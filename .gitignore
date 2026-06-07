@@ -1,0 +1,16 @@
+# Fruits-360 cloned dataset — re-clone with: git clone https://github.com/Horea94/Fruit-Images-Dataset.git Fruits360
+Fruits360/
+
+# Generated training images — regenerate with: python3 TrainingData/organize.py
+# (after cloning Fruits360 above)
+TrainingData/*/
+TrainingData/download.log
+
+# macOS
+.DS_Store
+
+# Xcode
+*.xcuserstate
+xcuserdata/
+DerivedData/
+*.xcworkspace/xcuserdata/
