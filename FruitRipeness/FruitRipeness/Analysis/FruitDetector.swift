@@ -1,6 +1,6 @@
+import SwiftUI
 import Vision
 import CoreImage
-import UIKit
 
 // State-machine based fruit detector.
 //
