@@ -19,6 +19,7 @@
 		AA000010 /* ScanningOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA100010 /* ScanningOverlayView.swift */; };
 		AA000011 /* PermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA100011 /* PermissionView.swift */; };
 		AA000012 /* CoreMLRipenessClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA100012 /* CoreMLRipenessClassifier.swift */; };
+		AA000013 /* FruitImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA100013 /* FruitImageLoader.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +35,7 @@
 		AA100010 /* ScanningOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanningOverlayView.swift; sourceTree = "<group>"; };
 		AA100011 /* PermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionView.swift; sourceTree = "<group>"; };
 		AA100012 /* CoreMLRipenessClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMLRipenessClassifier.swift; sourceTree = "<group>"; };
+		AA100013 /* FruitImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FruitImageLoader.swift; sourceTree = "<group>"; };
 		AA200001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA300001 /* FruitRipeness.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FruitRipeness.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -77,6 +79,7 @@
 				AA100004 /* RipenessAnalyzer.swift */,
 				AA100005 /* FruitDetector.swift */,
 				AA100012 /* CoreMLRipenessClassifier.swift */,
+				AA100013 /* FruitImageLoader.swift */,
 			);
 			path = Analysis;
 			sourceTree = "<group>";
@@ -197,6 +200,7 @@
 				AA000010 /* ScanningOverlayView.swift in Sources */,
 				AA000011 /* PermissionView.swift in Sources */,
 				AA000012 /* CoreMLRipenessClassifier.swift in Sources */,
+				AA000013 /* FruitImageLoader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

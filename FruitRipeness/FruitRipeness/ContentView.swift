@@ -1,13 +1,13 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var camera  = CameraManager()
-    @StateObject private var detector = FruitDetector()
+    @StateObject private var camera      = CameraManager()
+    @StateObject private var detector    = FruitDetector()
+    @StateObject private var imageLoader = FruitImageLoader()
 
-    // Card height states
-    @State private var cardHeight: CGFloat = 220
-    private let collapsedHeight: CGFloat  = 220
-    private let expandedHeight: CGFloat   = 440
+    @State private var cardHeight: CGFloat = 240
+    private let collapsedHeight: CGFloat   = 240
+    private let expandedHeight: CGFloat    = 500
 
     var body: some View {
         Group {
@@ -20,6 +20,7 @@ struct ContentView: View {
         .onAppear {
             camera.detector = detector
             camera.requestPermissionAndStart()
+            imageLoader.preloadAll()
         }
         .onDisappear {
             camera.stopSession()
@@ -30,47 +31,42 @@ struct ContentView: View {
 
     private var scannerView: some View {
         ZStack(alignment: .bottom) {
-            // Full-screen camera feed
             CameraPreviewView(session: camera.captureSession)
                 .ignoresSafeArea()
 
-            // Scanning overlay
             ScanningOverlayView(
                 isAnalyzing: detector.isAnalyzing,
                 hasResult: detector.latestResult != nil
             )
             .ignoresSafeArea()
 
-            // Top bar
             VStack {
                 topBar
                 Spacer()
             }
 
-            // Result card (always visible at bottom; grows when a result arrives)
-            VStack(spacing: 0) {
-                if let result = detector.latestResult {
-                    ResultCardView(result: result)
-                        .frame(height: cardHeight)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: result.id)
-                        .gesture(
-                            DragGesture()
-                                .onChanged { drag in
-                                    let newHeight = cardHeight - drag.translation.height
-                                    cardHeight = max(collapsedHeight, min(expandedHeight, newHeight))
+            if let result = detector.latestResult {
+                ResultCardView(result: result)
+                    .environmentObject(imageLoader)
+                    .frame(height: cardHeight)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .animation(.spring(response: 0.45, dampingFraction: 0.8), value: result.id)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { drag in
+                                let newH = cardHeight - drag.translation.height
+                                cardHeight = max(collapsedHeight, min(expandedHeight, newH))
+                            }
+                            .onEnded { drag in
+                                withAnimation(.spring(response: 0.35)) {
+                                    cardHeight = drag.translation.height < -60
+                                        ? expandedHeight
+                                        : collapsedHeight
                                 }
-                                .onEnded { drag in
-                                    withAnimation(.spring(response: 0.35)) {
-                                        cardHeight = drag.translation.height < -60
-                                            ? expandedHeight
-                                            : collapsedHeight
-                                    }
-                                }
-                        )
-                } else {
-                    nothingDetectedPill
-                }
+                            }
+                    )
+            } else {
+                nothingDetectedPill
             }
         }
         .preferredColorScheme(.dark)
@@ -92,9 +88,7 @@ struct ContentView: View {
 
             if detector.isAnalyzing {
                 HStack(spacing: 6) {
-                    ProgressView()
-                        .tint(.white)
-                        .scaleEffect(0.75)
+                    ProgressView().tint(.white).scaleEffect(0.75)
                     Text("Scanning")
                         .font(.caption.weight(.medium))
                         .foregroundColor(.white)
@@ -117,7 +111,7 @@ struct ContentView: View {
         )
     }
 
-    // MARK: - Nothing Detected Pill
+    // MARK: - No Detection Pill
 
     private var nothingDetectedPill: some View {
         HStack(spacing: 8) {

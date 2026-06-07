@@ -21,6 +21,30 @@
     <key>CFBundleVersion</key>
     <string>1</string>
 
+    <!-- Allow loading fruit photos from Wikipedia over HTTPS -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <false/>
+        <key>NSExceptionDomains</key>
+        <dict>
+            <key>wikipedia.org</key>
+            <dict>
+                <key>NSIncludesSubdomains</key>
+                <true/>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <false/>
+            </dict>
+            <key>wikimedia.org</key>
+            <dict>
+                <key>NSIncludesSubdomains</key>
+                <true/>
+                <key>NSExceptionAllowsInsecureHTTPLoads</key>
+                <false/>
+            </dict>
+        </dict>
+    </dict>
+
     <!-- Camera permission — REQUIRED -->
     <key>NSCameraUsageDescription</key>
     <string>FruitRipeness uses your camera to scan fruits and determine how ripe they are in real time.</string>

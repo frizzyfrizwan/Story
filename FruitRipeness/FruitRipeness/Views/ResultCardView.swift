@@ -1,8 +1,8 @@
 import SwiftUI
 
-// Bottom card that slides up and shows the ripeness analysis result.
 struct ResultCardView: View {
     let result: FruitAnalysisResult
+    @EnvironmentObject var imageLoader: FruitImageLoader
     @State private var showTips = false
 
     var body: some View {
@@ -12,14 +12,16 @@ struct ResultCardView: View {
                 .fill(Color.white.opacity(0.3))
                 .frame(width: 36, height: 4)
                 .padding(.top, 10)
+                .padding(.bottom, 2)
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
-                    // Fruit header
-                    HStack(spacing: 12) {
-                        Text(result.fruitType.emoji)
-                            .font(.system(size: 44))
 
+                    // MARK: Photo / placeholder header
+                    photoHeader
+
+                    // MARK: Fruit info row
+                    HStack(spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(result.fruitType.displayName)
                                 .font(.title2.weight(.bold))
@@ -37,20 +39,20 @@ struct ResultCardView: View {
 
                         Spacer()
 
-                        RipenessGaugeView(score: result.ripenessScore, level: result.ripenessLevel)
+                        RipenessGaugeView(score: result.ripenessScore,
+                                          level: result.ripenessLevel)
                     }
-                    .padding(.top, 6)
 
-                    // Divider
                     Rectangle()
                         .fill(Color.white.opacity(0.1))
                         .frame(height: 1)
 
-                    // Ripeness bar
-                    RipenessBarView(score: result.ripenessScore, level: result.ripenessLevel)
+                    // MARK: Ripeness bar
+                    RipenessBarView(score: result.ripenessScore,
+                                    level: result.ripenessLevel)
 
-                    // Description
-                    HStack {
+                    // MARK: Description
+                    HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "info.circle.fill")
                             .foregroundColor(.white.opacity(0.6))
                             .font(.caption)
@@ -61,7 +63,7 @@ struct ResultCardView: View {
                         Spacer()
                     }
 
-                    // Tips section
+                    // MARK: Tips
                     if !result.tips.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
                             Button {
@@ -102,10 +104,9 @@ struct ResultCardView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
 
-                    // Engine + confidence badge
+                    // MARK: Engine / confidence badge
                     if result.fruitType != .unknown {
                         HStack(spacing: 8) {
-                            // Engine indicator
                             HStack(spacing: 4) {
                                 Image(systemName: result.usedCoreML ? "cpu.fill" : "paintpalette.fill")
                                     .font(.caption2)
@@ -129,7 +130,7 @@ struct ResultCardView: View {
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.bottom, 30)
+                .padding(.bottom, 34)
             }
         }
         .background(
@@ -141,5 +142,55 @@ struct ResultCardView: View {
                 )
         )
         .shadow(color: .black.opacity(0.4), radius: 20, y: -5)
+        .onAppear { imageLoader.load(result.fruitType) }
+    }
+
+    // MARK: - Photo Header
+
+    @ViewBuilder
+    private var photoHeader: some View {
+        ZStack {
+            // Gradient placeholder always visible underneath
+            result.fruitType.placeholderGradient
+                .frame(height: 150)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+
+            if let image = imageLoader.images[result.fruitType] {
+                // Real Wikipedia photo
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 150)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .transition(.opacity.animation(.easeIn(duration: 0.4)))
+            } else {
+                // Emoji placeholder while the image loads
+                VStack(spacing: 6) {
+                    Text(result.fruitType.emoji)
+                        .font(.system(size: 56))
+                    ProgressView()
+                        .tint(.white.opacity(0.6))
+                        .scaleEffect(0.7)
+                }
+            }
+
+            // Ripeness badge overlay (bottom-right)
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Label(result.ripenessLevel.rawValue,
+                          systemImage: result.ripenessLevel.sfSymbol)
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(result.ripenessLevel.color.opacity(0.85))
+                        .clipShape(Capsule())
+                        .padding(10)
+                }
+            }
+        }
+        .frame(height: 150)
     }
 }
