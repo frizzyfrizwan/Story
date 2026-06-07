@@ -191,6 +191,23 @@ enum RipenessLevel: String {
     }
 }
 
+// MARK: - Scan State Machine
+
+/// Drives the entire detection flow in ContentView.
+enum ScanState {
+    case idle                           // nothing in frame
+    case scanning                       // Vision is running
+    case ambiguous([FruitCandidate])    // multiple plausible fruits — ask user
+    case result(FruitAnalysisResult)    // confirmed result
+}
+
+/// One candidate returned by the Vision pipeline.
+struct FruitCandidate: Identifiable {
+    let id = UUID()
+    let fruitType: FruitType
+    let confidence: Float               // 0–1 from VNClassificationObservation
+}
+
 // MARK: - Analysis Result
 
 struct FruitAnalysisResult: Identifiable {

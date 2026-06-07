@@ -5,9 +5,10 @@ struct ContentView: View {
     @StateObject private var detector    = FruitDetector()
     @StateObject private var imageLoader = FruitImageLoader()
 
-    @State private var cardHeight: CGFloat = 240
-    private let collapsedHeight: CGFloat   = 240
-    private let expandedHeight: CGFloat    = 500
+    // Card drag state
+    @State private var cardHeight: CGFloat = 260
+    private let collapsedHeight: CGFloat   = 260
+    private let expandedHeight: CGFloat    = 520
 
     var body: some View {
         Group {
@@ -22,57 +23,77 @@ struct ContentView: View {
             camera.requestPermissionAndStart()
             imageLoader.preloadAll()
         }
-        .onDisappear {
-            camera.stopSession()
-        }
+        .onDisappear { camera.stopSession() }
     }
 
-    // MARK: - Main Scanner
+    // MARK: - Main view
 
     private var scannerView: some View {
         ZStack(alignment: .bottom) {
+            // Live camera feed
             CameraPreviewView(session: camera.captureSession)
                 .ignoresSafeArea()
 
-            ScanningOverlayView(
-                isAnalyzing: detector.isAnalyzing,
-                hasResult: detector.latestResult != nil
-            )
-            .ignoresSafeArea()
+            // Animated scan frame — adapts to ScanState
+            ScanningOverlayView(scanState: detector.scanState)
+                .ignoresSafeArea()
 
-            VStack {
-                topBar
-                Spacer()
-            }
+            // Top status bar
+            VStack { topBar; Spacer() }
 
-            if let result = detector.latestResult {
-                ResultCardView(result: result)
-                    .environmentObject(imageLoader)
-                    .frame(height: cardHeight)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .animation(.spring(response: 0.45, dampingFraction: 0.8), value: result.id)
-                    .gesture(
-                        DragGesture()
-                            .onChanged { drag in
-                                let newH = cardHeight - drag.translation.height
-                                cardHeight = max(collapsedHeight, min(expandedHeight, newH))
-                            }
-                            .onEnded { drag in
-                                withAnimation(.spring(response: 0.35)) {
-                                    cardHeight = drag.translation.height < -60
-                                        ? expandedHeight
-                                        : collapsedHeight
-                                }
-                            }
-                    )
-            } else {
-                nothingDetectedPill
-            }
+            // Bottom sheet area — switches between idle pill / picker / result
+            bottomContent
         }
         .preferredColorScheme(.dark)
     }
 
-    // MARK: - Top Bar
+    // MARK: - Bottom content (state-driven)
+
+    @ViewBuilder
+    private var bottomContent: some View {
+        switch detector.scanState {
+
+        case .idle:
+            idlePill
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+
+        case .scanning:
+            // Keep showing whatever was there before; scanning is silent
+            EmptyView()
+
+        case .ambiguous(let candidates):
+            CandidatePickerView(
+                candidates: candidates,
+                onConfirm: { detector.confirmFruit($0) },
+                onDismiss: { detector.resetScan() }
+            )
+            .padding(.horizontal, 12)
+            .padding(.bottom, 28)
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+
+        case .result(let result):
+            ResultCardView(result: result)
+                .environmentObject(imageLoader)
+                .frame(height: cardHeight)
+                .padding(.horizontal, 0)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .gesture(
+                    DragGesture()
+                        .onChanged { drag in
+                            let newH = cardHeight - drag.translation.height
+                            cardHeight = max(collapsedHeight, min(expandedHeight, newH))
+                        }
+                        .onEnded { drag in
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                                cardHeight = drag.translation.height < -60
+                                    ? expandedHeight : collapsedHeight
+                            }
+                        }
+                )
+        }
+    }
+
+    // MARK: - Top bar
 
     private var topBar: some View {
         HStack {
@@ -80,9 +101,9 @@ struct ContentView: View {
                 Text("FruitRipeness")
                     .font(.title3.weight(.bold))
                     .foregroundColor(.white)
-                Text("AI-powered ripeness scanner")
+                Text("Point your camera at any fruit")
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.65))
+                    .foregroundColor(.white.opacity(0.6))
             }
             Spacer()
 
@@ -97,27 +118,36 @@ struct ContentView: View {
                 .padding(.vertical, 6)
                 .background(Color.white.opacity(0.15))
                 .clipShape(Capsule())
+                .transition(.opacity)
+            }
+
+            // Rescan button when a result is showing
+            if case .result = detector.scanState {
+                Button { detector.resetScan() } label: {
+                    Image(systemName: "arrow.counterclockwise.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.white.opacity(0.75))
+                }
+                .transition(.scale.combined(with: .opacity))
             }
         }
         .padding(.horizontal, 20)
         .padding(.top, 60)
         .padding(.bottom, 12)
         .background(
-            LinearGradient(
-                colors: [.black.opacity(0.6), .clear],
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            LinearGradient(colors: [.black.opacity(0.6), .clear],
+                           startPoint: .top, endPoint: .bottom)
         )
+        .animation(.easeInOut(duration: 0.25), value: detector.isAnalyzing)
     }
 
-    // MARK: - No Detection Pill
+    // MARK: - Idle pill
 
-    private var nothingDetectedPill: some View {
+    private var idlePill: some View {
         HStack(spacing: 8) {
             Image(systemName: "camera.viewfinder")
                 .foregroundColor(.white.opacity(0.7))
-            Text("Point the camera at a fruit")
+            Text("Point at a fruit to scan")
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.7))
         }
