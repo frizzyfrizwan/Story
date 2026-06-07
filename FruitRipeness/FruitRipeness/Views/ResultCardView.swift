@@ -102,15 +102,29 @@ struct ResultCardView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
 
-                    // Confidence badge
+                    // Engine + confidence badge
                     if result.fruitType != .unknown {
-                        HStack(spacing: 6) {
-                            Image(systemName: "brain")
+                        HStack(spacing: 8) {
+                            // Engine indicator
+                            HStack(spacing: 4) {
+                                Image(systemName: result.usedCoreML ? "cpu.fill" : "paintpalette.fill")
+                                    .font(.caption2)
+                                Text(result.usedCoreML ? "Core ML Model" : "Color Analysis")
+                                    .font(.caption2.weight(.medium))
+                            }
+                            .foregroundColor(result.usedCoreML ? .cyan.opacity(0.8) : .white.opacity(0.45))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(result.usedCoreML
+                                          ? Color.cyan.opacity(0.15)
+                                          : Color.white.opacity(0.07))
+                            )
+
+                            Text("\(Int(result.detectionConfidence * 100))% confidence")
                                 .font(.caption2)
-                                .foregroundColor(.white.opacity(0.5))
-                            Text("Detection confidence: \(Int(result.detectionConfidence * 100))%")
-                                .font(.caption2)
-                                .foregroundColor(.white.opacity(0.5))
+                                .foregroundColor(.white.opacity(0.4))
                         }
                     }
                 }

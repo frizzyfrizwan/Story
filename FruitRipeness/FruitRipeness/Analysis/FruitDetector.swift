@@ -1,54 +1,80 @@
 import Vision
 import CoreImage
-import Combine
 
-// Uses Apple's built-in Vision classifier to detect fruits in a frame.
-// Emits FruitAnalysisResult via the resultPublisher subject.
+// Detects fruit and assesses ripeness using:
+//   1. Core ML model (FruitRipenessModel.mlmodel) — if present in the bundle
+//   2. Vision built-in classifier + color-histogram analysis — always available fallback
 @MainActor
 final class FruitDetector: ObservableObject {
 
     @Published var latestResult: FruitAnalysisResult?
     @Published var isAnalyzing = false
+    @Published var usingCoreML = false
 
+    private let coreML  = CoreMLRipenessClassifier()
     private let analyzer = RipenessAnalyzer()
     private var frameCount = 0
-    private let analyzeEveryNFrames = 15   // ~0.5 fps on a 30fps feed
+    private let analyzeEveryNFrames = 15   // ~0.5 fps at 30fps
 
-    // MARK: - Process Frame
+    // MARK: - Frame Entry Point
 
     func processFrame(_ ciImage: CIImage) {
         frameCount += 1
         guard frameCount % analyzeEveryNFrames == 0 else { return }
-
         isAnalyzing = true
 
-        // Run Vision off the main thread
         Task.detached(priority: .userInitiated) { [weak self] in
             guard let self else { return }
-            let result = await self.classify(ciImage)
+
+            let result: FruitAnalysisResult?
+            if await self.coreML.isAvailable {
+                result = await self.runCoreML(on: ciImage)
+            } else {
+                result = await self.runVisionFallback(on: ciImage)
+            }
+
             await MainActor.run {
-                self.latestResult = result
+                if let result { self.latestResult = result }
+                self.usingCoreML = self.coreML.isAvailable
                 self.isAnalyzing = false
             }
         }
     }
 
-    // MARK: - Vision Classification
+    // MARK: - Core ML Path
 
-    private func classify(_ image: CIImage) async -> FruitAnalysisResult? {
+    private func runCoreML(on image: CIImage) async -> FruitAnalysisResult? {
+        guard let prediction = await coreML.classify(image) else {
+            // Core ML returned nothing — fall back silently
+            return await runVisionFallback(on: image)
+        }
+
+        let tips = RipenessTips.tips(for: prediction.fruitType, ripeness: prediction.ripenessLevel)
+        return FruitAnalysisResult(
+            fruitType: prediction.fruitType,
+            detectionConfidence: prediction.confidence,
+            ripenessLevel: prediction.ripenessLevel,
+            ripenessScore: prediction.ripenessLevel.score,
+            tips: tips,
+            usedCoreML: true
+        )
+    }
+
+    // MARK: - Vision + Color Fallback
+
+    private func runVisionFallback(on image: CIImage) async -> FruitAnalysisResult? {
         return await withCheckedContinuation { continuation in
-            let request = VNClassifyImageRequest { [weak self] request, error in
+            let request = VNClassifyImageRequest { [weak self] req, error in
                 guard let self else { continuation.resume(returning: nil); return }
 
                 if let error {
-                    print("[FruitDetector] Vision error: \(error)")
+                    print("[Detector] Vision error: \(error)")
                     continuation.resume(returning: nil)
                     return
                 }
 
-                let observations = (request.results as? [VNClassificationObservation]) ?? []
+                let observations = (req.results as? [VNClassificationObservation]) ?? []
 
-                // Find the best matching fruit
                 var bestFruit: FruitType = .unknown
                 var bestConfidence: Float = 0
 
@@ -56,23 +82,21 @@ final class FruitDetector: ObservableObject {
                     for label in fruit.visionLabels {
                         if let obs = observations.first(where: {
                             $0.identifier.lowercased().contains(label.lowercased())
-                        }) {
-                            if obs.confidence > bestConfidence {
-                                bestConfidence = obs.confidence
-                                bestFruit = fruit
-                            }
+                        }), obs.confidence > bestConfidence {
+                            bestConfidence = obs.confidence
+                            bestFruit = fruit
                         }
                     }
                 }
 
-                // If no fruit found with decent confidence, report unknown
                 guard bestFruit != .unknown, bestConfidence > 0.1 else {
                     continuation.resume(returning: FruitAnalysisResult(
                         fruitType: .unknown,
                         detectionConfidence: 0,
                         ripenessLevel: .ripe,
                         ripenessScore: 0.5,
-                        tips: ["Point the camera at a fruit"]
+                        tips: ["Point the camera at a fruit"],
+                        usedCoreML: false
                     ))
                     return
                 }
@@ -85,7 +109,8 @@ final class FruitDetector: ObservableObject {
                     detectionConfidence: bestConfidence,
                     ripenessLevel: level,
                     ripenessScore: score,
-                    tips: tips
+                    tips: tips,
+                    usedCoreML: false
                 ))
             }
 
@@ -93,7 +118,7 @@ final class FruitDetector: ObservableObject {
             do {
                 try handler.perform([request])
             } catch {
-                print("[FruitDetector] Handler error: \(error)")
+                print("[Detector] Handler error: \(error)")
                 continuation.resume(returning: nil)
             }
         }

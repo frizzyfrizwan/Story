@@ -99,6 +99,7 @@ struct FruitAnalysisResult: Identifiable {
     let ripenessLevel: RipenessLevel
     let ripenessScore: Float         // 0–1 continuous scale
     let tips: [String]
+    let usedCoreML: Bool
     let timestamp = Date()
 
     var isHighConfidence: Bool { detectionConfidence > 0.45 }

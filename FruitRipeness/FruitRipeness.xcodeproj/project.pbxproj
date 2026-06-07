@@ -18,6 +18,7 @@
 		AA000009 /* ResultCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA100009 /* ResultCardView.swift */; };
 		AA000010 /* ScanningOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA100010 /* ScanningOverlayView.swift */; };
 		AA000011 /* PermissionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA100011 /* PermissionView.swift */; };
+		AA000012 /* CoreMLRipenessClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA100012 /* CoreMLRipenessClassifier.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		AA100009 /* ResultCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultCardView.swift; sourceTree = "<group>"; };
 		AA100010 /* ScanningOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanningOverlayView.swift; sourceTree = "<group>"; };
 		AA100011 /* PermissionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionView.swift; sourceTree = "<group>"; };
+		AA100012 /* CoreMLRipenessClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMLRipenessClassifier.swift; sourceTree = "<group>"; };
 		AA200001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA300001 /* FruitRipeness.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FruitRipeness.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -74,6 +76,7 @@
 			children = (
 				AA100004 /* RipenessAnalyzer.swift */,
 				AA100005 /* FruitDetector.swift */,
+				AA100012 /* CoreMLRipenessClassifier.swift */,
 			);
 			path = Analysis;
 			sourceTree = "<group>";
@@ -193,6 +196,7 @@
 				AA000009 /* ResultCardView.swift in Sources */,
 				AA000010 /* ScanningOverlayView.swift in Sources */,
 				AA000011 /* PermissionView.swift in Sources */,
+				AA000012 /* CoreMLRipenessClassifier.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
