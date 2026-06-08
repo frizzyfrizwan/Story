@@ -25,6 +25,7 @@ final class CoreMLRipenessClassifier {
 
     init() {
         guard let url = Bundle.main.url(forResource: "FruitRipenessModel", withExtension: "mlmodelc")
+               ?? Bundle.main.url(forResource: "FruitRipenessModel", withExtension: "mlpackage")
                ?? Bundle.main.url(forResource: "FruitRipenessModel", withExtension: "mlmodel") else {
             print("[CoreML] FruitRipenessModel not found in bundle — using fallback")
             return
