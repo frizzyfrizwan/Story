@@ -25,10 +25,11 @@ DATA_DIR   = "/home/user/Story/TrainingData"
 OUTPUT_DIR = "/home/user/Story/FruitRipeness/FruitRipeness"
 MODEL_PATH = os.path.join(OUTPUT_DIR, "FruitRipenessModel.mlpackage")
 IMG_SIZE   = 128          # train at 128; CoreML export uses 224
-BATCH      = 64
-VAL_SPLIT  = 0.15
-EPOCHS     = 20
-LR         = 3e-3
+BATCH         = 64
+VAL_SPLIT     = 0.15
+EPOCHS        = 20
+LR            = 3e-3
+MAX_PER_CLASS = 250   # cap each class so total ~7k imgs → ~1 min/epoch
 DEVICE     = "cuda" if torch.cuda.is_available() else "cpu"
 
 print(f"\n🍎 FruitRipeness Trainer (from scratch, no internet needed)")
@@ -59,13 +60,29 @@ full_ds     = datasets.ImageFolder(DATA_DIR, transform=train_tf)
 class_names = full_ds.classes
 num_classes = len(class_names)
 
-val_n   = int(len(full_ds) * VAL_SPLIT)
-train_n = len(full_ds) - val_n
-train_ds, val_ds = random_split(full_ds, [train_n, val_n],
+# Balance: cap each class at MAX_PER_CLASS so large classes don't dominate
+# and total dataset stays small enough for fast CPU training.
+import random
+random.seed(42)
+by_class = {}
+for idx, (_, label) in enumerate(full_ds.samples):
+    by_class.setdefault(label, []).append(idx)
+balanced_indices = []
+for label, idxs in by_class.items():
+    balanced_indices.extend(random.sample(idxs, min(len(idxs), MAX_PER_CLASS)))
+random.shuffle(balanced_indices)
+
+from torch.utils.data import Subset
+balanced_ds = Subset(full_ds, balanced_indices)
+
+val_n   = int(len(balanced_ds) * VAL_SPLIT)
+train_n = len(balanced_ds) - val_n
+train_ds, val_ds = random_split(balanced_ds, [train_n, val_n],
                                  generator=torch.Generator().manual_seed(42))
 
 # Swap val set to non-augmented transform
-val_ds.dataset = datasets.ImageFolder(DATA_DIR, transform=val_tf)
+val_clean = datasets.ImageFolder(DATA_DIR, transform=val_tf)
+val_ds.dataset = Subset(val_clean, balanced_indices)
 
 train_loader = DataLoader(train_ds, batch_size=BATCH, shuffle=True,
                           num_workers=4, pin_memory=True)
