@@ -4,7 +4,7 @@ Fruits360/
 # Generated training images — regenerate with: python3 TrainingData/organize.py
 # (after cloning Fruits360 above)
 TrainingData/*/
-TrainingData/download.log
+TrainingData/*.log
 
 # macOS
 .DS_Store
