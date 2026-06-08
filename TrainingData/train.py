@@ -219,7 +219,7 @@ coreml = ct.convert(
         bias=[-0.485 / 0.229, -0.456 / 0.224, -0.406 / 0.225],
         color_layout=ct.colorlayout.RGB,
     )],
-    outputs=[ct.ClassifierConfig(class_labels=class_names)],
+    classifier_config=ct.ClassifierConfig(class_labels=class_names),
     minimum_deployment_target=ct.target.iOS16,
 )
 
