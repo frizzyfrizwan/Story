@@ -16,6 +16,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import layout                     # noqa: E402
 import vba_writer                 # noqa: E402
 import vsdx_writer                # noqa: E402
+import web_writer                 # noqa: E402
 
 
 def main():
@@ -38,10 +39,14 @@ def main():
     bas_path = os.path.join(out_dir, "MaintenanceProcessMap.bas")
     sub_count = vba_writer.write(bas_path, boxes, polys, page_h)
 
+    html_path = os.path.join(out_dir, "maintenance-process-map.html")
+    html_bytes = web_writer.write(html_path, boxes, polys, page_h)
+
     print(f"page      {layout.PAGE_W:g} x {page_h:g} in")
     print(f"shapes    {shape_count} ({len(boxes)} boxes, {len(polys)} connectors)")
     print(f"vsdx      {vsdx_path}")
     print(f"vba       {bas_path} ({sub_count} draw subs)")
+    print(f"html      {html_path} ({html_bytes / 1024:.0f} KB, self-contained)")
 
 
 if __name__ == "__main__":
