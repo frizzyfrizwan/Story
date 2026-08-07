@@ -205,6 +205,7 @@ CONTENT_TYPES = XML_DECL + f"""<Types xmlns="{NS_CT}">
 <Override PartName="/visio/document.xml" ContentType="application/vnd.ms-visio.drawing.main+xml"/>
 <Override PartName="/visio/pages/pages.xml" ContentType="application/vnd.ms-visio.pages+xml"/>
 <Override PartName="/visio/pages/page1.xml" ContentType="application/vnd.ms-visio.page+xml"/>
+<Override PartName="/visio/windows.xml" ContentType="application/vnd.ms-visio.windows+xml"/>
 </Types>"""
 
 ROOT_RELS = XML_DECL + f"""<Relationships xmlns="{NS_PKG_REL}">
@@ -215,7 +216,28 @@ ROOT_RELS = XML_DECL + f"""<Relationships xmlns="{NS_PKG_REL}">
 
 DOC_RELS = XML_DECL + f"""<Relationships xmlns="{NS_PKG_REL}">
 <Relationship Id="rId1" Type="{VREL}/pages" Target="pages/pages.xml"/>
+<Relationship Id="rId2" Type="{VREL}/windows" Target="windows.xml"/>
 </Relationships>"""
+
+# Visio desktop invents a window when this part is missing; Visio for the web
+# is stricter about the package looking like something Visio wrote, so it is
+# cheaper to ship one than to find out.
+WINDOWS = XML_DECL + f"""<Windows xmlns="{NS}" xmlns:r="{NS_R}" ClientWidth="1876" ClientHeight="1069">
+<Window ID="0" WindowType="Drawing" WindowState="1073741824" WindowLeft="-8" WindowTop="-31"
+ WindowWidth="1892" WindowHeight="1107" ContainerType="Page" Page="0" ViewScale="-1"
+ ViewCenterX="{{cx}}" ViewCenterY="{{cy}}">
+<ShowRulers>1</ShowRulers>
+<ShowGrid>1</ShowGrid>
+<ShowPageBreaks>0</ShowPageBreaks>
+<ShowGuides>1</ShowGuides>
+<ShowConnectionPoints>0</ShowConnectionPoints>
+<GlueSettings>9</GlueSettings>
+<SnapSettings>65847</SnapSettings>
+<SnapExtensions>34</SnapExtensions>
+<DynamicGridEnabled>1</DynamicGridEnabled>
+<TabSplitterPos>0.5</TabSplitterPos>
+</Window>
+</Windows>"""
 
 PAGES_RELS = XML_DECL + f"""<Relationships xmlns="{NS_PKG_REL}">
 <Relationship Id="rId1" Type="{VREL}/page" Target="page1.xml"/>
@@ -232,7 +254,10 @@ DOCUMENT = XML_DECL + f"""<VisioDocument xmlns="{NS}" xmlns:r="{NS_R}" xml:space
 <ProtectMasters>0</ProtectMasters>
 </DocumentSettings>
 <Colors/>
-<FaceNames/>
+<FaceNames>
+<FaceName NameU="Calibri" UnicodeRanges="-536859905 -1073732485 9 0" CharSets="536871327 0" Panos="2 15 5 2 2 2 4 3 2 4" Flags="325"/>
+<FaceName NameU="Segoe UI" UnicodeRanges="-469750017 -1073683329 9 0" CharSets="1073742335 -65536" Panos="2 11 5 2 4 2 4 2 2 3" Flags="325"/>
+</FaceNames>
 <StyleSheets>
 <StyleSheet ID="0" NameU="No Style" Name="No Style">
 <Cell N="EnableLineProps" V="1"/><Cell N="EnableFillProps" V="1"/><Cell N="EnableTextProps" V="1"/>
@@ -313,6 +338,7 @@ def write(path: str, boxes, polys, page_h: float, page_w: float = L.PAGE_W):
         "visio/pages/pages.xml": _pages_xml(page_w, page_h),
         "visio/pages/_rels/pages.xml.rels": PAGES_RELS,
         "visio/pages/page1.xml": page.xml(),
+        "visio/windows.xml": WINDOWS.format(cx=n(page_w / 2), cy=n(page_h / 2)),
     }
 
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
