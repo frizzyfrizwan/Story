@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turnpike District Console</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style id="app-css">
+/* ---------- reset ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html,body,h1,h2,h3,p,ul,ol,figure{margin:0;padding:0}
+img{max-width:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+
+/* ---------- tokens: light ---------- */
+:root{
+  --bg:#eef2f9; --card:#ffffff; --card2:#f6f8fd;
+  --ink:#101f38; --ink2:#49597c; --mute:#5d6c8a;
+  --line:#d8dfee; --line2:#e6ebf6;
+  --navy:#003087; --navy-ink:#003087;
+  --accent:#f47920; --accent-soft:rgba(244,121,32,.14);
+  --ok:#176c3c; --ok-bg:#e2f3e8;
+  --warn:#8a5300; --warn-bg:#fdf0dd;
+  --crit:#a83226; --crit-bg:#fbe7e4;
+  --mute-bg:#e8ecf5;
+  --btn:#003087; --btn-ink:#ffffff;
+  --input-bg:#ffffff;
+  --shadow:0 1px 2px rgba(16,31,56,.06),0 4px 14px rgba(16,31,56,.05);
+}
+/* ---------- tokens: dark (system) ---------- */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b1322; --card:#141f36; --card2:#182544;
+    --ink:#e9eefb; --ink2:#a6b4d4; --mute:#93a3c4;
+    --line:#27355a; --line2:#1e2c4d;
+    --navy:#2f5fc7; --navy-ink:#8fb1f0;
+    --accent:#f8863a; --accent-soft:rgba(248,134,58,.18);
+    --ok:#5ecb8b; --ok-bg:rgba(74,180,120,.16);
+    --warn:#f0b35e; --warn-bg:rgba(230,162,60,.15);
+    --crit:#f28b7d; --crit-bg:rgba(240,125,110,.15);
+    --mute-bg:rgba(147,163,196,.14);
+    --btn:#2f5fc7; --btn-ink:#ffffff;
+    --input-bg:#0f1930;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.3);
+  }
+}
+/* ---------- tokens: dark (explicit toggle) ---------- */
+:root[data-theme="dark"]{
+  --bg:#0b1322; --card:#141f36; --card2:#182544;
+  --ink:#e9eefb; --ink2:#a6b4d4; --mute:#93a3c4;
+  --line:#27355a; --line2:#1e2c4d;
+  --navy:#2f5fc7; --navy-ink:#8fb1f0;
+  --accent:#f8863a; --accent-soft:rgba(248,134,58,.18);
+  --ok:#5ecb8b; --ok-bg:rgba(74,180,120,.16);
+  --warn:#f0b35e; --warn-bg:rgba(230,162,60,.15);
+  --crit:#f28b7d; --crit-bg:rgba(240,125,110,.15);
+  --mute-bg:rgba(147,163,196,.14);
+  --btn:#2f5fc7; --btn-ink:#ffffff;
+  --input-bg:#0f1930;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.3);
+}
+
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:'Public Sans',system-ui,'Segoe UI',Arial,sans-serif;
+  font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,'Cascadia Mono',Consolas,monospace}
+
+/* ---------- shell ---------- */
+.wrap{max-width:1060px;margin:0 auto;padding:0 16px 80px}
+header.top{padding:20px 0 12px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+h1{font-size:26px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+h1 .flag{color:var(--accent)}
+.savebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.savenote{font-size:12px;color:var(--mute)}
+
+/* ---------- kpi strip ---------- */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:6px 0 14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)}
+.kpi .lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2)}
+.kpi .val{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi .sub{font-size:12px;color:var(--mute);margin-top:1px}
+.kpi.hot .val{color:var(--crit)}
+.kpi.warm .val{color:var(--warn)}
+.kpi.calm .val{color:var(--ok)}
+@media (max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- tabs ---------- */
+nav.tabs{display:flex;gap:4px;border-bottom:2px solid var(--line);margin-bottom:16px;overflow-x:auto}
+nav.tabs button{background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;padding:9px 14px;font-weight:700;font-size:14px;color:var(--ink2);cursor:pointer;white-space:nowrap}
+nav.tabs button.on{color:var(--navy-ink);border-bottom-color:var(--accent)}
+nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+
+/* ---------- sections & cards ---------- */
+section.blk{margin-bottom:24px}
+.blk>h2{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.blk>h2 .hint{font-weight:400;letter-spacing:0;text-transform:none;font-size:12px;color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+
+/* ---------- chips ---------- */
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chip.crit{background:var(--crit-bg);color:var(--crit)}
+.chip.mute{background:var(--mute-bg);color:var(--mute)}
+.chip.acc{background:var(--accent-soft);color:var(--accent)}
+
+/* ---------- controls ---------- */
+input[type=text],input[type=date],select,textarea{
+  width:100%;background:var(--input-bg);border:1px solid var(--line);border-radius:7px;
+  padding:7px 9px;font-size:14px;color:var(--ink)
+}
+textarea{resize:vertical;min-height:56px}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+label.f{display:block;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);margin-bottom:3px}
+.fld{margin-bottom:8px}
+button.btn{background:var(--btn);color:var(--btn-ink);border:none;border-radius:8px;padding:8px 14px;font-weight:700;font-size:13.5px;cursor:pointer}
+button.btn.sec{background:transparent;color:var(--navy-ink);border:1.5px solid var(--line);box-shadow:none}
+button.btn.warnb{background:transparent;color:var(--crit);border:1.5px solid var(--line)}
+button.btn.sm{padding:5px 10px;font-size:12.5px;border-radius:7px}
+button.btn:hover{filter:brightness(1.08)}
+.rowbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ---------- collection board ---------- */
+.board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media (max-width:900px){.board{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){.board{grid-template-columns:1fr}}
+.lead{border-left:4px solid var(--line);padding-left:12px}
+.lead.s-awaiting{border-left-color:var(--crit)}
+.lead.s-requested{border-left-color:var(--warn)}
+.lead.s-landed{border-left-color:var(--ok)}
+.lead.s-rolled{border-left-color:var(--navy-ink)}
+.lead .who{font-weight:700}
+.lead .prog{font-size:12px;color:var(--mute)}
+.lead select{margin:7px 0 6px}
+
+/* ---------- entries ---------- */
+.entry{margin-bottom:10px}
+.entry .ehead{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap}
+.entry .ehead .l{display:flex;gap:8px;align-items:center;flex:1;min-width:220px}
+.entry .ehead input{font-weight:700}
+.entry .lint{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.xdel{background:none;border:none;color:var(--mute);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:6px}
+.xdel:hover{color:var(--crit);background:var(--crit-bg)}
+.carried{font-size:11px;color:var(--mute)}
+
+/* ---------- contracts ---------- */
+.ct{display:grid;grid-template-columns:110px 1fr;gap:12px}
+@media (max-width:600px){.ct{grid-template-columns:1fr}}
+.ct .ref{font-weight:600;font-size:16px}
+.ct .days{font-size:13px;margin-top:4px}
+
+/* ---------- programs ---------- */
+.prog-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.prog-head .nm{font-weight:800;font-size:15px}
+.prog-head .own{font-size:12.5px;color:var(--mute)}
+
+/* ---------- actions ---------- */
+.act-item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line2)}
+.act-item:last-child{border-bottom:none}
+.act-item.done .atext{text-decoration:line-through;color:var(--mute)}
+.act-meta{font-size:12px;color:var(--mute);margin-top:2px}
+.heat3{color:var(--crit);font-weight:800}
+.heat2{color:var(--warn);font-weight:700}
+.heat1{color:var(--mute);font-weight:700}
+
+/* ---------- toast & modal ---------- */
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:9px 18px;border-radius:99px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:60}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#modal{position:fixed;inset:0;background:rgba(8,14,28,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+#modal.show{display:flex}
+#modal .box{background:var(--card);border-radius:12px;max-width:640px;width:100%;padding:16px;box-shadow:var(--shadow)}
+#modal textarea{min-height:260px;font-size:13px}
+#modal h3{font-size:15px;margin-bottom:8px}
+@media (prefers-reduced-motion: reduce){#toast{transition:none}}
+
+.footnote{font-size:12px;color:var(--mute);margin-top:20px;border-top:1px solid var(--line2);padding-top:10px}
+.empty{color:var(--mute);font-size:13.5px;padding:6px 2px}
+
+/* ---------- print: FTE green tracker document ---------- */
+#print-doc{display:none}
+@media print{
+  body{background:#fff}
+  body>*:not(#print-doc){display:none !important}
+  #print-doc{display:block;color:#1a1a1a;font-family:'Public Sans',Arial,sans-serif;font-size:11.5pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #print-doc .pd-eyebrow{font-size:9pt;letter-spacing:.14em;text-transform:uppercase;color:#025B36;font-weight:700}
+  #print-doc h1{font-size:19pt;color:#013A20;font-weight:800;margin:2pt 0 2pt}
+  #print-doc .pd-sub{font-size:10pt;color:#444;margin-bottom:10pt}
+  #print-doc .pd-exec{background:#C7E6E1;border-left:4pt solid #025B36;padding:8pt 10pt;margin:8pt 0 14pt;font-size:10.5pt}
+  #print-doc h2{font-size:12pt;color:#025B36;border-bottom:1.5pt solid #92A760;padding-bottom:2pt;margin:12pt 0 6pt;font-weight:800}
+  #print-doc .pd-entry{margin:0 0 8pt 0;page-break-inside:avoid}
+  #print-doc .pd-entry .pn{font-weight:700}
+  #print-doc .pd-entry .pm{color:#333;margin-left:10pt}
+  #print-doc .pd-foot{margin-top:14pt;border-top:1pt solid #92A760;padding-top:5pt;font-size:8.5pt;color:#555}
+}
+</style>
+</head>
+<body>
+<div id="app" class="wrap"></div>
+<div id="print-doc"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="modal"><div class="box"><h3 id="modal-title">Copy</h3><textarea id="modal-text" readonly></textarea><div class="rowbtns" style="margin-top:10px"><button class="btn" data-act="modal-copy">Copy to clipboard</button><button class="btn sec" data-act="modal-close">Close</button></div></div></div>
+<input type="file" id="import-file" accept="application/json" style="display:none">
+<script id="app-state" type="application/json">{"seed":true}</script>
+<script id="app-js">
+(function(){
+'use strict';
+var LS_KEY='turnpike-district-console-v1';
+
+/* ============ seed data — names and refs from the user's own operating docs.
+   Dates, dollars and statuses are deliberately blank: a blank prints as "—",
+   never as a claim. ============ */
+function uid(){return 'x'+Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4)}
+function todayISO(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function nextMondayISO(){var d=new Date();d.setHours(0,0,0,0);var add=(8-d.getDay())%7;if(add===0)add=0;d.setDate(d.getDate()+add);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+
+function seedState(){
+  var mk=function(name,program){return {id:uid(),name:name,program:program,status:'awaiting'}};
+  return {
+    v:1, savedAt:null,
+    weekEnding: nextMondayISO(),
+    leads:[
+      mk('Bryan Herrera','MRP / RCI'),
+      mk('Dan Ekback','Permits'),
+      mk('Aran Lessard','Structures'),
+      mk('Alex Navarro','Plan Review'),
+      mk('Doug Prager','Emergency Management'),
+      mk('Guy Murtonen','Environmental & Landscaping'),
+      mk('Briston De Armas','Environmental & Landscaping'),
+      mk('Nico','Contract Development & Administration'),
+      mk('Ops Centers — CMs & DMMs','Operations Delivery (boundary with Vlad Leon)')
+    ],
+    entries:[],
+    contracts:['E8V30','E8T22','E8R87','E8T73','E8V49'].map(function(r){return {id:uid(),ref:r,desc:'',end:'',dollars:'',basis:'',notes:''}}),
+    programs:[
+      {id:uid(),name:'MRP / RCI',owner:'Bryan Herrera'},
+      {id:uid(),name:'Permits',owner:'Dan Ekback'},
+      {id:uid(),name:'Structures',owner:'Aran Lessard'},
+      {id:uid(),name:'Contract Development & Administration',owner:'Nico'},
+      {id:uid(),name:'Beyond MRP',owner:'Owner unconfirmed — flag until closed'},
+      {id:uid(),name:'Environmental & Landscaping',owner:'Guy Murtonen / Briston De Armas'},
+      {id:uid(),name:'Plan Review',owner:'Alex Navarro'},
+      {id:uid(),name:'Emergency Management',owner:'Doug Prager'}
+    ].map(function(p){p.lastConfirmed='';p.moved='';p.stuck='';p.visible='';p.decision='';return p}),
+    actions:[],
+    cover:{changed:'',decision:'',risk:''},
+    history:[]
+  };
+}
+
+/* ============ state load: newer of embedded (published) vs localStorage ============ */
+function parseJsonSafe(t){try{return JSON.parse(t)}catch(e){return null}}
+function loadState(){
+  var embedded=parseJsonSafe((document.getElementById('app-state')||{}).textContent||'');
+  if(embedded&&embedded.seed)embedded=null;
+  var local=null;
+  try{local=parseJsonSafe(localStorage.getItem(LS_KEY))}catch(e){}
+  var pick=null;
+  if(embedded&&local)pick=((local.savedAt||'')>=(embedded.savedAt||''))?local:embedded;
+  else pick=local||embedded;
+  if(!pick||pick.v!==1)return seedState();
+  var base=seedState();
+  Object.keys(base).forEach(function(k){if(pick[k]===undefined)pick[k]=base[k]});
+  return pick;
+}
+var state=loadState();
+var ui={tab:'tracker',cloud:null,cloudReadOnly:false,lastCloudSave:state.savedAt};
+
+/* ============ small helpers ============ */
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtDate(iso){if(!iso)return '—';var p=iso.split('-');if(p.length!==3)return iso;var d=new Date(+p[0],+p[1]-1,+p[2]);return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}
+function fmtLong(iso){if(!iso)return '—';var p=iso.split('-');var d=new Date(+p[0],+p[1]-1,+p[2]);return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}
+function fmtMD(iso){if(!iso)return '—';var p=iso.split('-');var d=new Date(+p[0],+p[1]-1,+p[2]);return d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}
+function dash(s){return (s&&String(s).trim())?String(s).trim():'—'}
+function first(name){return String(name||'').split(' ')[0]}
+function workingDaysSince(iso){
+  if(!iso)return null;
+  var p=iso.split('-');var d=new Date(+p[0],+p[1]-1,+p[2]);d.setHours(0,0,0,0);
+  var now=new Date();now.setHours(0,0,0,0);
+  if(d>now)return 0;
+  var c=0;while(d<now){d.setDate(d.getDate()+1);var w=d.getDay();if(w!==0&&w!==6)c++}
+  return c;
+}
+function daysUntil(iso){
+  if(!iso)return null;
+  var p=iso.split('-');var d=new Date(+p[0],+p[1]-1,+p[2]);d.setHours(0,0,0,0);
+  var now=new Date();now.setHours(0,0,0,0);
+  return Math.round((d-now)/86400000);
+}
+
+/* ============ persistence ============ */
+var saveTimer=null;
+function markChanged(){
+  state.savedAt=new Date().toISOString();
+  if(saveTimer)clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveLocal,350);
+  scheduleDerived();
+}
+function saveLocal(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(state));setSaveNote('Saved on this device · '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}))}
+  catch(e){setSaveNote('Device save unavailable — use Backup')}
+  updateCloudBtn();
+}
+function setSaveNote(t){var el=document.getElementById('savenote');if(el)el.textContent=t}
+
+/* cloud (published-artifact) persistence, when the page runs as an artifact */
+(function initCloud(){
+  if(!(window.claude&&window.claude.use))return;
+  window.claude.use('artifact').then(function(ns){
+    if(ns){ui.cloud=ns;var b=document.getElementById('cloudbtn');if(b)b.style.display='';updateCloudBtn()}
+  }).catch(function(){});
+})();
+function updateCloudBtn(){
+  var b=document.getElementById('cloudbtn');if(!b||!ui.cloud||ui.cloudReadOnly)return;
+  var dirty=(state.savedAt||'')!==(ui.lastCloudSave||'');
+  b.textContent=dirty?'Save to all devices •':'Saved everywhere';
+  b.disabled=!dirty;
+}
+function fullDoc(stateJson){
+  var css=(document.getElementById('app-css')||{}).textContent||'';
+  var js=(document.getElementById('app-js')||{}).textContent||'';
+  var fontEl=document.querySelector('link[href*="fonts.googleapis"]');
+  var font=fontEl?fontEl.outerHTML:'';
+  return '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>Turnpike District Console</title>\n'+font+'\n<style id="app-css">'+css+'</style>\n</head>\n<body>\n<div id="app" class="wrap"></div>\n<div id="print-doc"></div>\n<div id="toast" role="status" aria-live="polite"></div>\n<div id="modal"><div class="box"><h3 id="modal-title">Copy</h3><textarea id="modal-text" readonly></textarea><div class="rowbtns" style="margin-top:10px"><button class="btn" data-act="modal-copy">Copy to clipboard</button><button class="btn sec" data-act="modal-close">Close</button></div></div></div>\n<input type="file" id="import-file" accept="application/json" style="display:none">\n<script id="app-state" type="application/json">'+stateJson.replace(/</g,'\\u003c')+'<\/script>\n<script id="app-js">'+js+'<\/script>\n</body>\n</html>';
+}
+function saveCloud(){
+  if(!ui.cloud)return;
+  state.savedAt=new Date().toISOString();
+  saveLocal();
+  var snapshot=state.savedAt;
+  ui.cloud.publish(fullDoc(JSON.stringify(state))).then(function(){
+    ui.lastCloudSave=snapshot;updateCloudBtn();toast('Saved for all your devices');
+  }).catch(function(err){
+    var code=err&&err.code;
+    if(code==='conflict'){toast('A newer version was saved elsewhere — loading it')}
+    else if(code==='not_writer'||code==='not_granted'||code==='consent_required'){ui.cloudReadOnly=true;var b=document.getElementById('cloudbtn');if(b)b.style.display='none';toast('This view is read-only — changes stay on this device')}
+    else if(code==='rate_limited'){toast('Saving too often — wait a minute and try again')}
+    else{toast('Cloud save failed — your work is still saved on this device')}
+  });
+}
+
+/* ============ derived quality checks ============ */
+var DATE_PAT=/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s*\d{1,2}\b|\b\d{1,2}\/\d{1,2}(\/\d{2,4})?\b|\b\d{4}-\d{2}-\d{2}\b|\b(mon|tues|wednes|thurs|fri|satur|sun)day\b|\bcob\b|\beod\b|\bweek of\b|\btoday\b|\btomorrow\b/i;
+var TASKLOG_PAT=/\b(ongoing|continu(e|ing|ed)|as needed|routine|day.to.day|attend(ing)?|monitor(ing)?|support(ing)?|misc|general)\b/i;
+var FIGURE_PAT=/%|\$\s?\d|\b\d+\s?(of|\/)\s?\d+\b/;
+function lintEntry(e){
+  var flags=[];
+  var hasDate=DATE_PAT.test(e.due||'');
+  var hasBlocker=!!(e.blockedBy&&e.blockedBy.trim());
+  if(!hasDate&&!hasBlocker)flags.push({s:'crit',t:'No real date or named blocker'});
+  if(!(e.requestedBy&&e.requestedBy.trim()))flags.push({s:'crit',t:'No named requester'});
+  if(TASKLOG_PAT.test((e.commitments||'')+' '+(e.task||'')))flags.push({s:'warn',t:'Reads as task-log, not director-level'});
+  if(FIGURE_PAT.test((e.commitments||'')+' '+(e.task||'')))flags.push({s:'mute',t:'Carries a figure — confirm the basis'});
+  if(hasBlocker&&!hasDate)flags.push({s:'ok',t:'Blocked — owner named'});
+  return flags;
+}
+function entryClean(e){return !lintEntry(e).some(function(f){return f.s==='crit'})}
+
+function freshness(p){
+  var wd=workingDaysSince(p.lastConfirmed);
+  if(wd===null)return {s:'crit',label:'NEVER CONFIRMED'};
+  if(wd>5)return {s:'warn',label:'STALE · '+wd+' wd'};
+  return {s:'ok',label:'Current'};
+}
+function contractClock(c){
+  var d=daysUntil(c.end);
+  if(d===null)return {s:'mute',label:'— end date not confirmed',sort:99999};
+  if(d<0)return {s:'crit',label:'OUT OF TERM · '+Math.abs(d)+'d',sort:-100000+d};
+  if(d<=30)return {s:'crit',label:d+' days remaining',sort:d};
+  if(d<=90)return {s:'warn',label:d+' days remaining',sort:d};
+  return {s:'ok',label:d+' days remaining',sort:d};
+}
+
+/* ============ KPI strip ============ */
+function kpiHtml(){
+  var due=state.weekEnding?new Date(state.weekEnding+'T17:00:00'):null;
+  var cd='—',cdSub='set the week ending date',cdCls='';
+  if(due){
+    var ms=due-new Date();
+    if(ms<0){cd='OVERDUE';cdCls='hot';cdSub='was due Mon '+fmtMD(state.weekEnding)+' COB'}
+    else{var dd=Math.floor(ms/86400000),hh=Math.floor(ms%86400000/3600000);cd=dd+'d '+hh+'h';cdCls=dd<1?'hot':(dd<3?'warm':'calm');cdSub='tracker to Ryan Brown · Mon '+fmtMD(state.weekEnding)+' COB'}
+  }
+  var landed=state.leads.filter(function(l){return l.status==='landed'||l.status==='rolled'}).length;
+  var lTot=state.leads.length;
+  var lCls=landed===lTot?'calm':(landed>=lTot/2?'warm':'hot');
+  var clean=state.entries.filter(entryClean).length,eTot=state.entries.length;
+  var eCls=eTot===0?'':(clean===eTot?'calm':'warm');
+  var clocks=state.contracts.map(contractClock).sort(function(a,b){return a.sort-b.sort});
+  var refByClock=state.contracts.map(function(c){return {c:c,k:contractClock(c)}}).sort(function(a,b){return a.k.sort-b.k.sort})[0];
+  var ck='—',ckSub='no end dates confirmed',ckCls='';
+  if(refByClock&&refByClock.k.s!=='mute'){
+    var d=daysUntil(refByClock.c.end);
+    ck=(d<0?Math.abs(d)+'d over':d+'d');
+    ckCls=refByClock.k.s==='crit'?'hot':(refByClock.k.s==='warn'?'warm':'calm');
+    ckSub=refByClock.c.ref+(d<0?' · out of term':' · nearest to term');
+  }
+  return '<div class="kpi '+cdCls+'"><div class="lbl">Monday COB</div><div class="val mono">'+cd+'</div><div class="sub">'+cdSub+'</div></div>'
+    +'<div class="kpi '+lCls+'"><div class="lbl">Sections landed</div><div class="val mono">'+landed+' / '+lTot+'</div><div class="sub">'+(lTot-landed)+' outstanding</div></div>'
+    +'<div class="kpi '+eCls+'"><div class="lbl">Entries ready</div><div class="val mono">'+clean+' / '+eTot+'</div><div class="sub">'+(eTot-clean)+' flagged before send</div></div>'
+    +'<div class="kpi '+ckCls+'"><div class="lbl">Contract clock</div><div class="val mono">'+ck+'</div><div class="sub">'+esc(ckSub)+'</div></div>';
+}
+var derivedTimer=null;
+function scheduleDerived(){if(derivedTimer)clearTimeout(derivedTimer);derivedTimer=setTimeout(updateDerived,250)}
+function updateDerived(){
+  var k=document.getElementById('kpis');if(k)k.innerHTML=kpiHtml();
+  document.querySelectorAll('[data-entry]').forEach(function(card){
+    var e=state.entries.find(function(x){return x.id===card.getAttribute('data-entry')});
+    var box=card.querySelector('.lint');
+    if(e&&box)box.innerHTML=lintChips(e);
+  });
+  document.querySelectorAll('[data-contract-chip]').forEach(function(el){
+    var c=state.contracts.find(function(x){return x.id===el.getAttribute('data-contract-chip')});
+    if(c){var k2=contractClock(c);el.innerHTML='<span class="chip '+k2.s+'">'+esc(k2.label)+'</span>'}
+  });
+  document.querySelectorAll('[data-program-chip]').forEach(function(el){
+    var p=state.programs.find(function(x){return x.id===el.getAttribute('data-program-chip')});
+    if(p){var f=freshness(p);el.innerHTML='<span class="chip '+f.s+'">'+esc(f.label)+'</span>'}
+  });
+}
+function lintChips(e){
+  var f=lintEntry(e);
+  if(!f.length)return '<span class="chip ok">Ready</span>';
+  return f.map(function(x){return '<span class="chip '+x.s+'">'+esc(x.t)+'</span>'}).join('');
+}
+
+/* ============ renderers ============ */
+function render(){
+  var app=document.getElementById('app');
+  app.innerHTML=
+    '<header class="top"><div><div class="eyebrow">Florida&rsquo;s Turnpike · Maintenance District Delivery · Jacobs GEC</div>'
+    +'<h1>District<span class="flag"> Console</span></h1></div>'
+    +'<div class="savebar"><span class="savenote" id="savenote"></span>'
+    +'<button class="btn sm" id="cloudbtn" data-act="save-cloud" style="display:none">Save to all devices</button>'
+    +'</div></header>'
+    +'<div class="kpis" id="kpis">'+kpiHtml()+'</div>'
+    +'<nav class="tabs" role="tablist">'+['tracker|Weekly Tracker','contracts|Contract Clock','programs|Programs','actions|Open Actions'].map(function(t){
+      var p=t.split('|');return '<button role="tab" data-act="tab" data-tab="'+p[0]+'" class="'+(ui.tab===p[0]?'on':'')+'">'+p[1]+'</button>'}).join('')
+    +'</nav>'
+    +'<div id="tabpane">'+renderTab()+'</div>'
+    +'<div class="footnote">Blank prints as &ldquo;—&rdquo; (not recorded), never as zero. Figures never travel without a basis: programmed, committed, available and encumbered are four different numbers. Contract references carried exactly. Data lives in this page — use Backup before clearing your browser.'
+    +'<div class="rowbtns" style="margin-top:8px"><button class="btn sec sm" data-act="export-json">Backup (JSON)</button><button class="btn sec sm" data-act="import-json">Restore backup</button></div></div>';
+  updateDerived();
+}
+function renderTab(){
+  if(ui.tab==='tracker')return renderTracker();
+  if(ui.tab==='contracts')return renderContracts();
+  if(ui.tab==='programs')return renderPrograms();
+  if(ui.tab==='actions')return renderActions();
+  return '';
+}
+
+/* ---- tracker tab ---- */
+var LEAD_STATUSES=[['awaiting','Awaiting'],['requested','Requested / chased'],['landed','Landed'],['rolled','Rolled into document']];
+function renderTracker(){
+  var h='<section class="blk"><h2>Collection board <span class="hint">Friday-morning target — chase early, chase kindly</span></h2><div class="board">';
+  h+=state.leads.map(function(l){
+    return '<div class="card lead s-'+l.status+'"><div class="who">'+esc(l.name)+'</div><div class="prog">'+esc(l.program)+'</div>'
+      +'<select data-bind="lead:'+l.id+':status" data-rerender="1" aria-label="Status for '+esc(l.name)+'">'
+      +LEAD_STATUSES.map(function(s){return '<option value="'+s[0]+'"'+(l.status===s[0]?' selected':'')+'>'+s[1]+'</option>'}).join('')
+      +'</select>'
+      +'<div class="rowbtns"><button class="btn sec sm" data-act="chase" data-id="'+l.id+'">Copy chase note</button></div></div>';
+  }).join('');
+  h+='</div></section>';
+
+  h+='<section class="blk"><h2>Entries <span class="hint">Name · task one-liner · requested by · commitments · due. Director-visibility items only.</span></h2>';
+  if(!state.entries.length)h+='<div class="empty">No entries yet for the week ending '+fmtDate(state.weekEnding)+'. Add them as sections land.</div>';
+  h+=state.entries.map(function(e){
+    return '<div class="card entry" data-entry="'+e.id+'">'
+      +'<div class="ehead"><div class="l"><input type="text" placeholder="Person" data-bind="entry:'+e.id+':person" value="'+esc(e.person)+'" aria-label="Person">'
+      +'<select data-bind="entry:'+e.id+':program" aria-label="Program">'+programOptions(e.program)+'</select></div>'
+      +(e.carried?'<span class="carried">carried from last week</span>':'')
+      +'<button class="xdel" data-act="del-entry" data-id="'+e.id+'" aria-label="Delete entry">✕</button></div>'
+      +'<div class="grid2"><div class="fld"><label class="f">Project / task one-liner</label><input type="text" data-bind="entry:'+e.id+':task" value="'+esc(e.task)+'"></div>'
+      +'<div class="fld"><label class="f">Requested by</label><input type="text" placeholder="Named person, not a team" data-bind="entry:'+e.id+':requestedBy" value="'+esc(e.requestedBy)+'"></div></div>'
+      +'<div class="fld"><label class="f">Commitments / deliverables</label><textarea data-bind="entry:'+e.id+':commitments" placeholder="One per line">'+esc(e.commitments)+'</textarea></div>'
+      +'<div class="grid2"><div class="fld"><label class="f">Due date / timing</label><input type="text" placeholder="e.g. Fri Aug 22 · COB Monday · week of Sep 1" data-bind="entry:'+e.id+':due" value="'+esc(e.due)+'"></div>'
+      +'<div class="fld"><label class="f">Blocked? name the blocker + who owns the unblock</label><input type="text" placeholder="e.g. awaiting FDOT counts — Vlad Leon" data-bind="entry:'+e.id+':blockedBy" value="'+esc(e.blockedBy)+'"></div></div>'
+      +'<div class="lint">'+lintChips(e)+'</div></div>';
+  }).join('');
+  h+='<div class="rowbtns" style="margin-top:6px"><button class="btn" data-act="add-entry">+ Add entry</button></div></section>';
+
+  h+='<section class="blk"><h2>Send it <span class="hint">cover note + consolidated document</span></h2><div class="card">'
+    +'<div class="grid3">'
+    +'<div class="fld"><label class="f">What changed since last week</label><input type="text" data-bind="cover:changed" value="'+esc(state.cover.changed)+'"></div>'
+    +'<div class="fld"><label class="f">Needs a director decision</label><input type="text" data-bind="cover:decision" value="'+esc(state.cover.decision)+'"></div>'
+    +'<div class="fld"><label class="f">At risk</label><input type="text" data-bind="cover:risk" value="'+esc(state.cover.risk)+'"></div></div>'
+    +'<div class="rowbtns"><button class="btn" data-act="copy-tracker">Copy tracker (text)</button>'
+    +'<button class="btn sec" data-act="print-tracker">Print / PDF — FTE green</button>'
+    +'<button class="btn sec" data-act="copy-cover">Copy cover note</button>'
+    +'<button class="btn warnb" data-act="next-week">Start next week →</button></div>'
+    +'</div></section>';
+  return h;
+}
+function programOptions(sel){
+  var names=state.programs.map(function(p){return p.name});
+  if(sel&&names.indexOf(sel)<0)names.push(sel);
+  names.push('Other / cross-program');
+  return names.map(function(n){return '<option value="'+esc(n)+'"'+(n===sel?' selected':'')+'>'+esc(n)+'</option>'}).join('');
+}
+
+/* ---- contracts tab ---- */
+function renderContracts(){
+  var sorted=state.contracts.slice().sort(function(a,b){return contractClock(a).sort-contractClock(b).sort});
+  var h='<section class="blk"><h2>Contract clock <span class="hint">out-of-term leads · 90-day amber · 30-day red · references carried exactly</span></h2>';
+  h+=sorted.map(function(c){
+    var k=contractClock(c);
+    return '<div class="card ct" style="margin-bottom:10px"><div><div class="ref mono">'+esc(c.ref)+'</div><div class="days" data-contract-chip="'+c.id+'"><span class="chip '+k.s+'">'+esc(k.label)+'</span></div></div>'
+      +'<div><div class="grid2"><div class="fld"><label class="f">Description</label><input type="text" data-bind="contract:'+c.id+':desc" value="'+esc(c.desc)+'"></div>'
+      +'<div class="fld"><label class="f">End of term</label><input type="date" data-bind="contract:'+c.id+':end" value="'+esc(c.end)+'"></div></div>'
+      +'<div class="grid2"><div class="fld"><label class="f">Dollars</label><input type="text" placeholder="—" data-bind="contract:'+c.id+':dollars" value="'+esc(c.dollars)+'"></div>'
+      +'<div class="fld"><label class="f">Basis — never mix</label><select data-bind="contract:'+c.id+':basis"><option value=""'+(c.basis===''?' selected':'')+'>— not set</option>'
+      +['programmed','committed','available','encumbered'].map(function(b){return '<option value="'+b+'"'+(c.basis===b?' selected':'')+'>'+b+'</option>'}).join('')+'</select></div></div>'
+      +'<div class="fld"><label class="f">Notes (renewal path, procurement status)</label><input type="text" data-bind="contract:'+c.id+':notes" value="'+esc(c.notes)+'"></div>'
+      +'<div class="rowbtns"><button class="xdel" data-act="del-contract" data-id="'+c.id+'" aria-label="Delete contract">✕ remove</button></div>'
+      +'</div></div>';
+  }).join('');
+  h+='<div class="rowbtns"><button class="btn" data-act="add-contract">+ Add contract</button></div>';
+  h+='<p class="empty" style="margin-top:8px">A date entered here is a claim — enter it only once confirmed against the contract file. Unconfirmed stays &ldquo;—&rdquo;.</p></section>';
+  return h;
+}
+
+/* ---- programs tab ---- */
+function renderPrograms(){
+  var h='<section class="blk"><h2>Eight programs — four fixed questions <span class="hint">freshness is first-class: stale reads as stale, never as current</span></h2>';
+  h+=state.programs.map(function(p){
+    var f=freshness(p);
+    return '<div class="card" style="margin-bottom:10px"><div class="prog-head"><div><span class="nm">'+esc(p.name)+'</span> <span class="own">· '+esc(p.owner)+'</span></div>'
+      +'<div class="rowbtns"><span data-program-chip="'+p.id+'"><span class="chip '+f.s+'">'+esc(f.label)+'</span></span>'
+      +'<button class="btn sec sm" data-act="confirm-program" data-id="'+p.id+'">Confirm today</button></div></div>'
+      +'<div class="grid2">'
+      +'<div class="fld"><label class="f">What moved (outcome, not activity)</label><input type="text" data-bind="program:'+p.id+':moved" value="'+esc(p.moved)+'"></div>'
+      +'<div class="fld"><label class="f">Stuck — on whom (named person)</label><input type="text" data-bind="program:'+p.id+':stuck" value="'+esc(p.stuck)+'"></div>'
+      +'<div class="fld"><label class="f">About to become visible to someone senior</label><input type="text" data-bind="program:'+p.id+':visible" value="'+esc(p.visible)+'"></div>'
+      +'<div class="fld"><label class="f">Decision needed this week (or &ldquo;none&rdquo;)</label><input type="text" data-bind="program:'+p.id+':decision" value="'+esc(p.decision)+'"></div>'
+      +'</div></div>';
+  }).join('');
+  h+='<div class="rowbtns"><button class="btn" data-act="copy-onepager">Copy one-pager draft</button></div></section>';
+  return h;
+}
+
+/* ---- actions tab ---- */
+function renderActions(){
+  var order={3:0,2:1,1:2};
+  var sorted=state.actions.slice().sort(function(a,b){
+    if(a.done!==b.done)return a.done?1:-1;
+    return (order[a.heat]||3)-(order[b.heat]||3);
+  });
+  var h='<section class="blk"><h2>Open actions <span class="hint">owed by me · owed to me · gone quiet — heat-ordered</span><div class="rowbtns"><button class="btn sm" data-act="add-action">+ Add item</button></div></h2><div class="card">';
+  if(!sorted.length)h+='<div class="empty">Nothing on the register. Friday&rsquo;s sweep will feed this.</div>';
+  h+=sorted.map(function(a){
+    return '<div class="act-item'+(a.done?' done':'')+'">'
+      +'<input type="checkbox" data-bind="action:'+a.id+':done" data-rerender="1"'+(a.done?' checked':'')+' aria-label="Done">'
+      +'<div><input type="text" class="atext" data-bind="action:'+a.id+':text" value="'+esc(a.text)+'" placeholder="What, exactly">'
+      +'<div class="act-meta grid3" style="margin-top:6px">'
+      +'<select data-bind="action:'+a.id+':dir"><option value="owe"'+(a.dir==='owe'?' selected':'')+'>I owe</option><option value="owed"'+(a.dir==='owed'?' selected':'')+'>Owed to me</option><option value="quiet"'+(a.dir==='quiet'?' selected':'')+'>Gone quiet</option></select>'
+      +'<input type="text" placeholder="Who" data-bind="action:'+a.id+':who" value="'+esc(a.who)+'">'
+      +'<input type="text" placeholder="Due / how long silent" data-bind="action:'+a.id+':due" value="'+esc(a.due)+'"></div>'
+      +'<div class="act-meta grid2" style="margin-top:6px">'
+      +'<select data-bind="action:'+a.id+':heat" data-rerender="1"><option value="1"'+(a.heat==1?' selected':'')+'>Heat 1 — quiet</option><option value="2"'+(a.heat==2?' selected':'')+'>Heat 2 — becoming visible</option><option value="3"'+(a.heat==3?' selected':'')+'>Heat 3 — senior visibility</option></select>'
+      +'<input type="text" placeholder="Political read (exposure, credit routing, corners)" data-bind="action:'+a.id+':note" value="'+esc(a.note)+'"></div></div>'
+      +'<button class="xdel" data-act="del-action" data-id="'+a.id+'" aria-label="Delete">✕</button></div>';
+  }).join('');
+  h+='</div></section>';
+  return h;
+}
+
+/* ============ exports ============ */
+function trackerText(){
+  var out=[];
+  out.push('GEC WORKLOAD & COMMITMENTS TRACKER');
+  out.push('Week ending '+fmtLong(state.weekEnding)+' — due COB');
+  out.push('Prepared by Faisal Rizwan · Maintenance District Delivery · Jacobs GEC');
+  out.push('');
+  var progs={};
+  state.entries.forEach(function(e){var k=e.program||'Unassigned';(progs[k]=progs[k]||[]).push(e)});
+  Object.keys(progs).forEach(function(pn){
+    var lead=state.leads.find(function(l){return l.program.indexOf(pn)===0||pn.indexOf(l.program)===0});
+    out.push('== '+pn.toUpperCase()+(lead?' — '+lead.name:'')+' ==');
+    progs[pn].forEach(function(e){
+      out.push('• '+dash(e.person)+' — '+dash(e.task));
+      out.push('    Requested by: '+dash(e.requestedBy));
+      String(e.commitments||'').split('\n').filter(function(x){return x.trim()}).forEach(function(c,i){
+        out.push('    '+(i===0?'Commitments: ':'             ')+c.trim());
+      });
+      if(!(e.commitments||'').trim())out.push('    Commitments: —');
+      out.push('    Due / timing: '+((e.due&&e.due.trim())?e.due.trim():(e.blockedBy&&e.blockedBy.trim()?'Blocked — '+e.blockedBy.trim():'—')));
+      out.push('');
+    });
+  });
+  if(!state.entries.length)out.push('No entries recorded.');
+  return out.join('\n');
+}
+function coverText(){
+  var lines=['Ryan — consolidated GEC Workload & Commitments Tracker for week ending '+fmtLong(state.weekEnding)+' attached.'];
+  if(state.cover.changed.trim())lines.push('Since last week: '+state.cover.changed.trim());
+  if(state.cover.decision.trim())lines.push('Needs a director decision: '+state.cover.decision.trim());
+  if(state.cover.risk.trim())lines.push('At risk: '+state.cover.risk.trim());
+  if(lines.length===1)lines.push('(Fill in: what changed · what needs a decision · what is at risk — two or three sentences, executive level.)');
+  return lines.join('\n');
+}
+function onePagerText(){
+  var out=[];
+  out.push('DISTRICT ONE-PAGER — week ending '+fmtLong(state.weekEnding));
+  out.push('');
+  out.push('DECISIONS REQUESTED THIS WEEK');
+  var dec=state.programs.filter(function(p){return p.decision&&p.decision.trim()&&p.decision.trim().toLowerCase()!=='none'});
+  if(dec.length)dec.forEach(function(p){out.push('• '+p.name+' ('+p.owner+'): '+p.decision.trim())});
+  else out.push('None requested.');
+  out.push('');
+  out.push('PROGRAMS');
+  state.programs.forEach(function(p){
+    var f=freshness(p);
+    out.push(p.name.toUpperCase()+' — '+p.owner+'  ['+f.label+']');
+    out.push('  Moved: '+dash(p.moved));
+    out.push('  Stuck: '+dash(p.stuck));
+    out.push('  Becoming visible: '+dash(p.visible));
+    out.push('  Decision needed: '+(p.decision&&p.decision.trim()?p.decision.trim():'none'));
+    out.push('');
+  });
+  out.push('CONTRACT CLOCK (90 DAYS)');
+  var hot=state.contracts.map(function(c){return {c:c,k:contractClock(c)}}).filter(function(x){return x.k.s==='crit'||x.k.s==='warn'}).sort(function(a,b){return a.k.sort-b.k.sort});
+  if(hot.length)hot.forEach(function(x){
+    out.push('• '+x.c.ref+' — '+x.k.label+(x.c.dollars?' — '+x.c.dollars+' ('+(x.c.basis||'basis not set')+')':' — $ not recorded')+(x.c.desc?' — '+x.c.desc:''));
+  });
+  else out.push('No confirmed end dates inside 90 days — clock unconfirmed until contract dates are entered.');
+  out.push('');
+  out.push('WATCH LIST');
+  var watch=state.actions.filter(function(a){return !a.done}).sort(function(a,b){return b.heat-a.heat}).slice(0,3);
+  if(watch.length)watch.forEach(function(a){out.push('• '+dash(a.text)+' — '+dash(a.who)+(a.due?' — '+a.due:''))});
+  else out.push('—');
+  out.push('');
+  out.push('Basis note: figures as labeled; a blank prints as — (not recorded), never as zero. Freshness: Current = confirmed within 5 working days; STALE = older; NEVER CONFIRMED = seeded, not verified by the owner.');
+  return out.join('\n');
+}
+function chaseText(l){
+  return 'Hi '+first(l.name)+' — pulling the district tracker together for Ryan ahead of Monday COB ('+fmtMD(state.weekEnding)+'). Could you get me the '+l.program+' section by Friday morning? Same shape as usual: name, task one-liner, who asked for it, commitments, and dates. Thanks.';
+}
+function printTracker(){
+  var pd=document.getElementById('print-doc');
+  var progs={};
+  state.entries.forEach(function(e){var k=e.program||'Unassigned';(progs[k]=progs[k]||[]).push(e)});
+  var body=Object.keys(progs).map(function(pn){
+    var lead=state.leads.find(function(l){return l.program.indexOf(pn)===0||pn.indexOf(l.program)===0});
+    return '<h2>'+esc(pn)+(lead?' — '+esc(lead.name):'')+'</h2>'+progs[pn].map(function(e){
+      var due=(e.due&&e.due.trim())?e.due.trim():(e.blockedBy&&e.blockedBy.trim()?'Blocked — '+e.blockedBy.trim():'—');
+      return '<div class="pd-entry"><div class="pn">'+esc(dash(e.person))+' — '+esc(dash(e.task))+'</div>'
+        +'<div class="pm">Requested by: '+esc(dash(e.requestedBy))+'</div>'
+        +'<div class="pm">Commitments: '+esc(dash(e.commitments)).replace(/\n/g,'<br>&nbsp;&nbsp;')+'</div>'
+        +'<div class="pm">Due / timing: '+esc(due)+'</div></div>';
+    }).join('');
+  }).join('');
+  var exec=[state.cover.changed,state.cover.decision&&('Needs a director decision: '+state.cover.decision),state.cover.risk&&('At risk: '+state.cover.risk)].filter(function(x){return x&&String(x).trim()}).join(' · ');
+  pd.innerHTML='<div class="pd-eyebrow">Florida&rsquo;s Turnpike Enterprise · Transportation Operations</div>'
+    +'<h1>GEC Workload &amp; Commitments Tracker</h1>'
+    +'<div class="pd-sub">Week ending '+esc(fmtLong(state.weekEnding))+' · Prepared by Faisal Rizwan · Maintenance District Delivery · Jacobs GEC</div>'
+    +(exec?'<div class="pd-exec"><strong>Executive summary.</strong> '+esc(exec)+'</div>':'')
+    +(body||'<p>No entries recorded.</p>')
+    +'<div class="pd-foot">Scope: every person on the Jacobs GEC contract, including ops-center-based Contract Managers and Delivery Maintenance Managers; excludes other GEC firms and FDOT/FTE staff. A blank prints as &ldquo;—&rdquo; (not recorded), never as zero. Figures as labeled by basis. Contract references carried exactly.</div>';
+  window.print();
+}
+
+/* ============ copy / modal / backup ============ */
+function toast(t){var el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(function(){el.classList.remove('show')},2200)}
+function copyText(t,title){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(function(){toast('Copied')},function(){showModal(t,title)});
+  }else showModal(t,title);
+}
+function showModal(t,title){
+  document.getElementById('modal-title').textContent=title||'Copy';
+  var ta=document.getElementById('modal-text');ta.value=t;
+  document.getElementById('modal').classList.add('show');
+  ta.focus();ta.select();
+}
+function exportJson(){
+  var data=JSON.stringify(state,null,2);
+  var done=function(){toast('Backup ready')};
+  if(window.claude&&window.claude.use){
+    window.claude.use('downloads').then(function(dl){
+      if(dl){dl.save({filename:'district-console-backup.json',data:data}).then(done).catch(function(){showModal(data,'Backup — copy and save as .json')});}
+      else fallbackDownload(data,done);
+    }).catch(function(){fallbackDownload(data,done)});
+  }else fallbackDownload(data,done);
+}
+function fallbackDownload(data,done){
+  try{
+    var a=document.createElement('a');
+    a.href='data:application/json;charset=utf-8,'+encodeURIComponent(data);
+    a.download='district-console-backup.json';
+    document.body.appendChild(a);a.click();a.remove();done();
+  }catch(e){showModal(data,'Backup — copy and save as .json')}
+}
+function importJson(file){
+  var r=new FileReader();
+  r.onload=function(){
+    var next=parseJsonSafe(r.result);
+    if(!next||next.v!==1){toast('That file is not a console backup');return}
+    var base=seedState();
+    Object.keys(base).forEach(function(k){if(next[k]===undefined)next[k]=base[k]});
+    state=next;markChanged();render();toast('Backup restored');
+  };
+  r.readAsText(file);
+}
+
+/* ============ events ============ */
+function resolveBind(spec){
+  var p=spec.split(':');
+  if(p[0]==='cover')return {obj:state.cover,field:p[1]};
+  if(p[0]==='state')return {obj:state,field:p[1]};
+  var coll={entry:state.entries,lead:state.leads,contract:state.contracts,program:state.programs,action:state.actions}[p[0]];
+  if(!coll)return null;
+  var it=coll.find(function(x){return x.id===p[1]});
+  return it?{obj:it,field:p[2]}:null;
+}
+document.addEventListener('input',function(ev){
+  var b=ev.target.getAttribute&&ev.target.getAttribute('data-bind');
+  if(!b)return;
+  var r=resolveBind(b);if(!r)return;
+  r.obj[r.field]=ev.target.type==='checkbox'?ev.target.checked:ev.target.value;
+  markChanged();
+});
+document.addEventListener('change',function(ev){
+  var t=ev.target;
+  if(t.id==='import-file'){if(t.files&&t.files[0])importJson(t.files[0]);t.value='';return}
+  var b=t.getAttribute&&t.getAttribute('data-bind');
+  if(!b)return;
+  var r=resolveBind(b);if(!r)return;
+  r.obj[r.field]=t.type==='checkbox'?t.checked:t.value;
+  markChanged();
+  if(t.getAttribute('data-rerender'))render();
+});
+document.addEventListener('click',function(ev){
+  var btn=ev.target.closest('[data-act]');
+  if(!btn)return;
+  var act=btn.getAttribute('data-act'),id=btn.getAttribute('data-id');
+  if(act==='tab'){ui.tab=btn.getAttribute('data-tab');render();return}
+  if(act==='add-entry'){state.entries.push({id:uid(),person:'',program:state.programs[0].name,task:'',requestedBy:'',commitments:'',due:'',blockedBy:'',carried:false});markChanged();render();return}
+  if(act==='del-entry'){if(confirm('Delete this entry?')){state.entries=state.entries.filter(function(e){return e.id!==id});markChanged();render()}return}
+  if(act==='chase'){var l=state.leads.find(function(x){return x.id===id});if(l){copyText(chaseText(l),'Chase note — '+l.name);if(l.status==='awaiting'){l.status='requested';markChanged();render()}}return}
+  if(act==='add-contract'){var ref=prompt('Contract reference (carried exactly):');if(ref&&ref.trim()){state.contracts.push({id:uid(),ref:ref.trim(),desc:'',end:'',dollars:'',basis:'',notes:''});markChanged();render()}return}
+  if(act==='del-contract'){if(confirm('Remove this contract from the clock?')){state.contracts=state.contracts.filter(function(c){return c.id!==id});markChanged();render()}return}
+  if(act==='confirm-program'){var pr=state.programs.find(function(x){return x.id===id});if(pr){pr.lastConfirmed=todayISO();markChanged();updateDerived();toast(pr.name+' confirmed today')}return}
+  if(act==='add-action'){state.actions.push({id:uid(),dir:'owe',text:'',who:'',due:'',heat:2,note:'',done:false});markChanged();render();return}
+  if(act==='del-action'){if(confirm('Delete this item?')){state.actions=state.actions.filter(function(a){return a.id!==id});markChanged();render()}return}
+  if(act==='copy-tracker'){copyText(trackerText(),'Consolidated tracker');return}
+  if(act==='copy-cover'){copyText(coverText(),'Cover note to Ryan');return}
+  if(act==='copy-onepager'){copyText(onePagerText(),'District one-pager draft');return}
+  if(act==='print-tracker'){printTracker();return}
+  if(act==='next-week'){
+    if(!confirm('Close out the week ending '+fmtDate(state.weekEnding)+' and start the next one? Entries carry forward; the collection board resets.'))return;
+    var landed=state.leads.filter(function(l){return l.status==='landed'||l.status==='rolled'}).length;
+    state.history.push({weekEnding:state.weekEnding,sectionsLanded:landed+'/'+state.leads.length,entries:state.entries.length,closedAt:new Date().toISOString()});
+    var p=state.weekEnding.split('-');var d=new Date(+p[0],+p[1]-1,+p[2]);d.setDate(d.getDate()+7);
+    state.weekEnding=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    state.leads.forEach(function(l){l.status='awaiting'});
+    state.entries.forEach(function(e){e.carried=true});
+    state.cover={changed:'',decision:'',risk:''};
+    markChanged();render();toast('New week started — '+fmtDate(state.weekEnding));
+    return;
+  }
+  if(act==='export-json'){exportJson();return}
+  if(act==='import-json'){document.getElementById('import-file').click();return}
+  if(act==='save-cloud'){saveCloud();return}
+  if(act==='modal-copy'){var ta=document.getElementById('modal-text');ta.focus();ta.select();
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(function(){toast('Copied')})}
+    else{try{document.execCommand('copy');toast('Copied')}catch(e){}}
+    return}
+  if(act==='modal-close'){document.getElementById('modal').classList.remove('show');return}
+});
+document.getElementById('modal').addEventListener('click',function(ev){
+  if(ev.target===this)this.classList.remove('show');
+});
+
+/* countdown tick */
+setInterval(function(){var k=document.getElementById('kpis');if(k)k.innerHTML=kpiHtml()},60000);
+
+/* flush the debounced save when the page is left — matters on phones */
+function flushSave(){if(saveTimer){clearTimeout(saveTimer);saveTimer=null;saveLocal()}}
+window.addEventListener('beforeunload',flushSave);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden')flushSave()});
+
+render();
+saveLocal();
+setSaveNote(state.savedAt?'Saved on this device':'Fresh start — seeded from your operating docs');
+})();
+</script>
+</body>
+</html>
