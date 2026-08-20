@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TenderDesk — Win Canadian government contracts without a bid team</title>
+<meta name="description" content="TenderDesk finds the government tenders your small business can win, tells you honestly whether to bid, and delivers a submission-ready response in five days — at a tenth of consultant rates.">
+<style>
+  :root{
+    --ink:#1a2332; --ink-soft:#4a5568; --paper:#fdfcfa; --card:#ffffff;
+    --accent:#b3261e; --accent-deep:#8c1d17; --gold:#f4b942;
+    --line:#e6e2da; --wash:#f4f1ec;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       color:var(--ink);background:var(--paper);line-height:1.6}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 24px}
+  header{border-bottom:1px solid var(--line);background:var(--card)}
+  .nav{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+  .logo{font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
+  .logo span{color:var(--accent)}
+  .nav a.cta{background:var(--accent);color:#fff;padding:10px 20px;border-radius:8px;
+             text-decoration:none;font-weight:600;font-size:.95rem}
+  .nav a.cta:hover{background:var(--accent-deep)}
+  .hero{padding:72px 0 56px;text-align:left;max-width:760px}
+  .kicker{display:inline-block;background:var(--wash);border:1px solid var(--line);
+          border-radius:999px;padding:5px 14px;font-size:.82rem;font-weight:600;
+          color:var(--accent-deep);margin-bottom:20px}
+  h1{font-size:clamp(2rem,5vw,3rem);line-height:1.15;letter-spacing:-.02em;font-weight:800}
+  .hero p.lead{font-size:1.2rem;color:var(--ink-soft);margin:20px 0 32px;max-width:640px}
+  .btn-row{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{display:inline-block;padding:14px 26px;border-radius:9px;text-decoration:none;font-weight:700}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.primary:hover{background:var(--accent-deep)}
+  .btn.ghost{border:1.5px solid var(--ink);color:var(--ink)}
+  .fine{font-size:.85rem;color:var(--ink-soft);margin-top:14px}
+  .stats{background:var(--ink);color:#fff;padding:44px 0}
+  .stats .wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:28px}
+  .stat b{display:block;font-size:1.9rem;font-weight:800;color:var(--gold)}
+  .stat span{font-size:.92rem;opacity:.85}
+  section{padding:64px 0}
+  h2{font-size:1.7rem;letter-spacing:-.01em;margin-bottom:10px}
+  .sub{color:var(--ink-soft);max-width:640px;margin-bottom:36px}
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:26px}
+  .step .n{width:34px;height:34px;border-radius:50%;background:var(--wash);color:var(--accent-deep);
+           display:flex;align-items:center;justify-content:center;font-weight:800;margin-bottom:14px}
+  .step h3{font-size:1.05rem;margin-bottom:8px}
+  .step p{font-size:.95rem;color:var(--ink-soft)}
+  .band{background:var(--wash);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+  .plan{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:28px;
+        display:flex;flex-direction:column}
+  .plan.featured{border:2px solid var(--accent);position:relative}
+  .plan.featured::before{content:"Most popular";position:absolute;top:-12px;left:24px;
+        background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;
+        padding:3px 12px;border-radius:999px}
+  .plan h3{font-size:1.02rem}
+  .price{font-size:1.9rem;font-weight:800;margin:10px 0 2px}
+  .price small{font-size:.9rem;font-weight:500;color:var(--ink-soft)}
+  .plan ul{list-style:none;margin:18px 0 24px;flex:1}
+  .plan li{padding:7px 0 7px 26px;position:relative;font-size:.93rem;color:var(--ink-soft)}
+  .plan li::before{content:"✓";position:absolute;left:2px;color:var(--accent);font-weight:800}
+  .plan a{text-align:center;border:1.5px solid var(--ink);border-radius:8px;padding:11px;
+          text-decoration:none;color:var(--ink);font-weight:700;font-size:.95rem}
+  .plan.featured a{background:var(--accent);border-color:var(--accent);color:#fff}
+  .why{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+  .why .step p b{color:var(--ink)}
+  .faq details{border-bottom:1px solid var(--line);padding:16px 0}
+  .faq summary{font-weight:700;cursor:pointer;font-size:1rem}
+  .faq p{margin-top:10px;color:var(--ink-soft);font-size:.95rem;max-width:720px}
+  .cta-final{text-align:center;padding:72px 24px}
+  .cta-final h2{font-size:2rem}
+  footer{border-top:1px solid var(--line);padding:28px 0;font-size:.85rem;color:var(--ink-soft)}
+  footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo">Tender<span>Desk</span> 🍁</div>
+    <a class="cta" href="mailto:hello@tenderdesk.ca?subject=Free%20compliance%20review">Get a free tender review</a>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <span class="kicker">New for 2026: federal buys from $10K–$5M must now be designed for small business</span>
+  <h1>Win government contracts without a bid team.</h1>
+  <p class="lead">Canadian governments buy ~$200&nbsp;billion a year — and new Buy&nbsp;Canadian and
+  small-business rules mean they need suppliers like you. TenderDesk finds the tenders you can
+  win, tells you honestly whether to bid, and hands you a submission-ready response in five
+  days. No 60-hour proposal marathons. No $20,000 consultants.</p>
+  <div class="btn-row">
+    <a class="btn primary" href="mailto:hello@tenderdesk.ca?subject=Free%20compliance%20review">Send us a tender — first review is free</a>
+    <a class="btn ghost" href="#pricing">See pricing</a>
+  </div>
+  <p class="fine">Serving trades, facilities, construction, and services businesses across Ontario &amp; Québec. English &amp; French.</p>
+</div>
+
+<div class="stats">
+  <div class="wrap">
+    <div class="stat"><b>$200B+</b><span>spent yearly by Canadian federal, provincial &amp; municipal buyers</span></div>
+    <div class="stat"><b>30–60 hrs</b><span>what one compliant RFP response costs a small firm in-house</span></div>
+    <div class="stat"><b>5 days</b><span>TenderDesk turnaround on a complete bid package</span></div>
+    <div class="stat"><b>~10×</b><span>cheaper than traditional bid consultants ($2,500–$3,000/bid)</span></div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="sub">A full bid desk, delivered as a service.</p>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><h3>We watch every portal</h3>
+        <p>CanadaBuys, MERX-listed federal work, provincial and municipal portals — matched daily against your trades, regions, and certifications.</p></div>
+      <div class="step"><div class="n">2</div><h3>Honest bid / no-bid call</h3>
+        <p>Fit score, mandatory requirements, red flags (bonding, clearances, insurance), and the hours it will really take. We tell you when <em>not</em> to bid.</p></div>
+      <div class="step"><div class="n">3</div><h3>Your package, drafted</h3>
+        <p>Compliance matrix, technical response, cover letter, past-performance write-ups, pricing and submission checklists — built from your company's real facts only.</p></div>
+      <div class="step"><div class="n">4</div><h3>You review, sign, submit</h3>
+        <p>Every open item is flagged for you to confirm. You stay the bidder of record; nothing is ever invented on your behalf.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="pricing">
+  <div class="wrap">
+    <h2>Pricing</h2>
+    <p class="sub">Launch pricing. Compare: bid consultants charge $2,450–$2,900 per proposal — before revisions.</p>
+    <div class="plans">
+      <div class="plan">
+        <h3>Tender Watch</h3>
+        <div class="price">$149<small>/month</small></div>
+        <ul>
+          <li>Weekly matched-tender digest</li>
+          <li>Bid / no-bid verdicts on up to 10 tenders a month</li>
+          <li>Deadline &amp; site-visit calendar</li>
+          <li>Cancel anytime</li>
+        </ul>
+        <a href="mailto:hello@tenderdesk.ca?subject=Tender%20Watch">Start watching</a>
+      </div>
+      <div class="plan featured">
+        <h3>Bid Package</h3>
+        <div class="price">$1,500<small>/bid</small></div>
+        <ul>
+          <li>Complete submission-ready draft in 5 business days</li>
+          <li>Compliance matrix against every mandatory criterion</li>
+          <li>Technical narrative, cover letter, past-performance</li>
+          <li>One revision round included</li>
+        </ul>
+        <a href="mailto:hello@tenderdesk.ca?subject=Bid%20Package">Send us your tender</a>
+      </div>
+      <div class="plan">
+        <h3>Bid Desk Retainer</h3>
+        <div class="price">$750<small>/month + $950/bid</small></div>
+        <ul>
+          <li>Everything in Tender Watch</li>
+          <li>Up to 2 bid packages a month at member rate</li>
+          <li>Prequalification upkeep: COR, ISNetworld/Avetta, clearances</li>
+          <li>Quarterly win-rate review</li>
+        </ul>
+        <a href="mailto:hello@tenderdesk.ca?subject=Bid%20Desk%20Retainer">Book a call</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Why small suppliers lose — and how 2026 changed the game</h2>
+    <div class="why">
+      <div class="step"><h3>The old problem</h3>
+        <p>Government RFPs run 100+ pages. Evaluators disqualify on a single missed mandatory
+        criterion. Small firms' share of federal contract value has fallen to roughly
+        <b>half</b> of what it was in 2008 — not because the work got worse, but because
+        bidding got heavier.</p></div>
+      <div class="step"><h3>The 2026 shift</h3>
+        <p>The <b>Buy Canadian Policy</b> now favours Canadian suppliers, and the federal
+        <b>Small Business Procurement Program</b> (July 2026) requires every purchase between
+        $10K and $5M to be designed with small businesses in mind. Ontario and BC have matching
+        rules. Buyers are actively looking for you.</p></div>
+      <div class="step"><h3>What we bring</h3>
+        <p>AI does the reading, cross-referencing, and first drafts in hours instead of weeks;
+        an experienced human checks every requirement and every fact before it reaches you.
+        That's how a $1,500 package matches work that used to cost ten times as much.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="band faq">
+  <div class="wrap">
+    <h2>Questions contractors actually ask</h2>
+    <details><summary>Do you guarantee we'll win?</summary>
+      <p>No — and be wary of anyone who does. We guarantee a compliant, professional, on-time
+      package and an honest no-bid call when a tender isn't winnable for you. Your win rate is
+      the number we track and report every quarter.</p></details>
+    <details><summary>Is it really written for us, or is it AI boilerplate?</summary>
+      <p>Every package is built from your company profile — your certifications, crews, past
+      contracts, service area. Anything we don't know is flagged for you to confirm, never
+      invented. Evaluators can spot boilerplate; so can we.</p></details>
+    <details><summary>We've never bid on government work. Can we start from zero?</summary>
+      <p>Yes — that's our Prequal Setup ($1,900 one-time): supplier registrations, safety
+      documentation, insurance package, and your first tender watchlist, typically inside two
+      weeks.</p></details>
+    <details><summary>What about French-language tenders in Québec?</summary>
+      <p>We deliver packages in English and French, including SEAO opportunities. Bilingual
+      capability is a rated advantage on many federal tenders — we'll tell you when it applies.</p></details>
+    <details><summary>Who sees our company information?</summary>
+      <p>Your profile lives in our systems, is used only to prepare your bids, and is never
+      shared. You can request its deletion at any time.</p></details>
+  </div>
+</section>
+
+<div class="cta-final">
+  <h2>There's a tender with your name on it right now.</h2>
+  <p class="sub" style="margin:14px auto 28px">Send any government tender you're eyeing — or ask us what's open in your trade this week. The first compliance review is free, no strings.</p>
+  <a class="btn primary" href="mailto:hello@tenderdesk.ca?subject=Free%20compliance%20review">Get my free tender review</a>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div>© 2026 TenderDesk · Ottawa, Ontario 🍁</div>
+    <div>hello@tenderdesk.ca · Proudly Canadian-owned</div>
+  </div>
+</footer>
+
+</body>
+</html>

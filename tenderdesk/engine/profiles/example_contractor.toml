@@ -1,0 +1,45 @@
+# Example TenderDesk client: a small Ontario facilities/trades contractor.
+# Copy this file per client and edit — this profile IS the product's memory
+# of who the client is; qualification and drafting only use facts from here.
+
+name = "Maple Ridge Facility Services Ltd."
+description = "12-person commercial facilities contractor based in Ottawa, Ontario. Janitorial, building maintenance, HVAC service, and snow & ice control for offices, warehouses, and institutional sites across Eastern Ontario since 2011."
+
+keywords = [
+    "janitorial",
+    "custodial",
+    "cleaning services",
+    "facility maintenance",
+    "facilities maintenance",
+    "building maintenance",
+    "HVAC",
+    "snow removal",
+    "snow and ice",
+    "grounds maintenance",
+    "property maintenance",
+]
+negative_keywords = ["software", "aircraft", "marine", "translation"]
+
+# UNSPSC families: 7610 cleaning/janitorial, 7210 building maintenance & repair
+unspsc_prefixes = ["7610", "7210", "72101", "76111"]
+gsin_prefixes = ["K1", "J0"]
+
+regions = ["Ontario", "National Capital Region", "Quebec"]
+categories = ["SRV", "SRVTGD", "CNST"]
+min_days_to_close = 7
+
+capabilities = "Bonded and insured ($5M commercial general liability). 24/7 dispatch. Green cleaning program (EcoLogo supplies). Fleet of 8 service vehicles. Bilingual site supervisors (EN/FR)."
+
+past_performance = [
+    "Public Services and Procurement Canada — janitorial services, 3 federal office buildings, Ottawa (2021-2024, $840K total value)",
+    "City of Ottawa — winter snow & ice control, recreation facilities (2019-2025, seasonal contracts)",
+    "Algonquin College — preventive HVAC maintenance, two campuses (2022-present)",
+]
+
+certifications = [
+    "Federal supplier registered (Procurement Business Number in SAP Ariba / CanadaBuys)",
+    "COR safety certified (IHSA Ontario)",
+    "WSIB clearance in good standing",
+    "Controlled Goods Program: not registered (flag if required)",
+    "Security clearances: 6 staff hold federal Reliability Status",
+]
