@@ -25,7 +25,8 @@ def test_bom_is_stripped(tenders):
 def test_fields_parsed(tenders):
     tender = find_tender(tenders, "TD-2026-004")
     assert tender.entity == "Department of National Defence"
-    assert tender.category == "SRVTGD"
+    # Raw feed values keep their '*' prefix; match.split_values() cleans them.
+    assert tender.category == "*SRVTGD"
     assert "76111501" in tender.unspsc
     assert tender.is_open
     assert len(tender.attachments) == 2

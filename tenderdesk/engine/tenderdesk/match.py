@@ -3,10 +3,15 @@
 This is the free, fast first pass: score every open tender against the
 company profile so only plausible fits are sent to the (paid) Claude
 qualification step. Scores are transparent — every point has a reason.
+
+Feed format note: CanadaBuys prefixes every value with ``*`` and separates
+multiple values with newlines (``*Ontario (except NCR)\\n*Quebec (except NCR)``),
+so all multi-value columns go through :func:`split_values` before comparison.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from datetime import date
 
@@ -21,8 +26,45 @@ WEIGHT_REGION = 2.0
 WEIGHT_CATEGORY = 1.5
 PENALTY_NEGATIVE_KEYWORD = -6.0
 
-# Region values in the feed that mean "anyone can bid / deliver anywhere".
-_NATIONWIDE = {"", "canada", "national capital region", "worldwide"}
+# Feed values meaning "deliverable anywhere", after normalization.
+_NATIONWIDE = {"canada", "worldwide", "national"}
+
+
+def split_values(raw: str) -> list[str]:
+    """Split a CanadaBuys multi-value cell into clean values.
+
+    Handles the feed's ``*`` prefixes and newline separators, plus the
+    comma-separated form used by some columns and other portals.
+    """
+    values = []
+    for line in raw.replace("\r", "\n").split("\n"):
+        for piece in line.split(","):
+            cleaned = piece.strip().lstrip("*").strip()
+            if cleaned:
+                values.append(cleaned)
+    return values
+
+
+def normalize_region(value: str) -> str:
+    """Reduce a region name to a comparable form.
+
+    ``"Ontario (except NCR)"`` and ``"Ontario"`` must compare equal — the feed
+    qualifies province names with NCR carve-outs that profiles don't write out.
+    """
+    value = re.sub(r"\(.*?\)", " ", value.lower())
+    value = re.sub(r"[^a-z ]", " ", value)
+    value = " ".join(value.split())
+    # "Nunavut Territory" -> "nunavut"; keeps multi-word names like
+    # "national capital region" and "british columbia" intact.
+    return value.removesuffix(" territory")
+
+
+def _regions_of(tender: Tender) -> set[str]:
+    return {
+        normalize_region(region)
+        for raw in (tender.regions_opportunity, tender.regions_delivery)
+        for region in split_values(raw)
+    } - {""}
 
 
 @dataclass
@@ -33,16 +75,15 @@ class MatchResult:
     # True once the tender matches on substance (keyword or commodity code).
     # Region/category alone must never produce a match.
     content_relevant: bool = False
+    # True when the tender names regions and none of them are ones the
+    # company serves — a hard exclusion, not a scoring penalty.
+    out_of_region: bool = False
 
     def add(self, points: float, reason: str, *, content: bool = False) -> None:
         self.score += points
         self.reasons.append(f"{'+' if points >= 0 else ''}{points:g} {reason}")
         if content and points > 0:
             self.content_relevant = True
-
-
-def _split_codes(raw: str) -> list[str]:
-    return [code.strip() for chunk in raw.split(",") for code in chunk.split("*") if code.strip()]
 
 
 def score_tender(tender: Tender, profile: CompanyProfile, today: date | None = None) -> MatchResult:
@@ -63,31 +104,37 @@ def score_tender(tender: Tender, profile: CompanyProfile, today: date | None = N
                 WEIGHT_KEYWORD_DESCRIPTION, f"keyword '{keyword}' in description", content=True
             )
 
-    tender_unspsc = _split_codes(tender.unspsc)
+    tender_unspsc = split_values(tender.unspsc)
     for prefix in profile.unspsc_prefixes:
         if any(code.startswith(prefix) for code in tender_unspsc):
             result.add(WEIGHT_UNSPSC, f"UNSPSC prefix {prefix}", content=True)
             break
 
-    tender_gsin = _split_codes(tender.gsin)
+    # Note: GSIN is populated on fewer than 5% of live notices, so this rarely
+    # fires — it stays as a bonus signal, never a requirement.
+    tender_gsin = split_values(tender.gsin)
     for prefix in profile.gsin_prefixes:
         if any(code.startswith(prefix) for code in tender_gsin):
             result.add(WEIGHT_GSIN, f"GSIN prefix {prefix}", content=True)
             break
 
     if profile.regions:
-        tender_regions = {
-            region.strip().lower()
-            for raw in (tender.regions_opportunity, tender.regions_delivery)
-            for region in raw.split(",")
-        }
-        if tender_regions & _NATIONWIDE or tender_regions & {r.lower() for r in profile.regions}:
+        tender_regions = _regions_of(tender)
+        wanted = {normalize_region(r) for r in profile.regions} - {""}
+        if not tender_regions:
+            # ~15% of live notices name no region. Unknown is not a match —
+            # award nothing and let the content signals decide.
+            pass
+        elif tender_regions & _NATIONWIDE or tender_regions & wanted:
             result.add(WEIGHT_REGION, "region match")
+        else:
+            result.out_of_region = True
 
-    if profile.categories and tender.category.strip().upper() in {
-        c.upper() for c in profile.categories
-    }:
-        result.add(WEIGHT_CATEGORY, f"category {tender.category}")
+    if profile.categories:
+        tender_categories = {c.upper() for c in split_values(tender.category)}
+        matched = tender_categories & {c.upper() for c in profile.categories}
+        if matched:
+            result.add(WEIGHT_CATEGORY, f"category {'/'.join(sorted(matched))}")
 
     return result
 
@@ -107,6 +154,8 @@ def rank_tenders(
         if days is not None and days < profile.min_days_to_close:
             continue
         result = score_tender(tender, profile, today)
+        if result.out_of_region:
+            continue
         if result.content_relevant and result.score >= min_score:
             results.append(result)
     results.sort(key=lambda r: r.score, reverse=True)
