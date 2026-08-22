@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+out/
+data/live_open_tenders.csv
+.pytest_cache/
