@@ -10,7 +10,7 @@ from tenderdesk.match import (
     split_values,
 )
 from tenderdesk.profile import load_profile
-from tenderdesk.tenders import find_tender, load_tenders
+from tenderdesk.tenders import Tender, find_tender, load_tenders
 
 ENGINE = Path(__file__).parent.parent
 TODAY = date(2026, 8, 20)
@@ -54,11 +54,44 @@ def test_category_matches_despite_star_prefix(tenders, profile):
 # --- region correctness ----------------------------------------------------
 
 
-def test_out_of_region_tender_is_excluded(tenders, profile):
-    """Moncton work must not reach an Ontario/Québec contractor."""
-    result = score_tender(find_tender(tenders, "TD-2026-008"), profile, today=TODAY)
+def test_open_to_canada_but_delivered_elsewhere_is_excluded(tenders, profile):
+    """regionsOfOpportunity '*Canada' means anyone may BID, not that the work
+    is nationwide — a New Brunswick job must not reach an Ontario contractor."""
+    tender = find_tender(tenders, "TD-2026-008")
+    assert tender.regions_opportunity == "*Canada"
+    result = score_tender(tender, profile, today=TODAY)
     assert result.out_of_region
-    assert "TD-2026-008" not in {r.tender.reference for r in rank_tenders(tenders, profile, today=TODAY)}
+    assert "TD-2026-008" not in {
+        r.tender.reference for r in rank_tenders(tenders, profile, today=TODAY)
+    }
+
+
+def test_generic_canada_beside_a_named_place_defers_to_the_place(tenders, profile):
+    """Delivery like '*Ontario\\n*Canada\\n*Kingston' is Ontario work, not nationwide."""
+    result = score_tender(find_tender(tenders, "TD-2026-003"), profile, today=TODAY)
+    assert any("region match" in reason for reason in result.reasons)
+    assert not any("nationwide" in reason for reason in result.reasons)
+
+
+def test_truly_nationwide_delivery_matches(profile):
+    from dataclasses import replace
+
+    base = Tender(reference="X", title="Janitorial services", description="janitorial")
+    nationwide = replace(base, regions_delivery="*Canada")
+    result = score_tender(nationwide, profile, today=TODAY)
+    assert not result.out_of_region
+    assert any("nationwide delivery" in reason for reason in result.reasons)
+
+
+def test_delivery_wins_over_opportunity(profile):
+    from dataclasses import replace
+
+    base = Tender(reference="X", title="Janitorial services", description="janitorial")
+    bc_job = replace(base, regions_opportunity="*Canada", regions_delivery="*British Columbia")
+    assert score_tender(bc_job, profile, today=TODAY).out_of_region
+    # Delivery blank -> fall back to opportunity rather than losing the signal.
+    ncr_job = replace(base, regions_opportunity="*National Capital Region (NCR)")
+    assert not score_tender(ncr_job, profile, today=TODAY).out_of_region
 
 
 def test_missing_region_is_not_a_match(tenders, profile):

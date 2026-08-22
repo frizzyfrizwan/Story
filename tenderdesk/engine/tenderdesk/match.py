@@ -59,12 +59,18 @@ def normalize_region(value: str) -> str:
     return value.removesuffix(" territory")
 
 
-def _regions_of(tender: Tender) -> set[str]:
-    return {
-        normalize_region(region)
-        for raw in (tender.regions_opportunity, tender.regions_delivery)
-        for region in split_values(raw)
-    } - {""}
+def delivery_regions(tender: Tender) -> set[str]:
+    """Where the work is actually performed.
+
+    ``regionsOfOpportunity`` says who is *allowed to bid* — almost always
+    "Canada" — so it cannot decide whether a company can service the job.
+    Use delivery, and fall back to opportunity only when delivery is blank.
+    """
+    for raw in (tender.regions_delivery, tender.regions_opportunity):
+        regions = {normalize_region(region) for region in split_values(raw)} - {""}
+        if regions:
+            return regions
+    return set()
 
 
 @dataclass
@@ -119,13 +125,18 @@ def score_tender(tender: Tender, profile: CompanyProfile, today: date | None = N
             break
 
     if profile.regions:
-        tender_regions = _regions_of(tender)
+        tender_regions = delivery_regions(tender)
+        # Delivery often lists a generic "Canada" beside the real location
+        # ("*Nunavut Territory\n*Canada\n*Iqaluit") — named places win.
+        specific = tender_regions - _NATIONWIDE
         wanted = {normalize_region(r) for r in profile.regions} - {""}
         if not tender_regions:
             # ~15% of live notices name no region. Unknown is not a match —
             # award nothing and let the content signals decide.
             pass
-        elif tender_regions & _NATIONWIDE or tender_regions & wanted:
+        elif not specific:
+            result.add(WEIGHT_REGION, "nationwide delivery")
+        elif specific & wanted:
             result.add(WEIGHT_REGION, "region match")
         else:
             result.out_of_region = True
