@@ -325,3 +325,34 @@ def test_detects_open_canada_proactive_disclosure_columns():
     assert cols["supplier"] == "vendor_name"
     assert cols["buyer"] == "buyer_name"
     assert cols["postal"] == "vendor_postal_code"
+
+
+def test_clean_text_collapses_feed_formatting():
+    from tenderdesk.awards import clean_text
+
+    assert clean_text("6 Craigmohr Court \nCraigmohr") == "6 Craigmohr Court Craigmohr"
+    assert clean_text("*Snow removal\n*Landscaping") == "Snow removal Landscaping"
+    assert clean_text("") == ""
+
+
+def test_samples_come_from_the_joined_description(tmp_path, profile):
+    """Sampling one column produced blanks on ~90% of real rows."""
+    fields = FIELDS + ["unspscDescription-eng"]
+    path = tmp_path / "awards.csv"
+    row = _row(**{"gsinDescription-nibsDescription-eng": ""})
+    row["unspscDescription-eng"] = "*Janitorial services\n*Building maintenance"
+    with path.open("w", newline="", encoding="utf-8") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fields)
+        writer.writeheader()
+        writer.writerow(row)
+    found = find_prospects(path, profile)
+    assert found[0].samples
+    assert "\n" not in found[0].samples[0]
+    assert "Janitorial services" in found[0].samples[0]
+
+
+def test_addresses_are_single_line(tmp_path, profile):
+    rows = [_row(**{"supplierAddressLine-ligneAdresseFournisseur-eng": "6 Craigmohr Court \nUnit 2"})]
+    found = find_prospects(_write(tmp_path, rows), profile)
+    assert "\n" not in found[0].mailing_address
+    assert found[0].street == "6 Craigmohr Court Unit 2"

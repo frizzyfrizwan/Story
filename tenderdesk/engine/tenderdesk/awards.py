@@ -94,6 +94,15 @@ def detect_columns(fieldnames: list[str]) -> dict[str, str]:
     return found
 
 
+def clean_text(raw: str) -> str:
+    """Collapse the feed's embedded newlines and '*' prefixes into one line.
+
+    Address and description cells routinely contain literal newlines, which
+    break both terminal output and any spreadsheet the list is exported to.
+    """
+    return " ".join((raw or "").replace("*", " ").split())
+
+
 def _to_float(raw: str) -> float:
     cleaned = "".join(ch for ch in raw if ch.isdigit() or ch in ".-")
     try:
@@ -276,13 +285,13 @@ def find_prospects(
             prospect = prospects.get(key)
             if prospect is None:
                 prospect = Prospect(
-                    supplier=supplier,
-                    operating_name=(row.get(cols.get("operating_name", ""), "") or "").strip(),
-                    city=row_city,
-                    province=province,
-                    postal=(row.get(cols.get("postal", ""), "") or "").strip(),
-                    street=(row.get(cols.get("street", ""), "") or "").strip(),
-                    employees=(row.get(cols.get("employees", ""), "") or "").strip(),
+                    supplier=clean_text(supplier),
+                    operating_name=clean_text(row.get(cols.get("operating_name", ""), "")),
+                    city=clean_text(row_city),
+                    province=clean_text(province),
+                    postal=clean_text(row.get(cols.get("postal", ""), "")),
+                    street=clean_text(row.get(cols.get("street", ""), "")),
+                    employees=clean_text(row.get(cols.get("employees", ""), "")),
                 )
                 prospects[key] = prospect
             prospect.contracts += 1
@@ -295,9 +304,11 @@ def find_prospects(
                 if buyer:
                     prospect.buyers.add(buyer)
             if len(prospect.samples) < 3:
-                original = (row.get(cols["description"]) or "").strip().lstrip("*")
+                # Use the joined description, not one column — the single
+                # column this used to read is blank on ~90% of rows.
+                original = clean_text(raw_description)[:140]
                 if original and original not in prospect.samples:
-                    prospect.samples.append(original[:120])
+                    prospect.samples.append(original)
 
     return sorted(prospects.values(), key=lambda p: (p.contracts, p.total_value), reverse=True)
 
