@@ -74,6 +74,59 @@ def cmd_scan(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_prospects(args: argparse.Namespace) -> int:
+    from .awards import CONTRACT_HISTORY_PAGE, find_prospects, inspect_columns
+
+    if args.inspect:
+        inspect_columns(args.awards)
+        return 0
+    if not Path(args.awards).exists():
+        print(
+            f"Award file not found: {args.awards}\n\n"
+            f"Download the federal contract history CSV from:\n  {CONTRACT_HISTORY_PAGE}\n"
+            f"then pass it with --awards <file>.",
+            file=sys.stderr,
+        )
+        return 2
+    profile = load_profile(args.profile)
+    prospects = find_prospects(args.awards, profile, max_contract_value=args.max_value)[: args.top]
+    if args.json:
+        print(
+            json.dumps(
+                [
+                    {
+                        "supplier": p.supplier,
+                        "contracts": p.contracts,
+                        "total_value": p.total_value,
+                        "average_value": p.average_value,
+                        "latest_date": p.latest_date,
+                        "buyers": sorted(p.buyers),
+                        "samples": p.samples,
+                    }
+                    for p in prospects
+                ],
+                indent=2,
+            )
+        )
+        return 0
+    if not prospects:
+        print("No prospects matched. Try --inspect to check column detection.")
+        return 0
+    print(f"{len(prospects)} prospect(s) matching {profile.name}'s trade and region:\n")
+    for rank, p in enumerate(prospects, 1):
+        print(f"{rank}. {p.supplier}")
+        print(
+            f"     {p.contracts} contract(s), ${p.total_value:,.0f} total, "
+            f"${p.average_value:,.0f} avg | latest {p.latest_date or 'n/a'}"
+        )
+        if p.buyers:
+            print(f"     buyers: {', '.join(sorted(p.buyers)[:3])}")
+        for sample in p.samples[:1]:
+            print(f"     e.g. {sample}")
+        print()
+    return 0
+
+
 def cmd_qualify(args: argparse.Namespace) -> int:
     from .qualify import qualify  # deferred: needs the anthropic client
 
@@ -117,6 +170,19 @@ def main(argv: list[str] | None = None) -> int:
     scan.add_argument("--min-score", type=float, default=3.0)
     scan.add_argument("--json", action="store_true")
     scan.set_defaults(func=cmd_scan)
+
+    prospects_p = sub.add_parser(
+        "prospects", help="Find companies to sell to, from federal award history"
+    )
+    prospects_p.add_argument("--awards", default="data/contract_history.csv")
+    prospects_p.add_argument("--profile", help="Company profile TOML (the trade you target)")
+    prospects_p.add_argument("--top", type=int, default=25)
+    prospects_p.add_argument("--max-value", type=float, default=5_000_000.0)
+    prospects_p.add_argument("--json", action="store_true")
+    prospects_p.add_argument(
+        "--inspect", action="store_true", help="Print the file's columns and detected mapping"
+    )
+    prospects_p.set_defaults(func=cmd_prospects)
 
     qualify_p = sub.add_parser("qualify", help="Claude bid/no-bid verdict on one tender")
     _add_common(qualify_p)
