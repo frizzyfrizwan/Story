@@ -22,7 +22,7 @@ import json
 import sys
 from pathlib import Path
 
-from .ingest import download_open_tenders
+from .ingest import TenderFeedError, download_open_tenders
 from .match import rank_tenders
 from .profile import load_profile
 from .tenders import find_tender, load_tenders
@@ -132,7 +132,11 @@ def main(argv: list[str] | None = None) -> int:
     draft_p.set_defaults(func=cmd_draft)
 
     args = parser.parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except TenderFeedError as exc:
+        print(f"\n{exc}\n", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":
