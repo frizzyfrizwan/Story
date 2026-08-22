@@ -191,10 +191,19 @@ def cmd_review(args: argparse.Namespace) -> int:
     document = render_review(decision, tender, profile, prepared_by=args.prepared_by)
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f"{_safe_name(tender.reference)}-review.md"
+    stem = _safe_name(tender.reference)
+    out_path = out_dir / f"{stem}-review.md"
     out_path.write_text(document, encoding="utf-8")
     print(f"\nVerdict: {decision.recommendation} ({decision.fit_score}/100)", file=sys.stderr)
     print(f"Wrote {out_path}")
+    if args.pdf:
+        from .pdf import render_review_pdf
+
+        pdf_path = render_review_pdf(
+            decision, tender, profile, out_dir / f"{stem}-review.pdf",
+            prepared_by=args.prepared_by,
+        )
+        print(f"Wrote {pdf_path}")
     return 0
 
 
@@ -284,6 +293,9 @@ def main(argv: list[str] | None = None) -> int:
     review_p.add_argument("--model", default=None, help="Override Claude model")
     review_p.add_argument("--out", default="out", help="Output directory")
     review_p.add_argument("--prepared-by", default="TenderDesk", help="Your business name")
+    review_p.add_argument(
+        "--pdf", action="store_true", help="Also write a client-ready PDF"
+    )
     review_p.set_defaults(func=cmd_review)
 
     draft_p = sub.add_parser("draft", help="Generate a full bid package for one tender")

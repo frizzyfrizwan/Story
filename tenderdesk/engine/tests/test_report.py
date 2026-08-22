@@ -96,3 +96,58 @@ def test_closing_timestamp_is_readable(profile):
     doc = render_review(_decision(), t, profile)
     assert "2026-09-10 14:00" in doc
     assert "T14:00" not in doc
+
+
+# --- PDF output -------------------------------------------------------------
+#
+# Content is verified through render_review() above; these check that the PDF
+# itself is well-formed. Text extraction is deliberately not used — it pulls in
+# a native crypto stack that is not needed to ship a document.
+
+
+def _pdf_pages(raw: bytes) -> int:
+    return raw.count(b"/Type /Page\n") or raw.count(b"/Type /Page")
+
+
+def test_pdf_is_well_formed(tmp_path, tender, profile):
+    from tenderdesk.pdf import render_review_pdf
+
+    out = render_review_pdf(
+        _decision(), tender, profile, tmp_path / "review.pdf",
+        prepared_by="TenderDesk", today=date(2026, 8, 22),
+    )
+    raw = out.read_bytes()
+    assert raw.startswith(b"%PDF-")
+    assert raw.rstrip().endswith(b"%%EOF")
+    assert len(raw) > 2000
+    assert _pdf_pages(raw) >= 1
+
+
+def test_pdf_escapes_markup_safely(tmp_path, tender, profile):
+    """Ampersands and angle brackets in model output must not corrupt the PDF."""
+    from tenderdesk.pdf import render_review_pdf
+
+    risky = _decision(
+        rationale="Cost < $5M & margin > 2% on <b>this</b> file",
+        red_flags=["Bonding & insurance <unverified>"],
+    )
+    out = render_review_pdf(risky, tender, profile, tmp_path / "x.pdf")
+    assert out.read_bytes().startswith(b"%PDF-")
+
+
+def test_every_verdict_renders(tmp_path, tender, profile):
+    from tenderdesk.pdf import render_review_pdf
+
+    for i, verdict in enumerate(("bid", "bid_with_partner", "no_bid")):
+        out = render_review_pdf(
+            _decision(recommendation=verdict), tender, profile, tmp_path / f"{i}.pdf"
+        )
+        assert out.exists() and out.stat().st_size > 2000
+
+
+def test_pdf_survives_empty_sections(tmp_path, tender, profile):
+    from tenderdesk.pdf import render_review_pdf
+
+    bare = _decision(red_flags=[], mandatory_requirements=[], questions_for_buyer=[])
+    out = render_review_pdf(bare, tender, profile, tmp_path / "bare.pdf")
+    assert out.read_bytes().startswith(b"%PDF-")

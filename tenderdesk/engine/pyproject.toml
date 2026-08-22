@@ -12,6 +12,7 @@ license = { text = "Proprietary" }
 dependencies = [
     "anthropic>=1.0",
     "httpx>=0.27",
+    "reportlab>=4.0",
 ]
 
 [project.optional-dependencies]
