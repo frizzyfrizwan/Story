@@ -85,3 +85,14 @@ def test_empty_sections_are_omitted(tender, profile):
     assert "What stands in the way" not in doc
     assert "Questions worth putting" not in doc
     assert "## Verdict" in doc
+
+
+def test_closing_timestamp_is_readable(profile):
+    from dataclasses import replace
+
+    from tenderdesk.tenders import Tender
+
+    t = Tender(reference="X", title="T", closes="2026-09-10T14:00:00-04:00")
+    doc = render_review(_decision(), t, profile)
+    assert "2026-09-10 14:00" in doc
+    assert "T14:00" not in doc

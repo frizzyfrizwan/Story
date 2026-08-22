@@ -30,7 +30,8 @@ def render_review(
     """Return a client-ready Markdown review of one tender."""
     verdict = _VERDICT_HEADING.get(decision.recommendation, decision.recommendation)
     stamp = (today or date.today()).isoformat()
-    closes = tender.closes[:16] if tender.closes else "see notice"
+    # The feed writes ISO timestamps ("2026-09-10T14:00"); clients read dates.
+    closes = tender.closes[:16].replace("T", " ") if tender.closes else "see notice"
 
     lines = [
         f"# Tender Review — {tender.title}",
