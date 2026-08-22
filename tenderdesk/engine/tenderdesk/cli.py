@@ -30,6 +30,10 @@ from .tenders import find_tender, load_tenders
 LIVE_CACHE = Path("data/live_open_tenders.csv")
 
 
+def _safe_name(reference: str) -> str:
+    return "".join(c if c.isalnum() or c in "-_." else "_" for c in reference)
+
+
 def _load(args: argparse.Namespace):
     if getattr(args, "live", False):
         print("Downloading current open tenders from CanadaBuys...", file=sys.stderr)
@@ -175,17 +179,54 @@ def cmd_qualify(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_draft(args: argparse.Namespace) -> int:
-    from .draft import draft_package  # deferred: needs the anthropic client
+def cmd_review(args: argparse.Namespace) -> int:
+    """Client-facing tender review — the free deliverable."""
+    from .qualify import qualify
+    from .report import render_review
 
     tenders, profile = _load(args)
     tender = find_tender(tenders, args.ref)
+    print(f"Reviewing with Claude: {tender.summary_line()}", file=sys.stderr)
+    decision = qualify(tender, profile, model=args.model)
+    document = render_review(decision, tender, profile, prepared_by=args.prepared_by)
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    out_path = out_dir / f"{_safe_name(tender.reference)}-review.md"
+    out_path.write_text(document, encoding="utf-8")
+    print(f"\nVerdict: {decision.recommendation} ({decision.fit_score}/100)", file=sys.stderr)
+    print(f"Wrote {out_path}")
+    return 0
+
+
+def cmd_draft(args: argparse.Namespace) -> int:
+    from .draft import draft_package  # deferred: needs the anthropic client
+    from .qualify import qualify
+
+    tenders, profile = _load(args)
+    tender = find_tender(tenders, args.ref)
+
+    # Never hand a client a polished package for a bid they should not enter.
+    if not args.force:
+        print("Checking bid/no-bid before drafting...", file=sys.stderr)
+        decision = qualify(tender, profile, model=args.model)
+        print(f"  verdict: {decision.recommendation} ({decision.fit_score}/100)", file=sys.stderr)
+        if decision.recommendation == "no_bid":
+            print(
+                f"\nNot drafting. The qualification step says NO BID "
+                f"(fit {decision.fit_score}/100):\n\n  {decision.rationale}\n\n"
+                f"Send the client a review instead:\n"
+                f"  tenderdesk review --profile {args.profile} --ref {args.ref}\n\n"
+                f"To draft anyway (e.g. the client has decided to bid regardless), "
+                f"re-run with --force.",
+                file=sys.stderr,
+            )
+            return 3
+
     print(f"Drafting bid package with Claude: {tender.summary_line()}", file=sys.stderr)
     package = draft_package(tender, profile, model=args.model)
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
-    safe_ref = "".join(c if c.isalnum() or c in "-_." else "_" for c in tender.reference)
-    out_path = out_dir / f"{safe_ref}.md"
+    out_path = out_dir / f"{_safe_name(tender.reference)}.md"
     out_path.write_text(package, encoding="utf-8")
     print(f"Wrote {out_path}")
     return 0
@@ -235,11 +276,24 @@ def main(argv: list[str] | None = None) -> int:
     qualify_p.add_argument("--model", default=None, help="Override Claude model")
     qualify_p.set_defaults(func=cmd_qualify)
 
+    review_p = sub.add_parser(
+        "review", help="Client-facing tender review (the free deliverable)"
+    )
+    _add_common(review_p)
+    review_p.add_argument("--ref", required=True, help="Tender reference number")
+    review_p.add_argument("--model", default=None, help="Override Claude model")
+    review_p.add_argument("--out", default="out", help="Output directory")
+    review_p.add_argument("--prepared-by", default="TenderDesk", help="Your business name")
+    review_p.set_defaults(func=cmd_review)
+
     draft_p = sub.add_parser("draft", help="Generate a full bid package for one tender")
     _add_common(draft_p)
     draft_p.add_argument("--ref", required=True, help="Tender reference number")
     draft_p.add_argument("--model", default=None, help="Override Claude model")
     draft_p.add_argument("--out", default="out", help="Output directory")
+    draft_p.add_argument(
+        "--force", action="store_true", help="Draft even if the verdict is no-bid"
+    )
     draft_p.set_defaults(func=cmd_draft)
 
     args = parser.parse_args(argv)
