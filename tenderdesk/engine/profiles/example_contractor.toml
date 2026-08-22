@@ -18,7 +18,18 @@ keywords = [
     "grounds maintenance",
     "property maintenance",
 ]
-negative_keywords = ["software", "aircraft", "marine", "translation"]
+# Work that shares a commodity code with janitorial/facilities but needs
+# licences and abatement crews this company doesn't have.
+negative_keywords = [
+    "software",
+    "aircraft",
+    "marine",
+    "translation",
+    "hazardous waste",
+    "asbestos",
+    "lead abatement",
+    "remediation",
+]
 
 # UNSPSC families: 7610 cleaning/janitorial, 7210 building maintenance & repair
 unspsc_prefixes = ["7610", "7210", "72101", "76111"]
