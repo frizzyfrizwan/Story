@@ -1,0 +1,87 @@
+# PROSPECT profile — Groupe Multi-Services Galipeau (Ottawa)
+#
+# Built entirely from federal contract award history. Everything below is
+# sourced; nothing is assumed. Facts marked [UNVERIFIED] must be confirmed
+# with the client before they appear in any bid — the drafting engine will
+# emit [FILL: ...] placeholders for anything missing rather than invent it.
+#
+# Verified from award data (4 contracts, $3,575,560 total, all PSPC,
+# all "Competitive - Open bidding" — this company bids and wins):
+#   2026-04-02  $576,345  EJ196-260967  Window Cleaning, Block 1/2/3, NCR
+#   2024-09-12  $1,877,111 EJ196-241423 Snow and Ice Removal, Parliament Hill
+#   2024-08-22  $576,074  EJ196-241048  Window Cleaning, Parliament Hill Complexes
+#   2024-04-16  $546,030  EJ196-241453  Window Cleaning, Confederation Heights
+#
+# KEY INSIGHT: this is a window/height cleaning specialist that also does
+# snow and ice — NOT a general janitorial contractor. Three of four contracts
+# are window cleaning on federal heritage buildings (Centre Block, West Block,
+# East Block, Library of Parliament). Pitch accordingly.
+
+name = "Groupe Multi-Services Galipeau"
+description = "14-person Ottawa contractor based in Vanier, specializing in window cleaning and height cleaning services for federal buildings in the National Capital Region, plus snow and ice control. Holds a track record of competitively won PSPC contracts on the Parliament Hill precinct, including Centre Block, West Block, East Block and the Library of Parliament."
+
+keywords = [
+    # Core trade — three of four contracts won
+    "window cleaning",
+    "window or window blind cleaning",
+    "height cleaning",
+    "high-rise cleaning",
+    "exterior cleaning",
+    "building envelope",
+    # Second line — largest single contract won
+    "snow and ice",
+    "snow removal",
+    "ice control",
+    "de-icing",
+    # Adjacent work their UNSPSC codes already cover
+    "building maintenance",
+    "facility maintenance",
+    "facilities maintenance",
+    "infrastructure maintenance",
+    "janitorial",
+    "custodial",
+]
+
+negative_keywords = [
+    "software",
+    "aircraft",
+    "marine",
+    "translation",
+    "hazardous waste",
+    "asbestos",
+    "lead abatement",
+    "remediation",
+    "information technology",
+]
+
+# Exact UNSPSC codes from their won contracts.
+#   76111504 - Window or window blind cleaning services
+#   72100000 / 72101500 - Building and facility maintenance and repair
+#   72102900 / 72102903 - Snow removal services
+#   72103300 - Infrastructure maintenance and repair
+unspsc_prefixes = ["76111504", "761115", "72100000", "721015", "721029", "721033"]
+
+# GSIN was blank on all four of their contracts; left empty rather than guessed.
+gsin_prefixes = []
+
+regions = ["Ontario", "National Capital Region", "Quebec"]
+categories = ["SRV", "SRVTGD"]
+min_days_to_close = 7
+
+capabilities = "Window cleaning and height cleaning, including swing stage and elevated access work on federal heritage buildings. Snow and ice removal for federal precincts. Supplies labour, supervision, transportation, tools, material and equipment. [UNVERIFIED: confirm insurance limits, working-at-height certification, bonding capacity, and fall-protection program before citing any of these in a bid.]"
+
+past_performance = [
+    "Public Services and Procurement Canada — EJ196-260967, Window Cleaning and Height Cleaning Services, Block 1, 2 and 3, National Capital Region ($576,345, awarded April 2026)",
+    "Public Services and Procurement Canada — EJ196-241423, Snow and Ice Removal, Parliament Hill Buildings ($1,877,111, awarded September 2024)",
+    "Public Services and Procurement Canada — EJ196-241048, Window Cleaning and Height Cleaning, Parliament Hill Complexes: Centre Block, West Block, East Block, Library of Parliament ($576,074, awarded August 2024)",
+    "Public Services and Procurement Canada — EJ196-241453, Window Cleaning Services, Confederation Heights, 229 and 249 Wellington Street, Ottawa ($546,030, awarded April 2024)",
+]
+
+certifications = [
+    "Federal supplier in good standing — four PSPC contracts won via competitive open bidding since 2024",
+    "[UNVERIFIED: WSIB clearance number]",
+    "[UNVERIFIED: commercial general liability limit]",
+    "[UNVERIFIED: working-at-height / fall-protection certification]",
+    "[UNVERIFIED: COR or equivalent safety certification]",
+    "[UNVERIFIED: security clearance level held by staff — Parliament Hill work suggests screening is in place, but confirm]",
+]
