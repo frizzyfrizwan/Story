@@ -1,12 +1,14 @@
 """Find prospects from federal contract award history.
 
-Proactive disclosure publishes every federal contract over $10K — who won it,
-for how much, and when. Companies that have won work in your category and
-region are *proven government bidders*: they know the process, they have
-capacity, and since win rates run 20-30% they lose far more bids than they
-win. That makes them the best cold-outreach list available, and it is free.
+CanadaBuys publishes every awarded federal contract — who won it, for how
+much, when, what they sold, how many people they employ, and their mailing
+address. Companies that have won work in your category and region are
+*proven government bidders*: they know the process, they have capacity, and
+since win rates run 20-30% they lose far more bids than they win. That makes
+them the best cold-outreach list available, and it is free.
 
-Dataset: https://open.canada.ca/data/en/dataset/4fe645a1-ffcd-40c1-9385-2c771be956a4
+Feed: contractHistoryComplete-contratsOctroyesComplet.csv
+https://canadabuys.canada.ca/en/support/opendata
 
 The published schema changes between releases, so columns are detected by
 fuzzy match rather than hard-coded — run ``tenderdesk prospects --inspect``
@@ -16,34 +18,42 @@ to see what was found in the file you downloaded.
 from __future__ import annotations
 
 import csv
+import re
 import sys
-from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
 from .match import normalize_region, split_values
 from .profile import CompanyProfile
 
-CONTRACT_HISTORY_PAGE = (
-    "https://open.canada.ca/data/en/dataset/4fe645a1-ffcd-40c1-9385-2c771be956a4"
-)
+CONTRACT_HISTORY_PAGE = "https://canadabuys.canada.ca/en/support/opendata"
 
 # Ordered candidates: the first column whose lowercased name contains one of
-# these substrings wins. Longer/more specific patterns come first.
+# these substrings wins. Most specific patterns come first.
 _COLUMN_PATTERNS = {
-    "supplier": ("vendor_name", "supplier_name", "vendor", "supplier"),
-    "value": ("total_contract_value", "contract_value", "original_value", "value"),
-    "date": ("contract_date", "award_date", "start_date", "date"),
-    "description": ("description_en", "description", "comments_en", "objet"),
-    "buyer": ("owner_org_title", "owner_org", "organization", "department"),
-    "region": ("delivery_region", "region", "province"),
+    "supplier": ("supplierlegalname", "vendor_name", "supplier_name", "vendor"),
+    "operating_name": ("supplieroperatingname", "supplierstandardizedname"),
+    "value": ("totalcontractvalue", "contractamount", "contract_value", "value"),
+    "date": ("contractawarddate", "award_date", "contract_date", "publicationdate", "date"),
+    "description": ("gsindescription", "tenderdescription", "description_en", "description"),
+    "buyer": ("contractingentityname", "enduserentitiesname", "owner_org_title", "department"),
+    "city": ("supplieraddresscity",),
+    "province": ("supplieraddressprovince",),
+    "postal": ("supplieraddresspostalcode",),
+    "street": ("supplieraddressline",),
+    "employees": ("supplieremployeecount",),
+    "region": ("regionsofdelivery", "delivery_region"),
 }
+
+# The feed writes English and French columns in pairs; never pick the French one.
+_FRENCH_SUFFIXES = ("-fra", "_fr", "-fr")
 
 
 def detect_columns(fieldnames: list[str]) -> dict[str, str]:
     """Map canonical fields to whatever this release actually calls them."""
     found: dict[str, str] = {}
-    lowered = {name: name.lower() for name in fieldnames}
+    english = [n for n in fieldnames if not n.lower().endswith(_FRENCH_SUFFIXES)]
+    lowered = {name: name.lower() for name in english}
     for canonical, patterns in _COLUMN_PATTERNS.items():
         for pattern in patterns:
             match = next((n for n, low in lowered.items() if pattern in low), None)
@@ -61,11 +71,27 @@ def _to_float(raw: str) -> float:
         return 0.0
 
 
+def employee_ceiling(raw: str) -> int | None:
+    """Upper bound of a band like '50 to 99 employees' -> 99.
+
+    Returns None when the field is blank or unparseable, which must never
+    filter a company out — missing data is not disqualifying.
+    """
+    numbers = re.findall(r"\d+", raw or "")
+    return int(numbers[-1]) if numbers else None
+
+
 @dataclass
 class Prospect:
     """A company that has won federal work you could help them win more of."""
 
     supplier: str
+    operating_name: str = ""
+    city: str = ""
+    province: str = ""
+    postal: str = ""
+    street: str = ""
+    employees: str = ""
     contracts: int = 0
     total_value: float = 0.0
     latest_date: str = ""
@@ -76,22 +102,36 @@ class Prospect:
     def average_value(self) -> float:
         return self.total_value / self.contracts if self.contracts else 0.0
 
+    @property
+    def location(self) -> str:
+        return ", ".join(part for part in (self.city, self.province) if part)
+
+    @property
+    def mailing_address(self) -> str:
+        parts = (self.street, self.city, self.province, self.postal)
+        return ", ".join(part for part in parts if part)
+
 
 def find_prospects(
     awards_csv: str | Path,
     profile: CompanyProfile,
     max_contract_value: float = 5_000_000.0,
     min_contract_value: float = 10_000.0,
+    max_employees: int | None = None,
+    city: str | None = None,
+    progress: bool = False,
 ) -> list[Prospect]:
     """Aggregate award rows into ranked prospect companies.
 
-    Filters to the profile's keywords and regions, and to contract sizes a
-    small supplier actually competes for — a $40M prime contract tells you
-    nothing about who needs bid help.
+    Filters to the profile's keywords, to where the *supplier* is based (the
+    delivery-region column is empty on most rows, and you want contractors you
+    can reach anyway), and to contract sizes a small supplier competes for — a
+    $40M prime contract tells you nothing about who needs bid help.
     """
     path = Path(awards_csv)
     keywords = [k.lower() for k in profile.keywords]
     wanted_regions = {normalize_region(r) for r in profile.regions} - {""}
+    wanted_city = (city or "").strip().lower()
     prospects: dict[str, Prospect] = {}
 
     with path.open(newline="", encoding="utf-8-sig", errors="replace") as handle:
@@ -106,7 +146,10 @@ def find_prospects(
                 f"Run with --inspect to see available columns."
             )
 
-        for row in reader:
+        for count, row in enumerate(reader, 1):
+            if progress and count % 100_000 == 0:
+                print(f"  ...{count:,} rows scanned", file=sys.stderr)
+
             supplier = (row.get(cols["supplier"]) or "").strip()
             if not supplier:
                 continue
@@ -114,11 +157,17 @@ def find_prospects(
             if not any(keyword in description for keyword in keywords):
                 continue
 
-            if wanted_regions and "region" in cols:
-                row_regions = {
-                    normalize_region(r) for r in split_values(row.get(cols["region"]) or "")
-                } - {""}
-                if row_regions and not (row_regions & wanted_regions):
+            province = (row.get(cols.get("province", ""), "") or "").strip()
+            if wanted_regions and province:
+                if normalize_region(province) not in wanted_regions:
+                    continue
+            row_city = (row.get(cols.get("city", ""), "") or "").strip()
+            if wanted_city and wanted_city not in row_city.lower():
+                continue
+
+            if max_employees is not None:
+                ceiling = employee_ceiling(row.get(cols.get("employees", ""), "") or "")
+                if ceiling is not None and ceiling > max_employees:
                     continue
 
             value = _to_float(row.get(cols.get("value", ""), "") or "")
@@ -126,7 +175,18 @@ def find_prospects(
                 continue
 
             key = supplier.upper()
-            prospect = prospects.setdefault(key, Prospect(supplier=supplier))
+            prospect = prospects.get(key)
+            if prospect is None:
+                prospect = Prospect(
+                    supplier=supplier,
+                    operating_name=(row.get(cols.get("operating_name", ""), "") or "").strip(),
+                    city=row_city,
+                    province=province,
+                    postal=(row.get(cols.get("postal", ""), "") or "").strip(),
+                    street=(row.get(cols.get("street", ""), "") or "").strip(),
+                    employees=(row.get(cols.get("employees", ""), "") or "").strip(),
+                )
+                prospects[key] = prospect
             prospect.contracts += 1
             prospect.total_value += value
             date = (row.get(cols.get("date", ""), "") or "").strip()
@@ -137,12 +197,63 @@ def find_prospects(
                 if buyer:
                     prospect.buyers.add(buyer)
             if len(prospect.samples) < 3:
-                original = (row.get(cols["description"]) or "").strip()
-                if original:
+                original = (row.get(cols["description"]) or "").strip().lstrip("*")
+                if original and original not in prospect.samples:
                     prospect.samples.append(original[:120])
 
-    ranked = sorted(prospects.values(), key=lambda p: (p.contracts, p.total_value), reverse=True)
-    return ranked
+    return sorted(prospects.values(), key=lambda p: (p.contracts, p.total_value), reverse=True)
+
+
+def write_prospect_csv(prospects: list[Prospect], dest: str | Path) -> Path:
+    """Write prospects as a spreadsheet ready for outreach tracking."""
+    path = Path(dest)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", newline="", encoding="utf-8-sig") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(
+            [
+                "Company",
+                "Operating name",
+                "Employees",
+                "City",
+                "Province",
+                "Postal code",
+                "Street",
+                "Contracts won",
+                "Total value",
+                "Average value",
+                "Latest award",
+                "Buyers",
+                "Example work",
+                "Contact",
+                "Date emailed",
+                "Reply",
+                "Outcome",
+            ]
+        )
+        for p in prospects:
+            writer.writerow(
+                [
+                    p.supplier,
+                    p.operating_name,
+                    p.employees,
+                    p.city,
+                    p.province,
+                    p.postal,
+                    p.street,
+                    p.contracts,
+                    f"{p.total_value:.2f}",
+                    f"{p.average_value:.2f}",
+                    p.latest_date,
+                    "; ".join(sorted(p.buyers)[:3]),
+                    p.samples[0] if p.samples else "",
+                    "",
+                    "",
+                    "",
+                    "",
+                ]
+            )
+    return path
 
 
 def inspect_columns(awards_csv: str | Path) -> None:
@@ -156,8 +267,8 @@ def inspect_columns(awards_csv: str | Path) -> None:
     detected = detect_columns(fieldnames)
     print("Detected mapping:")
     for canonical in _COLUMN_PATTERNS:
-        print(f"  {canonical:12} -> {detected.get(canonical, '(not found)')}")
+        print(f"  {canonical:15} -> {detected.get(canonical, '(not found)')}")
     print("\nAll columns (with a sample value):")
     for name in fieldnames:
         sample = str(first.get(name, ""))[:60]
-        print(f"  {name}: {sample!r}", file=sys.stdout)
+        print(f"  {name}: {sample!r}")

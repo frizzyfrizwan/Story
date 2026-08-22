@@ -75,7 +75,12 @@ def cmd_scan(args: argparse.Namespace) -> int:
 
 
 def cmd_prospects(args: argparse.Namespace) -> int:
-    from .awards import CONTRACT_HISTORY_PAGE, find_prospects, inspect_columns
+    from .awards import (
+        CONTRACT_HISTORY_PAGE,
+        find_prospects,
+        inspect_columns,
+        write_prospect_csv,
+    )
 
     if args.inspect:
         inspect_columns(args.awards)
@@ -83,19 +88,39 @@ def cmd_prospects(args: argparse.Namespace) -> int:
     if not Path(args.awards).exists():
         print(
             f"Award file not found: {args.awards}\n\n"
-            f"Download the federal contract history CSV from:\n  {CONTRACT_HISTORY_PAGE}\n"
+            f"Download contractHistoryComplete-contratsOctroyesComplet.csv from:\n"
+            f"  {CONTRACT_HISTORY_PAGE}\n"
             f"then pass it with --awards <file>.",
             file=sys.stderr,
         )
         return 2
     profile = load_profile(args.profile)
-    prospects = find_prospects(args.awards, profile, max_contract_value=args.max_value)[: args.top]
+    print(f"Scanning award history for {profile.name}'s trade...", file=sys.stderr)
+    all_prospects = find_prospects(
+        args.awards,
+        profile,
+        max_contract_value=args.max_value,
+        max_employees=args.max_employees,
+        city=args.city,
+        progress=True,
+    )
+    prospects = all_prospects[: args.top]
+
+    if args.csv_out:
+        out = write_prospect_csv(all_prospects, args.csv_out)
+        print(f"Wrote {len(all_prospects)} prospects to {out}", file=sys.stderr)
+
     if args.json:
         print(
             json.dumps(
                 [
                     {
                         "supplier": p.supplier,
+                        "operating_name": p.operating_name,
+                        "employees": p.employees,
+                        "city": p.city,
+                        "province": p.province,
+                        "mailing_address": p.mailing_address,
                         "contracts": p.contracts,
                         "total_value": p.total_value,
                         "average_value": p.average_value,
@@ -112,15 +137,22 @@ def cmd_prospects(args: argparse.Namespace) -> int:
     if not prospects:
         print("No prospects matched. Try --inspect to check column detection.")
         return 0
-    print(f"{len(prospects)} prospect(s) matching {profile.name}'s trade and region:\n")
+    print(f"\n{len(all_prospects)} prospect(s) found; showing top {len(prospects)}:\n")
     for rank, p in enumerate(prospects, 1):
-        print(f"{rank}. {p.supplier}")
-        print(
-            f"     {p.contracts} contract(s), ${p.total_value:,.0f} total, "
-            f"${p.average_value:,.0f} avg | latest {p.latest_date or 'n/a'}"
-        )
+        name = p.supplier
+        if p.operating_name and p.operating_name.upper() != p.supplier.upper():
+            name += f"  (trading as {p.operating_name})"
+        print(f"{rank}. {name}")
+        details = [f"{p.contracts} contract(s)", f"${p.total_value:,.0f} total"]
+        if p.employees:
+            details.append(p.employees)
+        print(f"     {' | '.join(details)}")
+        if p.location:
+            print(f"     {p.mailing_address}")
+        if p.latest_date:
+            print(f"     latest award: {p.latest_date}")
         if p.buyers:
-            print(f"     buyers: {', '.join(sorted(p.buyers)[:3])}")
+            print(f"     buyers: {', '.join(sorted(p.buyers)[:2])}")
         for sample in p.samples[:1]:
             print(f"     e.g. {sample}")
         print()
@@ -178,6 +210,11 @@ def main(argv: list[str] | None = None) -> int:
     prospects_p.add_argument("--profile", help="Company profile TOML (the trade you target)")
     prospects_p.add_argument("--top", type=int, default=25)
     prospects_p.add_argument("--max-value", type=float, default=5_000_000.0)
+    prospects_p.add_argument(
+        "--max-employees", type=int, default=None, help="Only firms this size or smaller"
+    )
+    prospects_p.add_argument("--city", default=None, help="Only suppliers based in this city")
+    prospects_p.add_argument("--csv-out", default=None, help="Write the full list to a spreadsheet")
     prospects_p.add_argument("--json", action="store_true")
     prospects_p.add_argument(
         "--inspect", action="store_true", help="Print the file's columns and detected mapping"
