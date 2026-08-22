@@ -37,10 +37,16 @@ _COLUMN_PATTERNS = {
     "value": ("totalcontractvalue", "contractamount", "contract_value", "value"),
     "date": ("contractawarddate", "award_date", "contract_date", "publicationdate", "date"),
     "description": ("gsindescription", "tenderdescription", "description_en", "description"),
-    "buyer": ("contractingentityname", "enduserentitiesname", "owner_org_title", "department"),
-    "city": ("supplieraddresscity",),
-    "province": ("supplieraddressprovince",),
-    "postal": ("supplieraddresspostalcode",),
+    "buyer": (
+        "contractingentityname",
+        "enduserentitiesname",
+        "owner_org_title",
+        "buyer_name",
+        "department",
+    ),
+    "city": ("supplieraddresscity", "vendor_city"),
+    "province": ("supplieraddressprovince", "vendor_province"),
+    "postal": ("supplieraddresspostalcode", "vendor_postal_code", "postal_code"),
     "street": ("supplieraddressline",),
     "employees": ("supplieremployeecount",),
     "region": ("regionsofdelivery", "delivery_region"),
@@ -48,6 +54,30 @@ _COLUMN_PATTERNS = {
 
 # The feed writes English and French columns in pairs; never pick the French one.
 _FRENCH_SUFFIXES = ("-fra", "_fr", "-fr")
+
+# Any column that might describe the work. No single one is reliably populated
+# — CanadaBuys leaves gsinDescription blank on ~90% of rows — so keywords are
+# matched against all of them joined together.
+_DESCRIPTION_PATTERNS = (
+    "gsindescription",
+    "unspscdescription",
+    "tenderdescription",
+    "description_en",
+    "description",
+    "objet",
+    "title",
+)
+
+
+def description_columns(fieldnames: list[str]) -> list[str]:
+    """Every English column that could carry a description of the work."""
+    english = [n for n in fieldnames if not n.lower().endswith(_FRENCH_SUFFIXES)]
+    matched = []
+    for name in english:
+        low = name.lower()
+        if any(pattern in low for pattern in _DESCRIPTION_PATTERNS):
+            matched.append(name)
+    return matched
 
 
 def detect_columns(fieldnames: list[str]) -> dict[str, str]:
@@ -187,6 +217,7 @@ def find_prospects(
                 f"Could not find columns for {sorted(missing)} in {path.name}. "
                 f"Run with --inspect to see available columns."
             )
+        desc_cols = description_columns(list(reader.fieldnames))
 
         for count, row in enumerate(reader, 1):
             if progress and count % 100_000 == 0:
@@ -199,7 +230,9 @@ def find_prospects(
                 if stats:
                     stats.no_supplier += 1
                 continue
-            raw_description = (row.get(cols["description"]) or "").strip()
+            raw_description = " | ".join(
+                value for col in desc_cols if (value := (row.get(col) or "").strip())
+            )
             description = raw_description.lower()
             if not any(keyword in description for keyword in keywords):
                 if stats:

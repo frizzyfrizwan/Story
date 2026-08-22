@@ -285,3 +285,43 @@ def test_filter_stats_explain_a_zero_result_run(tmp_path, profile):
     assert "rows read" in report
     # The unmatched description must be surfaced so the profile can be tuned.
     assert "Software licence renewal" in report
+
+
+def test_description_matching_spans_every_candidate_column():
+    """No single description column is reliably populated, so all are joined."""
+    from tenderdesk.awards import description_columns
+
+    cols = description_columns(FIELDS)
+    assert "gsinDescription-nibsDescription-eng" in cols
+    assert not any(c.endswith("-fra") for c in cols)
+
+
+def test_matches_when_only_a_secondary_description_column_is_filled(tmp_path, profile):
+    """CanadaBuys leaves gsinDescription blank on ~90% of rows."""
+    fields = FIELDS + ["title-titre-eng", "tenderDescription-descriptionAppelOffres-eng"]
+    path = tmp_path / "awards.csv"
+    row = _row(**{"gsinDescription-nibsDescription-eng": ""})
+    row["title-titre-eng"] = "SUPPLY OF SERVICES (123/001)"
+    row["tenderDescription-descriptionAppelOffres-eng"] = "Provision of janitorial services"
+    with path.open("w", newline="", encoding="utf-8") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fields)
+        writer.writeheader()
+        writer.writerow(row)
+    found = find_prospects(path, profile)
+    assert [p.supplier for p in found] == ["Capital Cleaning Inc."]
+
+
+def test_detects_open_canada_proactive_disclosure_columns():
+    cols = detect_columns(
+        [
+            "vendor_name",
+            "buyer_name",
+            "contract_date",
+            "description_en",
+            "contract_value",
+            "vendor_postal_code",
+        ]
+    )
+    assert cols["supplier"] == "vendor_name"
+    assert cols["buyer"] == "buyer_name"
+    assert cols["postal"] == "vendor_postal_code"
