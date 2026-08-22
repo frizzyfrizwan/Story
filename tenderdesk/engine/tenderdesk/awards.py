@@ -20,6 +20,7 @@ from __future__ import annotations
 import csv
 import re
 import sys
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -82,6 +83,46 @@ def employee_ceiling(raw: str) -> int | None:
 
 
 @dataclass
+class FilterStats:
+    """Row-by-row funnel, so a zero-result run explains itself."""
+
+    total: int = 0
+    no_supplier: int = 0
+    no_keyword_match: int = 0
+    wrong_province: int = 0
+    wrong_city: int = 0
+    too_many_employees: int = 0
+    value_out_of_range: int = 0
+    kept: int = 0
+    blank_description: int = 0
+    description_samples: Counter = field(default_factory=Counter)
+    province_samples: Counter = field(default_factory=Counter)
+
+    def report(self) -> str:
+        lines = [
+            "",
+            "Filter funnel:",
+            f"  {self.total:>10,}  rows read",
+            f"  {self.no_supplier:>10,}  dropped: no supplier name",
+            f"  {self.no_keyword_match:>10,}  dropped: description matched no profile keyword"
+            f"  ({self.blank_description:,} of those had a blank description)",
+            f"  {self.wrong_province:>10,}  dropped: supplier province not in profile regions",
+            f"  {self.wrong_city:>10,}  dropped: supplier city filter",
+            f"  {self.too_many_employees:>10,}  dropped: too many employees",
+            f"  {self.value_out_of_range:>10,}  dropped: contract value out of range",
+            f"  {self.kept:>10,}  kept",
+        ]
+        if self.description_samples:
+            lines.append("\nMost common descriptions in the file:")
+            for text, count in self.description_samples.most_common(15):
+                lines.append(f"  {count:>7,}  {text[:80]}")
+        if self.province_samples:
+            top = ", ".join(f"{p} ({c:,})" for p, c in self.province_samples.most_common(8))
+            lines.append(f"\nSupplier provinces seen: {top}")
+        return "\n".join(lines)
+
+
+@dataclass
 class Prospect:
     """A company that has won federal work you could help them win more of."""
 
@@ -120,6 +161,7 @@ def find_prospects(
     max_employees: int | None = None,
     city: str | None = None,
     progress: bool = False,
+    stats: FilterStats | None = None,
 ) -> list[Prospect]:
     """Aggregate award rows into ranked prospect companies.
 
@@ -149,30 +191,53 @@ def find_prospects(
         for count, row in enumerate(reader, 1):
             if progress and count % 100_000 == 0:
                 print(f"  ...{count:,} rows scanned", file=sys.stderr)
+            if stats:
+                stats.total += 1
 
             supplier = (row.get(cols["supplier"]) or "").strip()
             if not supplier:
+                if stats:
+                    stats.no_supplier += 1
                 continue
-            description = (row.get(cols["description"]) or "").lower()
+            raw_description = (row.get(cols["description"]) or "").strip()
+            description = raw_description.lower()
             if not any(keyword in description for keyword in keywords):
+                if stats:
+                    stats.no_keyword_match += 1
+                    if not raw_description:
+                        stats.blank_description += 1
+                    else:
+                        stats.description_samples[raw_description.lstrip("*")] += 1
                 continue
 
             province = (row.get(cols.get("province", ""), "") or "").strip()
+            if stats and province:
+                stats.province_samples[province] += 1
             if wanted_regions and province:
                 if normalize_region(province) not in wanted_regions:
+                    if stats:
+                        stats.wrong_province += 1
                     continue
             row_city = (row.get(cols.get("city", ""), "") or "").strip()
             if wanted_city and wanted_city not in row_city.lower():
+                if stats:
+                    stats.wrong_city += 1
                 continue
 
             if max_employees is not None:
                 ceiling = employee_ceiling(row.get(cols.get("employees", ""), "") or "")
                 if ceiling is not None and ceiling > max_employees:
+                    if stats:
+                        stats.too_many_employees += 1
                     continue
 
             value = _to_float(row.get(cols.get("value", ""), "") or "")
             if value and not (min_contract_value <= value <= max_contract_value):
+                if stats:
+                    stats.value_out_of_range += 1
                 continue
+            if stats:
+                stats.kept += 1
 
             key = supplier.upper()
             prospect = prospects.get(key)

@@ -254,3 +254,34 @@ def test_csv_export_has_outreach_tracking_columns(tmp_path, profile):
 
 def test_average_value_of_empty_prospect_is_zero():
     assert Prospect(supplier="X").average_value == 0.0
+
+
+# --- diagnostics ------------------------------------------------------------
+
+
+def test_filter_stats_explain_a_zero_result_run(tmp_path, profile):
+    from tenderdesk.awards import FilterStats
+
+    rows = [
+        _row(**{"gsinDescription-nibsDescription-eng": "*Software licence renewal"}),
+        _row(**{"gsinDescription-nibsDescription-eng": ""}),
+        _row(
+            **{
+                "supplierLegalName-nomLegalFournisseur-eng": "Pacific Facility Care",
+                "supplierAddressProvince-fournisseurAdresseProvince-eng": "British Columbia",
+            }
+        ),
+        _row(),
+    ]
+    stats = FilterStats()
+    found = find_prospects(_write(tmp_path, rows), profile, stats=stats)
+    assert stats.total == 4
+    assert stats.no_keyword_match == 2
+    assert stats.blank_description == 1
+    assert stats.wrong_province == 1
+    assert stats.kept == 1
+    assert len(found) == 1
+    report = stats.report()
+    assert "rows read" in report
+    # The unmatched description must be surfaced so the profile can be tuned.
+    assert "Software licence renewal" in report

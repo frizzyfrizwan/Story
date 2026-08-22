@@ -77,6 +77,7 @@ def cmd_scan(args: argparse.Namespace) -> int:
 def cmd_prospects(args: argparse.Namespace) -> int:
     from .awards import (
         CONTRACT_HISTORY_PAGE,
+        FilterStats,
         find_prospects,
         inspect_columns,
         write_prospect_csv,
@@ -96,6 +97,7 @@ def cmd_prospects(args: argparse.Namespace) -> int:
         return 2
     profile = load_profile(args.profile)
     print(f"Scanning award history for {profile.name}'s trade...", file=sys.stderr)
+    stats = FilterStats() if args.why else None
     all_prospects = find_prospects(
         args.awards,
         profile,
@@ -103,8 +105,11 @@ def cmd_prospects(args: argparse.Namespace) -> int:
         max_employees=args.max_employees,
         city=args.city,
         progress=True,
+        stats=stats,
     )
     prospects = all_prospects[: args.top]
+    if stats:
+        print(stats.report(), file=sys.stderr)
 
     if args.csv_out:
         out = write_prospect_csv(all_prospects, args.csv_out)
@@ -218,6 +223,9 @@ def main(argv: list[str] | None = None) -> int:
     prospects_p.add_argument("--json", action="store_true")
     prospects_p.add_argument(
         "--inspect", action="store_true", help="Print the file's columns and detected mapping"
+    )
+    prospects_p.add_argument(
+        "--why", action="store_true", help="Show which filter dropped how many rows"
     )
     prospects_p.set_defaults(func=cmd_prospects)
 
