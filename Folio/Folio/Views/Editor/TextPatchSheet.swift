@@ -20,7 +20,7 @@ struct TextPatchSheet: View {
         _fontSize = State(initialValue: session.fontSize)
         _coversOriginal = State(initialValue: session.coversOriginal)
         _isBold = State(initialValue: session.isBold)
-        let match = InkColor.pens.first { $0.uiColor.cgColor == session.color.cgColor } ?? InkColor.pens[0]
+        let match = InkColor.pens.first { $0.uiColor.isEqual(session.color) } ?? InkColor.pens[0]
         _color = State(initialValue: match)
     }
 
