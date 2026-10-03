@@ -66,6 +66,7 @@ jobs:
       - name: Launch app and capture screenshots
         if: always()
         continue-on-error: true
+        timeout-minutes: 8
         run: |
           set -x
           NAME="${{ steps.sim.outputs.name }}"
@@ -75,7 +76,6 @@ jobs:
           xcrun simctl bootstatus "$UDID" -b
           APP=$(find DerivedData/Build/Products -type d -name "Folio.app" -path "*iphonesimulator*" | head -1)
           xcrun simctl install "$UDID" "$APP"
-          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
           mkdir -p screenshots
           xcrun simctl launch "$UDID" app.folio.ios -demo
           sleep 8
