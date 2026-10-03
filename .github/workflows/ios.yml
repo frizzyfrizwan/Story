@@ -1,0 +1,137 @@
+name: iOS
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "Folio/**"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "Folio/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & test (iOS Simulator)
+    runs-on: macos-15
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode 16
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+
+      - name: Pick a simulator
+        id: sim
+        run: |
+          xcrun simctl list devices available
+          NAME=$(xcrun simctl list devices available iPhone | grep -oE 'iPhone [0-9]+( Pro| Pro Max| Plus)?' | sort -V | tail -1)
+          echo "Simulator: $NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing \
+            -project Folio/Folio.xcodeproj \
+            -scheme Folio \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" \
+            2>&1 | tee build.log
+
+      - name: Test
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building \
+            -project Folio/Folio.xcodeproj \
+            -scheme Folio \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
+            -derivedDataPath DerivedData \
+            -resultBundlePath TestResults.xcresult \
+            2>&1 | tee test.log
+
+      - name: Launch app and capture screenshots
+        if: always()
+        continue-on-error: true
+        run: |
+          set -x
+          NAME="${{ steps.sim.outputs.name }}"
+          UDID=$(xcrun simctl list devices available | grep -F "$NAME (" | head -1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}')
+          echo "Simulator UDID: $UDID"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          APP=$(find DerivedData/Build/Products -type d -name "Folio.app" -path "*iphonesimulator*" | head -1)
+          xcrun simctl install "$UDID" "$APP"
+          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
+          mkdir -p screenshots
+          xcrun simctl launch "$UDID" app.folio.ios -demo
+          sleep 8
+          xcrun simctl io "$UDID" screenshot screenshots/01-library.png
+          xcrun simctl terminate "$UDID" app.folio.ios || true
+          xcrun simctl launch "$UDID" app.folio.ios -demo-open
+          sleep 8
+          xcrun simctl io "$UDID" screenshot screenshots/02-editor.png
+          xcrun simctl terminate "$UDID" app.folio.ios || true
+          ls -la screenshots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots
+          if-no-files-found: ignore
+
+      - name: Commit screenshots to the PR branch
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -x
+          [ -f screenshots/01-library.png ] || exit 0
+          git fetch origin "$HEAD_REF"
+          git checkout -B "$HEAD_REF" "origin/$HEAD_REF"
+          mkdir -p Folio/Screenshots
+          cp screenshots/*.png Folio/Screenshots/
+          git add Folio/Screenshots
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "ci: update simulator screenshots"
+          git push origin "$HEAD_REF"
+
+      - name: Summarize compiler errors
+        if: failure()
+        run: |
+          echo "## Compiler / test errors" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          grep -hE "error:|failed|Failing tests" build.log test.log 2>/dev/null | sort -u | head -200 >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-logs
+          path: |
+            build.log
+            test.log
+            TestResults.xcresult
+          if-no-files-found: ignore
