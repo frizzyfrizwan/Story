@@ -63,44 +63,44 @@ jobs:
             -resultBundlePath TestResults.xcresult \
             2>&1 | tee test.log
 
-      - name: Launch app and capture screenshots
+      - name: Export screenshots from the UI test results
         if: always()
         continue-on-error: true
-        timeout-minutes: 12
+        timeout-minutes: 5
         run: |
           set -x
-          # Hard per-command timeouts: simctl occasionally hangs on CI.
-          with_timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
-
-          NAME="${{ steps.sim.outputs.name }}"
-          UDID=$(xcrun simctl list devices available | grep -F "$NAME (" | head -1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}')
-          echo "Simulator UDID: $UDID"
-
-          # Start from a clean boot; the test run can leave the simulator half-way.
-          with_timeout 60 xcrun simctl shutdown "$UDID" || true
-          sleep 5
-          with_timeout 120 xcrun simctl boot "$UDID" || true
-          with_timeout 180 xcrun simctl bootstatus "$UDID" -b || sleep 30
-
-          APP=$(find DerivedData/Build/Products -type d -name "Folio.app" -path "*iphonesimulator*" | head -1)
-          with_timeout 120 xcrun simctl install "$UDID" "$APP"
-          mkdir -p screenshots
-
-          capture() {
-            local file="$1"; shift
-            with_timeout 60 xcrun simctl launch "$UDID" app.folio.ios "$@" || return 0
-            sleep 8
-            with_timeout 60 xcrun simctl io "$UDID" screenshot "screenshots/$file" || true
-            with_timeout 30 xcrun simctl terminate "$UDID" app.folio.ios || true
-          }
-
-          capture 01-library.png -demo
-          capture 02-editor.png -demo-open
-          capture 03-mark.png -demo-open mark
-          capture 04-text.png -demo-open text
-          capture 05-pages.png -demo-open pages
-          capture 06-find.png -demo-open find
-          capture 07-redact.png -demo-open redact
+          rm -rf attachments screenshots
+          mkdir -p attachments screenshots
+          xcrun xcresulttool export attachments --path TestResults.xcresult --output-path attachments
+          ls -la attachments
+          python3 - <<'EOF'
+          import json, os, shutil
+          src_dir = "attachments"
+          manifest_path = os.path.join(src_dir, "manifest.json")
+          copied = 0
+          if os.path.exists(manifest_path):
+              manifest = json.load(open(manifest_path))
+              entries = manifest if isinstance(manifest, list) else manifest.get("attachments", [])
+              for entry in entries:
+                  attachments = entry.get("attachments", [entry]) if isinstance(entry, dict) else []
+                  for a in attachments:
+                      exported = a.get("exportedFileName")
+                      if not exported:
+                          continue
+                      name = a.get("suggestedHumanReadableName") or exported
+                      if not name.lower().endswith((".png", ".jpg", ".jpeg")):
+                          name += ".png"
+                      src = os.path.join(src_dir, exported)
+                      if os.path.exists(src):
+                          shutil.copy(src, os.path.join("screenshots", name))
+                          copied += 1
+          if copied == 0:
+              for f in os.listdir(src_dir):
+                  if f.lower().endswith((".png", ".jpg", ".jpeg")):
+                      shutil.copy(os.path.join(src_dir, f), os.path.join("screenshots", f))
+                      copied += 1
+          print("copied", copied, "screenshots")
+          EOF
           ls -la screenshots
 
       - name: Upload screenshots
