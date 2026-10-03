@@ -114,7 +114,7 @@ jobs:
           fi
           git -c user.name="github-actions[bot]" \
               -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-              commit -m "ci: update simulator screenshots"
+              commit -m "ci: update simulator screenshots [skip ci]"
           git push origin "$HEAD_REF"
 
       - name: Summarize compiler errors

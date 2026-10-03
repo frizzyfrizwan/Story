@@ -129,6 +129,7 @@ struct EditorView: View {
                 }
                 .foregroundStyle(.primary)
             }
+            .buttonStyle(.plain)
             .accessibilityLabel("Rename \(model.record.name)")
         }
 

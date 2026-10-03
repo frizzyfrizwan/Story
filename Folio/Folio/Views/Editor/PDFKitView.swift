@@ -9,7 +9,7 @@ struct PDFKitView: UIViewRepresentable {
     let drawWithFinger: Bool
 
     func makeUIView(context: Context) -> PDFView {
-        let view = PDFView()
+        let view = FittingPDFView()
         view.document = model.document
         view.autoScales = true
         view.displayMode = .singlePageContinuous
@@ -18,8 +18,6 @@ struct PDFKitView: UIViewRepresentable {
         view.pageBreakMargins = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
         view.pageShadowsEnabled = true
         view.backgroundColor = UIColor.systemGroupedBackground
-        view.minScaleFactor = 0.4
-        view.maxScaleFactor = 8
         context.coordinator.install(on: view)
         model.attach(pdfView: view)
         return view
@@ -104,6 +102,34 @@ struct PDFKitView: UIViewRepresentable {
         ) -> Bool {
             true
         }
+    }
+}
+
+// MARK: - Fit to width
+
+/// PDFView's `autoScales` fits the page using whatever size the view had
+/// when the document was set, which inside SwiftUI is often not the final
+/// size. This subclass re-fits whenever its size changes or a new document
+/// is assigned, and keeps the fit as the minimum zoom.
+final class FittingPDFView: PDFView {
+    private var lastFitSize: CGSize = .zero
+
+    override var document: PDFDocument? {
+        didSet {
+            lastFitSize = .zero
+            setNeedsLayout()
+        }
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard document != nil, bounds.width > 0, bounds.height > 0, bounds.size != lastFitSize else { return }
+        let fit = scaleFactorForSizeToFit
+        guard fit > 0 else { return }
+        lastFitSize = bounds.size
+        minScaleFactor = fit
+        maxScaleFactor = max(fit * 6, 4)
+        scaleFactor = fit
     }
 }
 
