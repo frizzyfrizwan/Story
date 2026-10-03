@@ -16,6 +16,17 @@ enum RedactionFinder {
             let nsText = text as NSString
             let fullRange = NSRange(location: 0, length: nsText.length)
 
+            // Card and ID numbers first: the data detector also reports them as
+            // phone numbers, and the more specific kind should win.
+            for match in matches(of: Patterns.cardNumber, in: text) where Luhn.isValid(match) {
+                let key = "card|\(match)"
+                if seenText.insert(key).inserted { found.append((.cardNumber, match)) }
+            }
+            for match in matches(of: Patterns.ssn, in: text) {
+                let key = "id|\(match)"
+                if seenText.insert(key).inserted { found.append((.idNumber, match)) }
+            }
+
             detector?.enumerateMatches(in: text, options: [], range: fullRange) { result, _, _ in
                 guard let result else { return }
                 let matched = nsText.substring(with: result.range).trimmed
@@ -25,6 +36,7 @@ enum RedactionFinder {
                 case .link:
                     kind = result.url?.scheme?.lowercased() == "mailto" ? .email : .url
                 case .phoneNumber:
+                    if Luhn.isValid(matched) || Self.looksLikeID(matched) { return }
                     kind = .phone
                 case .address:
                     kind = .address
@@ -35,15 +47,6 @@ enum RedactionFinder {
                 if seenText.insert(key).inserted {
                     found.append((kind, matched))
                 }
-            }
-
-            for match in matches(of: Patterns.cardNumber, in: text) where Luhn.isValid(match) {
-                let key = "card|\(match)"
-                if seenText.insert(key).inserted { found.append((.cardNumber, match)) }
-            }
-            for match in matches(of: Patterns.ssn, in: text) {
-                let key = "id|\(match)"
-                if seenText.insert(key).inserted { found.append((.idNumber, match)) }
             }
         }
 
@@ -83,6 +86,11 @@ enum RedactionFinder {
     private enum Patterns {
         static let cardNumber = try! NSRegularExpression(pattern: #"(?<!\d)(?:\d[ -]?){12,18}\d(?!\d)"#)
         static let ssn = try! NSRegularExpression(pattern: #"\b\d{3}-\d{2}-\d{4}\b"#)
+    }
+
+    private static func looksLikeID(_ text: String) -> Bool {
+        let range = NSRange(location: 0, length: (text as NSString).length)
+        return Patterns.ssn.firstMatch(in: text, options: [], range: range) != nil
     }
 
     private static func matches(of regex: NSRegularExpression, in text: String) -> [String] {
