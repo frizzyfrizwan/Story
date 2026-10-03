@@ -121,7 +121,7 @@ enum PDFService {
     /// Re-draws the page, with all of its annotations, into a fresh PDF page.
     /// Vector content stays vector; annotations become part of the page.
     static func flatten(page: PDFPage) -> PDFPage? {
-        pageByRedrawing(page) { _ in }
+        pageByRedrawing(page) { _, _ in }
     }
 
     /// Re-draws the page and adds an invisible OCR text layer on top.
