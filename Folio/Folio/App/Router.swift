@@ -12,6 +12,8 @@ final class Router {
     var paywallFeature: ProFeature?
     var showSettings = false
     var alertMessage: String?
+    /// A screen the editor should open on appear (demo/screenshot mode only).
+    var pendingDemoScreen: String?
 
     func openEditor(_ id: UUID) {
         path = [.editor(id)]

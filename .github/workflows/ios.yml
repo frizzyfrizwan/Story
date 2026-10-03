@@ -85,6 +85,14 @@ jobs:
           sleep 8
           xcrun simctl io "$UDID" screenshot screenshots/02-editor.png
           xcrun simctl terminate "$UDID" app.folio.ios || true
+          n=3
+          for screen in mark text pages find redact; do
+            xcrun simctl launch "$UDID" app.folio.ios -demo-open "$screen"
+            sleep 8
+            xcrun simctl io "$UDID" screenshot "screenshots/0$n-$screen.png"
+            xcrun simctl terminate "$UDID" app.folio.ios || true
+            n=$((n+1))
+          done
           ls -la screenshots
 
       - name: Upload screenshots

@@ -13,6 +13,14 @@ enum DemoSeeder {
         CommandLine.arguments.contains("-demo-open")
     }
 
+    /// `-demo-open mark|text|pages|sign|find` opens that editor screen too.
+    private static var requestedScreen: String? {
+        let arguments = CommandLine.arguments
+        guard let index = arguments.firstIndex(of: "-demo-open"), index + 1 < arguments.count else { return nil }
+        let value = arguments[index + 1]
+        return value.hasPrefix("-") ? nil : value
+    }
+
     @MainActor
     static func seedIfRequested(library: LibraryStore, settings: AppSettings, router: Router) async {
         guard isRequested else { return }
@@ -24,6 +32,7 @@ enum DemoSeeder {
             record = try? await library.add(document: makeSampleDocument(), name: "Welcome to Folio", isScanned: false)
         }
         if shouldOpenEditor, let record {
+            router.pendingDemoScreen = requestedScreen
             router.openEditor(record.id)
         }
     }

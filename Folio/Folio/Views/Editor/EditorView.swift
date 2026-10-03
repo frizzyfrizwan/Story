@@ -107,6 +107,31 @@ struct EditorView: View {
         .onDisappear {
             Task { await model.saveNow() }
         }
+        .task { await applyDemoScreenIfNeeded() }
+    }
+
+    /// Demo/screenshot mode: open a specific screen once the editor is up.
+    private func applyDemoScreenIfNeeded() async {
+        guard let screen = router.pendingDemoScreen else { return }
+        router.pendingDemoScreen = nil
+        try? await Task.sleep(for: .milliseconds(600))
+        switch screen {
+        case "mark":
+            model.mode = .markup
+        case "text":
+            model.mode = .text
+        case "pages":
+            model.activeSheet = .pages
+        case "sign":
+            model.activeSheet = .signaturePicker
+        case "find":
+            model.isFinding = true
+            model.findQuery = "Folio"
+        case "redact":
+            model.activeSheet = .smartRedact
+        default:
+            break
+        }
     }
 
     // MARK: - Chrome
