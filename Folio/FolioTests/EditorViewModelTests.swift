@@ -102,7 +102,11 @@ final class EditorViewModelTests: XCTestCase {
         XCTAssertEqual(page.annotations.count, 1)
         let annotation = try XCTUnwrap(page.annotations.first)
         XCTAssertEqual(EditorViewModel.normalizedType(of: annotation), "Ink")
-        XCTAssertTrue(annotation.bounds.contains(CGPoint(x: 40, y: 60)))
+        // The stroke's start and end lie on the path, so they must fall
+        // inside the annotation rectangle (control points may not).
+        XCTAssertTrue(annotation.bounds.contains(CGPoint(x: 10, y: 10)), "bounds \(annotation.bounds)")
+        XCTAssertTrue(annotation.bounds.contains(CGPoint(x: 80, y: 30)), "bounds \(annotation.bounds)")
+        XCTAssertGreaterThan(annotation.bounds.width, 60)
 
         model.undo()
         XCTAssertTrue(page.annotations.isEmpty)
