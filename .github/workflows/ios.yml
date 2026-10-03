@@ -66,33 +66,41 @@ jobs:
       - name: Launch app and capture screenshots
         if: always()
         continue-on-error: true
-        timeout-minutes: 8
+        timeout-minutes: 12
         run: |
           set -x
+          # Hard per-command timeouts: simctl occasionally hangs on CI.
+          with_timeout() { perl -e 'alarm shift; exec @ARGV' "$@"; }
+
           NAME="${{ steps.sim.outputs.name }}"
           UDID=$(xcrun simctl list devices available | grep -F "$NAME (" | head -1 | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}')
           echo "Simulator UDID: $UDID"
-          xcrun simctl boot "$UDID" || true
-          xcrun simctl bootstatus "$UDID" -b
+
+          # Start from a clean boot; the test run can leave the simulator half-way.
+          with_timeout 60 xcrun simctl shutdown "$UDID" || true
+          sleep 5
+          with_timeout 120 xcrun simctl boot "$UDID" || true
+          with_timeout 180 xcrun simctl bootstatus "$UDID" -b || sleep 30
+
           APP=$(find DerivedData/Build/Products -type d -name "Folio.app" -path "*iphonesimulator*" | head -1)
-          xcrun simctl install "$UDID" "$APP"
+          with_timeout 120 xcrun simctl install "$UDID" "$APP"
           mkdir -p screenshots
-          xcrun simctl launch "$UDID" app.folio.ios -demo
-          sleep 8
-          xcrun simctl io "$UDID" screenshot screenshots/01-library.png
-          xcrun simctl terminate "$UDID" app.folio.ios || true
-          xcrun simctl launch "$UDID" app.folio.ios -demo-open
-          sleep 8
-          xcrun simctl io "$UDID" screenshot screenshots/02-editor.png
-          xcrun simctl terminate "$UDID" app.folio.ios || true
-          n=3
-          for screen in mark text pages find redact; do
-            xcrun simctl launch "$UDID" app.folio.ios -demo-open "$screen"
+
+          capture() {
+            local file="$1"; shift
+            with_timeout 60 xcrun simctl launch "$UDID" app.folio.ios "$@" || return 0
             sleep 8
-            xcrun simctl io "$UDID" screenshot "screenshots/0$n-$screen.png"
-            xcrun simctl terminate "$UDID" app.folio.ios || true
-            n=$((n+1))
-          done
+            with_timeout 60 xcrun simctl io "$UDID" screenshot "screenshots/$file" || true
+            with_timeout 30 xcrun simctl terminate "$UDID" app.folio.ios || true
+          }
+
+          capture 01-library.png -demo
+          capture 02-editor.png -demo-open
+          capture 03-mark.png -demo-open mark
+          capture 04-text.png -demo-open text
+          capture 05-pages.png -demo-open pages
+          capture 06-find.png -demo-open find
+          capture 07-redact.png -demo-open redact
           ls -la screenshots
 
       - name: Upload screenshots
