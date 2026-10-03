@@ -46,6 +46,24 @@ final class EditorViewModel {
     private(set) var busyMessage = ""
     private(set) var busyProgress: Double?
 
+    // MARK: Find
+
+    var isFinding = false {
+        didSet {
+            guard isFinding != oldValue else { return }
+            if isFinding {
+                mode = .read
+            } else {
+                clearFind()
+            }
+        }
+    }
+    var findQuery = ""
+    private(set) var findResults: [PDFSelection] = []
+    private(set) var findIndex = 0
+    private(set) var isSearching = false
+    private var findTask: Task<Void, Never>?
+
     // MARK: Undo
 
     private(set) var undoStack: [EditAction] = []
@@ -80,6 +98,72 @@ final class EditorViewModel {
     func goTo(page index: Int) {
         guard let page = document.page(at: index) else { return }
         pdfView?.go(to: page)
+    }
+
+    // MARK: - Find in document
+
+    func find(_ query: String) {
+        findTask?.cancel()
+        let trimmed = query.trimmed
+        guard trimmed.count >= 2 else {
+            findResults = []
+            findIndex = 0
+            isSearching = false
+            pdfView?.highlightedSelections = nil
+            return
+        }
+        isSearching = true
+        let document = self.document
+        findTask = Task { [weak self] in
+            let results = await Task.detached(priority: .userInitiated) {
+                document.findString(trimmed, withOptions: [.caseInsensitive])
+            }.value
+            guard !Task.isCancelled, let self else { return }
+            self.findResults = results
+            self.findIndex = 0
+            self.isSearching = false
+            self.applyFindHighlights()
+            self.showCurrentFindResult()
+        }
+    }
+
+    func nextFindResult() {
+        guard !findResults.isEmpty else { return }
+        findIndex = (findIndex + 1) % findResults.count
+        showCurrentFindResult()
+        Haptics.selection()
+    }
+
+    func previousFindResult() {
+        guard !findResults.isEmpty else { return }
+        findIndex = (findIndex - 1 + findResults.count) % findResults.count
+        showCurrentFindResult()
+        Haptics.selection()
+    }
+
+    private func applyFindHighlights() {
+        for selection in findResults {
+            selection.color = UIColor.systemYellow.withAlphaComponent(0.45)
+        }
+        pdfView?.highlightedSelections = findResults.isEmpty ? nil : findResults
+    }
+
+    private func showCurrentFindResult() {
+        guard let pdfView, findResults.indices.contains(findIndex) else { return }
+        let selection = findResults[findIndex]
+        pdfView.setCurrentSelection(selection, animate: true)
+        pdfView.go(to: selection)
+    }
+
+    private func clearFind() {
+        findTask?.cancel()
+        findTask = nil
+        findResults = []
+        findIndex = 0
+        findQuery = ""
+        isSearching = false
+        pdfView?.highlightedSelections = nil
+        pdfView?.clearSelection()
     }
 
     // MARK: - Undo plumbing

@@ -28,9 +28,16 @@ struct EditorView: View {
                 SignaturePlacementOverlay(model: model, signature: signature)
             }
         }
+        .safeAreaInset(edge: .top, spacing: 0) {
+            if model.isFinding {
+                FindBar(model: model)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             bottomControls
         }
+        .animation(.snappy(duration: 0.25), value: model.isFinding)
         .overlay {
             if model.isBusy {
                 BusyOverlay(message: model.busyMessage, progress: model.busyProgress)
@@ -126,6 +133,13 @@ struct EditorView: View {
         }
 
         ToolbarItemGroup(placement: .topBarTrailing) {
+            Button {
+                model.isFinding.toggle()
+            } label: {
+                Image(systemName: "magnifyingglass")
+            }
+            .accessibilityLabel("Find in document")
+
             Button {
                 model.undo()
             } label: {

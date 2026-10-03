@@ -4,6 +4,7 @@ struct RootView: View {
     @Environment(Router.self) private var router
     @Environment(AppSettings.self) private var settings
     @Environment(StoreService.self) private var store
+    @Environment(LibraryStore.self) private var library
 
     var body: some View {
         @Bindable var router = router
@@ -19,6 +20,9 @@ struct RootView: View {
                 }
         }
         .tint(.accentColor)
+        .task {
+            await DemoSeeder.seedIfRequested(library: library, settings: settings, router: router)
+        }
         .sheet(isPresented: $router.showPaywall) {
             PaywallView(feature: router.paywallFeature)
         }
@@ -26,7 +30,7 @@ struct RootView: View {
             SettingsView()
         }
         .sheet(isPresented: Binding(
-            get: { !settings.hasSeenWelcome },
+            get: { !settings.hasSeenWelcome && !DemoSeeder.isRequested },
             set: { if !$0 { settings.hasSeenWelcome = true } }
         )) {
             WelcomeView()

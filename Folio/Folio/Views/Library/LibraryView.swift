@@ -21,6 +21,13 @@ struct LibraryView: View {
     @State private var deleting: DocumentRecord?
     @State private var shareItem: ShareItem?
     @State private var isImporting = false
+    @State private var lockedFile: LockedFile?
+    @State private var password = ""
+
+    struct LockedFile: Identifiable {
+        let id = UUID()
+        let url: URL
+    }
 
     struct ScanDraft: Identifiable {
         let id = UUID()
@@ -114,6 +121,20 @@ struct LibraryView: View {
         }
         .sheet(item: $shareItem) { item in
             ShareSheet(items: [item.url])
+        }
+        .alert("Password required", isPresented: Binding(
+            get: { lockedFile != nil },
+            set: { if !$0 { lockedFile = nil } }
+        ), presenting: lockedFile) { file in
+            SecureField("Password", text: $password)
+            Button("Unlock") {
+                let entered = password
+                password = ""
+                Task { await importLocked(file.url, password: entered) }
+            }
+            Button("Cancel", role: .cancel) { password = "" }
+        } message: { file in
+            Text("“\(file.url.lastPathComponent)” is protected. Enter its password to import it. Folio stores the unlocked copy.")
         }
         .alert("Rename document", isPresented: Binding(
             get: { renaming != nil },
@@ -265,6 +286,8 @@ struct LibraryView: View {
         for url in urls {
             do {
                 imported.append(try await library.importFile(at: url))
+            } catch LibraryStore.LibraryError.encrypted {
+                lockedFile = LockedFile(url: url)
             } catch {
                 failures.append(error.localizedDescription)
             }
@@ -276,6 +299,20 @@ struct LibraryView: View {
             open(record)
         } else if imported.count > 1 {
             toast = .success("\(imported.count) documents imported")
+        }
+    }
+
+    private func importLocked(_ url: URL, password: String) async {
+        isImporting = true
+        defer { isImporting = false }
+        do {
+            let record = try await library.importFile(at: url, password: password)
+            open(record)
+        } catch LibraryStore.LibraryError.wrongPassword {
+            toast = .error("That password didn't work. Try again.")
+            lockedFile = LockedFile(url: url)
+        } catch {
+            toast = .error(error.localizedDescription)
         }
     }
 

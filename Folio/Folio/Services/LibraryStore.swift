@@ -8,13 +8,15 @@ final class LibraryStore {
     enum LibraryError: LocalizedError {
         case notAPDF
         case encrypted
+        case wrongPassword
         case writeFailed
         case missing
 
         var errorDescription: String? {
             switch self {
             case .notAPDF: return "That file isn't a PDF Folio can open."
-            case .encrypted: return "This PDF is password protected. Remove the password and try again."
+            case .encrypted: return "This PDF is password protected."
+            case .wrongPassword: return "That password didn't unlock the PDF."
             case .writeFailed: return "The document couldn't be saved."
             case .missing: return "That document is no longer in your library."
             }
@@ -123,12 +125,36 @@ final class LibraryStore {
     // MARK: - Adding documents
 
     /// Copies a PDF from anywhere (Files, Mail, AirDrop) into the library.
-    func importFile(at url: URL, name: String? = nil) async throws -> DocumentRecord {
+    /// Pass `password` to import a protected PDF; it is stored unlocked.
+    func importFile(at url: URL, name: String? = nil, password: String? = nil) async throws -> DocumentRecord {
         let accessing = url.startAccessingSecurityScopedResource()
         defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-        let data = try coordinatedRead(from: url)
+        var data = try coordinatedRead(from: url)
+        if let password {
+            data = try await Self.unlocked(data: data, password: password)
+        }
         let documentName = name ?? url.lastPathComponent.asDocumentName
         return try await add(data: data, name: documentName, isScanned: false)
+    }
+
+    /// Rebuilds a protected PDF without encryption after unlocking it.
+    private static func unlocked(data: Data, password: String) async throws -> Data {
+        try await Task.detached(priority: .userInitiated) { () throws -> Data in
+            guard let document = PDFDocument(data: data) else { throw LibraryError.notAPDF }
+            if document.isLocked, !document.unlock(withPassword: password) {
+                throw LibraryError.wrongPassword
+            }
+            let copy = PDFDocument()
+            for page in document.allPages {
+                if let page = page.copy() as? PDFPage {
+                    copy.insert(page, at: copy.pageCount)
+                }
+            }
+            guard copy.pageCount > 0, let result = copy.dataRepresentation() else {
+                throw LibraryError.writeFailed
+            }
+            return result
+        }.value
     }
 
     /// Opens a PDF outside the library (for merging pages into a document).

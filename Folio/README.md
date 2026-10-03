@@ -17,7 +17,7 @@ Folio is a native iOS 17+ app (SwiftUI + PDFKit + Vision + StoreKit 2) for peopl
 
 ### Modes
 
-- **Read** – scroll, pinch, long-press to select text. Links work.
+- **Read** – scroll, pinch, long-press to select text. Links work. Tap the magnifier to find text anywhere in the document; matches are highlighted and you can step through them.
 - **Mark** – pen, highlighter, eraser. One finger draws, two fingers scroll (or Pencil-only in Settings).
 - **Text** – tap a line to retype it, tap empty space to add text.
 - **Sign** – pick a saved signature, drop it on the page.
@@ -81,8 +81,16 @@ Run the tests with ⌘U (the `FolioTests` target covers PDF assembly, the OCR te
 - Add an app icon to `Assets.xcassets/AppIcon.appiconset` (the catalog already declares the 1024 pt slots).
 - Review the privacy strings in `Info.plist` and fill in the App Privacy questionnaire as "data not collected".
 
+## Demo mode and screenshots
+
+Launching with `-demo` seeds a two-page "Welcome to Folio" document and skips the welcome sheet; `-demo-open` also opens it in the editor. CI uses this to capture `screenshots/01-library.png` and `screenshots/02-editor.png` from the simulator on every run (download them from the workflow's artifacts). Handy for App Store captures too:
+
+```
+xcrun simctl launch booted app.folio.ios -demo-open
+```
+
 ## Known limitations
 
-- Password-protected PDFs are rejected at import with a clear message; unlocking isn't built yet.
+- Password-protected PDFs are unlocked at import (you're asked for the password) and stored without encryption; Folio doesn't re-apply passwords on export.
 - "Tap to retype" paints over the original glyphs rather than rewriting the content stream, so the old text is still present in the file (Smart Redact is the tool for removing text for good).
 - Form-field filling relies on PDFKit's built-in widget handling; there is no dedicated form UI.
