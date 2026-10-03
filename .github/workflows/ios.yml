@@ -21,6 +21,8 @@ jobs:
     name: Build & test (iOS Simulator)
     runs-on: macos-15
     timeout-minutes: 45
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -73,6 +75,7 @@ jobs:
           xcrun simctl bootstatus "$UDID" -b
           APP=$(find DerivedData/Build/Products -type d -name "Folio.app" -path "*iphonesimulator*" | head -1)
           xcrun simctl install "$UDID" "$APP"
+          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
           mkdir -p screenshots
           xcrun simctl launch "$UDID" app.folio.ios -demo
           sleep 8
@@ -91,6 +94,28 @@ jobs:
           name: screenshots
           path: screenshots
           if-no-files-found: ignore
+
+      - name: Commit screenshots to the PR branch
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -x
+          [ -f screenshots/01-library.png ] || exit 0
+          git fetch origin "$HEAD_REF"
+          git checkout -B "$HEAD_REF" "origin/$HEAD_REF"
+          mkdir -p Folio/Screenshots
+          cp screenshots/*.png Folio/Screenshots/
+          git add Folio/Screenshots
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "ci: update simulator screenshots"
+          git push origin "$HEAD_REF"
 
       - name: Summarize compiler errors
         if: failure()
