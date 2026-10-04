@@ -26,9 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Select newest Xcode 16
+      - name: Select newest Xcode (prefer 26, same as the TestFlight build)
         run: |
-          XCODE=$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE" ]; then
+            XCODE=$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)
+          fi
           echo "Using $XCODE"
           sudo xcode-select -s "$XCODE"
           xcodebuild -version

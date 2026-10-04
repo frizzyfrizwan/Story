@@ -46,12 +46,19 @@ jobs:
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Select newest Xcode 16
+      - name: Select Xcode 26 (App Store requires the iOS 26 SDK)
         if: steps.secrets.outputs.ready == 'true'
         run: |
-          XCODE=$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)
+          ls -d /Applications/Xcode*.app
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE" ]; then
+            echo "::error::No Xcode 26 on this runner. Apple rejects uploads built with older SDKs; switch runs-on to a newer macOS image."
+            exit 1
+          fi
+          echo "Using $XCODE"
           sudo xcode-select -s "$XCODE"
           xcodebuild -version
+          xcodebuild -showsdks | grep -i ios
 
       - name: Install App Store Connect API key
         if: steps.secrets.outputs.ready == 'true'
