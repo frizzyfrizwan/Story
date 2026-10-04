@@ -75,6 +75,17 @@ Folio/
 
 Run the tests with ⌘U (the `FolioTests` target covers PDF assembly, the OCR text layer and the redaction finder).
 
+## TestFlight from GitHub
+
+`.github/workflows/testflight.yml` archives the app with Xcode's cloud signing and uploads it to TestFlight. It runs on every push to `master` that touches `Folio/`, or on demand from the Actions tab, and skips itself with a warning until these repository secrets exist:
+
+| Secret | Where to get it |
+|---|---|
+| `APPLE_TEAM_ID` | developer.apple.com → Membership details → Team ID |
+| `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_API_KEY_P8` | App Store Connect → Users and Access → Integrations → App Store Connect API → generate a key with the **App Manager** role; paste the `.p8` file's full contents as the third secret |
+
+Also create the app record once in App Store Connect (My Apps → + → iOS, bundle id `app.folio.ios`). Each successful run shows up in TestFlight within a few minutes; add yourself as an internal tester to install it from the TestFlight app on your iPhone.
+
 ## Shipping checklist
 
 - Create the two in-app purchases in App Store Connect with the ids in `StoreService.ProductID` (`app.folio.pro.yearly` as an auto-renewing subscription with an introductory free trial, `app.folio.pro.lifetime` as a non-consumable).
