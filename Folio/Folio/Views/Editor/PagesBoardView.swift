@@ -21,6 +21,7 @@ struct PagesBoardView: View {
     @State private var showImporter = false
     @State private var photoItems: [PhotosPickerItem] = []
     @State private var shareItem: ShareItem?
+    @State private var showAddOptions = false
 
     struct PageItem: Identifiable, Equatable {
         let id: ObjectIdentifier
@@ -137,31 +138,41 @@ struct PagesBoardView: View {
     // MARK: - Pieces
 
     private var addTile: some View {
-        Menu {
-            if DocumentScannerView.isSupported {
-                Button("Scan", systemImage: "doc.viewfinder") { showScanner = true }
-            }
-            Button("From Photos", systemImage: "photo.on.rectangle") { showPhotos = true }
-            Button("From another PDF", systemImage: "doc.badge.plus") { showImporter = true }
-            Button("Blank page", systemImage: "doc") {
-                model.insertBlankPage(after: model.pageCount - 1)
-            }
+        Button {
+            Haptics.tap()
+            showAddOptions = true
         } label: {
-            VStack(spacing: 8) {
-                Image(systemName: "plus")
-                    .font(.title2.weight(.semibold))
-                Text("Add pages")
+            VStack(spacing: 6) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .strokeBorder(Color.accentColor.opacity(0.5), style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
+                    VStack(spacing: 8) {
+                        Image(systemName: "plus")
+                            .font(.title2.weight(.semibold))
+                        Text("Add pages")
+                            .font(.caption.weight(.medium))
+                    }
+                    .foregroundStyle(Color.accentColor)
+                }
+                .aspectRatio(0.72, contentMode: .fit)
+                Text(" ")
                     .font(.caption.weight(.medium))
             }
-            .foregroundStyle(Color.accentColor)
-            .frame(maxWidth: .infinity)
-            .aspectRatio(0.72, contentMode: .fit)
-            .background(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(Color.accentColor.opacity(0.5), style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
-            )
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .accessibilityLabel("Add pages")
+        .confirmationDialog("Add pages", isPresented: $showAddOptions, titleVisibility: .visible) {
+            if DocumentScannerView.isSupported {
+                Button("Scan") { showScanner = true }
+            }
+            Button("From Photos") { showPhotos = true }
+            Button("From another PDF") { showImporter = true }
+            Button("Blank page") {
+                model.insertBlankPage(after: model.pageCount - 1)
+            }
+            Button("Cancel", role: .cancel) {}
+        }
     }
 
     private var selectionBar: some View {
