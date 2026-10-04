@@ -68,7 +68,7 @@ Folio/
 ## Running it
 
 1. Open `Folio/Folio.xcodeproj` in **Xcode 16** or newer.
-2. Select the `Folio` target → *Signing & Capabilities* → pick your team (bundle id `app.folio.ios`, change as needed).
+2. Select the `Folio` target → *Signing & Capabilities* → pick your team (bundle id `com.faisalrizwan.folio`, change as needed).
 3. Run on an iOS 17+ device. The simulator works for everything except the camera scanner (use *From Photos* or *Import PDF* there).
 4. The shared `Folio` scheme references `Config/Folio.storekit`, so purchases work locally. If Xcode doesn't pick it up, set it under *Edit Scheme → Run → Options → StoreKit Configuration*.
 5. Debug builds have a *Settings → Debug → Unlock Pro* toggle for exercising Pro features without a purchase.
@@ -84,7 +84,7 @@ Run the tests with ⌘U (the `FolioTests` target covers PDF assembly, the OCR te
 | `APPLE_TEAM_ID` | developer.apple.com → Membership details → Team ID |
 | `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_API_KEY_P8` | App Store Connect → Users and Access → Integrations → App Store Connect API → generate a key with the **App Manager** role; paste the `.p8` file's full contents as the third secret |
 
-Also create the app record once in App Store Connect (My Apps → + → iOS, bundle id `app.folio.ios`). Each successful run shows up in TestFlight within a few minutes; add yourself as an internal tester to install it from the TestFlight app on your iPhone.
+Also create the app record once in App Store Connect (My Apps → + → iOS, bundle id `com.faisalrizwan.folio`). Each successful run shows up in TestFlight within a few minutes; add yourself as an internal tester to install it from the TestFlight app on your iPhone.
 
 ## Shipping checklist
 
@@ -97,7 +97,7 @@ Also create the app record once in App Store Connect (My Apps → + → iOS, bun
 Launching with `-demo` seeds a two-page "Welcome to Folio" document and skips the welcome sheet; `-demo-open` also opens it in the editor. CI uses this to capture `screenshots/01-library.png` and `screenshots/02-editor.png` from the simulator on every run (download them from the workflow's artifacts). Handy for App Store captures too:
 
 ```
-xcrun simctl launch booted app.folio.ios -demo-open
+xcrun simctl launch booted com.faisalrizwan.folio -demo-open
 ```
 
 ## Known limitations

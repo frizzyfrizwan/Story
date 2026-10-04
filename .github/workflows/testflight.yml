@@ -9,7 +9,7 @@ name: TestFlight
 #   ASC_API_KEY_P8      Full contents of the downloaded AuthKey_XXXX.p8 file
 #
 # The API key needs the App Manager (or Admin) role, and an app record with
-# bundle id app.folio.ios must exist in App Store Connect.
+# bundle id com.faisalrizwan.folio must exist in App Store Connect.
 
 on:
   workflow_dispatch:
