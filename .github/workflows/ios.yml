@@ -1,0 +1,155 @@
+name: iOS
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "Folio/**"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "Folio/**"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & test (iOS Simulator)
+    runs-on: macos-15
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode 16
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+
+      - name: Pick a simulator
+        id: sim
+        run: |
+          xcrun simctl list devices available
+          NAME=$(xcrun simctl list devices available iPhone | grep -oE 'iPhone [0-9]+( Pro| Pro Max| Plus)?' | sort -V | tail -1)
+          echo "Simulator: $NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing \
+            -project Folio/Folio.xcodeproj \
+            -scheme Folio \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" \
+            2>&1 | tee build.log
+
+      - name: Test
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building \
+            -project Folio/Folio.xcodeproj \
+            -scheme Folio \
+            -destination "platform=iOS Simulator,name=${{ steps.sim.outputs.name }}" \
+            -derivedDataPath DerivedData \
+            -resultBundlePath TestResults.xcresult \
+            2>&1 | tee test.log
+
+      - name: Export screenshots from the UI test results
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 5
+        run: |
+          set -x
+          rm -rf attachments screenshots
+          mkdir -p attachments screenshots
+          xcrun xcresulttool export attachments --path TestResults.xcresult --output-path attachments
+          ls -la attachments
+          python3 - <<'EOF'
+          import json, os, re, shutil
+          src_dir = "attachments"
+          manifest_path = os.path.join(src_dir, "manifest.json")
+          copied = 0
+          if os.path.exists(manifest_path):
+              manifest = json.load(open(manifest_path))
+              entries = manifest if isinstance(manifest, list) else manifest.get("attachments", [])
+              for entry in entries:
+                  attachments = entry.get("attachments", [entry]) if isinstance(entry, dict) else []
+                  for a in attachments:
+                      exported = a.get("exportedFileName")
+                      if not exported:
+                          continue
+                      name = a.get("suggestedHumanReadableName") or exported
+                      # "01-library_0_<UUID>.png" -> "01-library.png"
+                      name = re.sub(r"_\d+_[0-9A-Fa-f-]{36}", "", name)
+                      if not name.lower().endswith((".png", ".jpg", ".jpeg")):
+                          name += ".png"
+                      src = os.path.join(src_dir, exported)
+                      if os.path.exists(src):
+                          shutil.copy(src, os.path.join("screenshots", name))
+                          copied += 1
+          if copied == 0:
+              for f in os.listdir(src_dir):
+                  if f.lower().endswith((".png", ".jpg", ".jpeg")):
+                      shutil.copy(os.path.join(src_dir, f), os.path.join("screenshots", f))
+                      copied += 1
+          print("copied", copied, "screenshots")
+          EOF
+          ls -la screenshots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots
+          if-no-files-found: ignore
+
+      - name: Commit screenshots to the PR branch
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -x
+          [ -f screenshots/01-library.png ] || exit 0
+          git fetch origin "$HEAD_REF"
+          git checkout -B "$HEAD_REF" "origin/$HEAD_REF"
+          mkdir -p Folio/Screenshots
+          cp screenshots/*.png Folio/Screenshots/
+          git add Folio/Screenshots
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "ci: update simulator screenshots [skip ci]"
+          git push origin "$HEAD_REF"
+
+      - name: Summarize compiler errors
+        if: failure()
+        run: |
+          echo "## Compiler / test errors" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          grep -hE "error:|failed|Failing tests" build.log test.log 2>/dev/null | sort -u | head -200 >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-logs
+          path: |
+            build.log
+            test.log
+            TestResults.xcresult
+          if-no-files-found: ignore
