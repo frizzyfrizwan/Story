@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { ArrowUpRight, Clock, KeyRound, Lightbulb, LogIn, Wallet as WalletIcon, X } from "lucide-react";
 import type { ReactNode } from "react";
 import type { TripIdea } from "@/lib/ai/explain";
@@ -96,9 +97,9 @@ function WalletSection({ signedIn, balances, loading, error }: WalletSectionProp
       <SectionLabel
         action={
           signedIn && (
-            <a href="/wallet" className={cn("inline-flex items-center gap-0.5 rounded-[4px] text-[11.5px] text-fg-subtle hover:text-fg", focusRing)}>
+            <Link href="/wallet" className={cn("inline-flex items-center gap-0.5 rounded-[4px] text-[11.5px] text-fg-subtle hover:text-fg", focusRing)}>
               Manage <ArrowUpRight className="size-3" aria-hidden="true" />
-            </a>
+            </Link>
           )
         }
       >
@@ -129,9 +130,9 @@ function WalletSection({ signedIn, balances, loading, error }: WalletSectionProp
       ) : top.length === 0 ? (
         <p className="text-[13px] leading-snug text-fg-muted">
           No balances yet —{" "}
-          <a href="/wallet" className="text-sky underline decoration-sky/35 underline-offset-[3px] hover:decoration-sky">
+          <Link href="/wallet" className="text-sky underline decoration-sky/35 underline-offset-[3px] hover:decoration-sky">
             add them
-          </a>{" "}
+          </Link>{" "}
           so answers are tailored to what you hold.
         </p>
       ) : (
@@ -148,7 +149,10 @@ function WalletSection({ signedIn, balances, loading, error }: WalletSectionProp
           })}
           {rest > 0 && (
             <li className="pt-1 text-xs text-fg-subtle">
-              +{rest} more in <a href="/wallet" className="underline underline-offset-[3px] hover:text-fg">your wallet</a>
+              +{rest} more in{" "}
+              <Link href="/wallet" className="underline underline-offset-[3px] hover:text-fg">
+                your wallet
+              </Link>
             </li>
           )}
         </ul>

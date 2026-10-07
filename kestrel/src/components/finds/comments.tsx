@@ -96,7 +96,7 @@ export function Comments({ findId, comments, className }: { findId: string; comm
 
       <form onSubmit={submit} className="mt-6 rounded-[var(--radius-lg)] border border-panel-border bg-bg-elev-1/60 p-4 sm:p-5">
         <Field
-          label={signedIn ? "Add a comment" : "Add a comment"}
+          label="Add a comment"
           hint={signedIn ? undefined : "You'll be asked to sign in when you post."}
           error={error}
           labelAction={

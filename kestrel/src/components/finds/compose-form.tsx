@@ -577,17 +577,26 @@ export function ComposeForm({ suggestedTags = [] }: { suggestedTags?: string[] }
               </Field>
 
               <div className="sm:col-span-2">
-                <Field label="Cabin" hint="Tap again to clear">
+                <Field label="Cabin" hint={form.cabin ? undefined : "Which cabin you flew"}>
                   <div className="flex flex-wrap items-center gap-2">
-                    <CabinPicker
-                      value={form.cabin ?? ("" as Cabin)}
-                      onChange={(c) => set("cabin", form.cabin === c ? null : c)}
-                      size="md"
-                    />
+                    <CabinPicker value={form.cabin ?? ("" as Cabin)} onChange={(c) => set("cabin", c)} size="md" />
                     {form.cabin && (
-                      <span className="font-mono text-xs text-fg-subtle">
-                        {CABIN_SHORT[form.cabin]} · {CABIN_LABEL[form.cabin]}
-                      </span>
+                      <>
+                        <span className="font-mono text-xs text-fg-subtle">
+                          {CABIN_SHORT[form.cabin]} · {CABIN_LABEL[form.cabin]}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => set("cabin", null)}
+                          className={cn(
+                            "inline-flex h-8 items-center gap-1 rounded-full px-2.5 font-mono text-xs text-fg-subtle transition-colors hover:bg-fg/6 hover:text-fg",
+                            focusRing,
+                          )}
+                        >
+                          <X className="size-3" aria-hidden="true" />
+                          Clear
+                        </button>
+                      </>
                     )}
                   </div>
                 </Field>
