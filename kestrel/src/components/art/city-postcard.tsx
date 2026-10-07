@@ -81,12 +81,24 @@ function Skyline({ rng, c }: { rng: Rng; c: string[] }) {
           const h = between(rng, L.h[0], L.h[1]);
           const y = H - h;
           items.push(<rect key={`b${x}`} x={x} y={y} width={w} height={h + 2} />);
-          if (rng() < 0.3) items.push(<rect key={`c${x}`} x={x + w * 0.3} y={y - between(rng, 4, 12)} width={w * 0.4} height={14} />);
+          if (rng() < 0.3)
+            items.push(<rect key={`c${x}`} x={x + w * 0.3} y={y - between(rng, 4, 12)} width={w * 0.4} height={14} />);
           if (!tallest || h > tallest.h) tallest = { x, w, h };
           if (L.windows > 0) {
             for (let wy = y + 6; wy < H - 6; wy += 7) {
               for (let wx = x + 3; wx < x + w - 4; wx += 6) {
-                if (rng() < L.windows) items.push(<rect key={`w${wx}-${wy}`} x={wx} y={wy} width={2.4} height={3.2} fill={WARM} opacity={between(rng, 0.5, 0.95)} />);
+                if (rng() < L.windows)
+                  items.push(
+                    <rect
+                      key={`w${wx}-${wy}`}
+                      x={wx}
+                      y={wy}
+                      width={2.4}
+                      height={3.2}
+                      fill={WARM}
+                      opacity={between(rng, 0.5, 0.95)}
+                    />,
+                  );
               }
             }
           }
@@ -97,7 +109,14 @@ function Skyline({ rng, c }: { rng: Rng; c: string[] }) {
             {items}
             {li === 2 && tallest && (
               <g>
-                <line x1={tallest.x + tallest.w / 2} y1={H - tallest.h} x2={tallest.x + tallest.w / 2} y2={H - tallest.h - 18} stroke={L.fill} strokeWidth={1.2} />
+                <line
+                  x1={tallest.x + tallest.w / 2}
+                  y1={H - tallest.h}
+                  x2={tallest.x + tallest.w / 2}
+                  y2={H - tallest.h - 18}
+                  stroke={L.fill}
+                  strokeWidth={1.2}
+                />
                 <circle cx={tallest.x + tallest.w / 2} cy={H - tallest.h - 19} r={1.6} fill={WARM} />
               </g>
             )}
@@ -132,7 +151,15 @@ function Coast({ rng, c, sea }: { rng: Rng; c: string[]; sea: string }) {
       <Waves rng={rng} y0={150} color={tint(sea, 0.35)} />
       <path d={hillPath(ridge(rng, 184, 4, [30, 50]))} fill={c[2]} />
       {Array.from({ length: 5 }, (_, i) => (
-        <rect key={i} x={between(rng, 120, 190)} y={142 + i * 8} width={between(rng, 10, 40)} height={1.2} fill={WARM} opacity={0.5 - i * 0.08} />
+        <rect
+          key={i}
+          x={between(rng, 120, 190)}
+          y={142 + i * 8}
+          width={between(rng, 10, 40)}
+          height={1.2}
+          fill={WARM}
+          opacity={0.5 - i * 0.08}
+        />
       ))}
     </g>
   );
@@ -160,7 +187,16 @@ function Desert({ rng, c }: { rng: Rng; c: string[] }) {
   return (
     <g>
       {Array.from({ length: 4 }, (_, i) => (
-        <line key={i} x1={0} x2={W} y1={112 + i * 3} y2={112 + i * 3} stroke={WARM} strokeWidth={0.6} opacity={0.25 - i * 0.05} />
+        <line
+          key={i}
+          x1={0}
+          x2={W}
+          y1={112 + i * 3}
+          y2={112 + i * 3}
+          stroke={WARM}
+          strokeWidth={0.6}
+          opacity={0.25 - i * 0.05}
+        />
       ))}
       <path d={hillPath(ridge(rng, 128, 10, [60, 110]))} fill={c[0]} opacity={0.7} />
       <path d={hillPath(ridge(rng, 150, 12, [50, 90]))} fill={c[1]} opacity={0.9} />
@@ -178,7 +214,13 @@ function Palm({ x, y, lean, scale, color }: { x: number; y: number; lean: number
         const r = (a * Math.PI) / 180;
         const ex = top[0] + Math.cos(r) * 20 * scale;
         const ey = top[1] + Math.sin(r) * 12 * scale + 8 * scale;
-        return <path key={i} d={`M${top[0]} ${top[1]} Q${(top[0] + ex) / 2 + Math.cos(r) * 4} ${top[1] - 10 * scale} ${ex} ${ey}`} strokeWidth={1.8 * scale} />;
+        return (
+          <path
+            key={i}
+            d={`M${top[0]} ${top[1]} Q${(top[0] + ex) / 2 + Math.cos(r) * 4} ${top[1] - 10 * scale} ${ex} ${ey}`}
+            strokeWidth={1.8 * scale}
+          />
+        );
       })}
     </g>
   );
@@ -246,7 +288,18 @@ const SIZE_CLASS = {
   lg: { box: "w-[40rem]", name: "text-3xl", sub: "text-[11px]", pad: "p-5" },
 } as const;
 
-export function CityPostcard({ name, motif, from, to, size = "md", subtitle, showName = true, grain = true, className, children }: CityPostcardProps) {
+export function CityPostcard({
+  name,
+  motif,
+  from,
+  to,
+  size = "md",
+  subtitle,
+  showName = true,
+  grain = true,
+  className,
+  children,
+}: CityPostcardProps) {
   const seed = hash32(`${name}|${motif}`);
   const rng = seededRandom(seed);
   const uid = `pc${seed.toString(36)}`;
@@ -258,18 +311,33 @@ export function CityPostcard({ name, motif, from, to, size = "md", subtitle, sho
   const sunR = motif === "desert" ? 24 : between(rng, 12, 20);
   const sunColor = night ? tint(to, 0.75) : tint(from, 0.7);
   const stars = night
-    ? Array.from({ length: 48 }, (_, i) => ({ id: i, x: rng() * W, y: rng() * 110, r: between(rng, 0.4, 1.3), o: between(rng, 0.3, 0.95) }))
+    ? Array.from({ length: 48 }, (_, i) => ({
+        id: i,
+        x: rng() * W,
+        y: rng() * 110,
+        r: between(rng, 0.4, 1.3),
+        o: between(rng, 0.3, 0.95),
+      }))
     : [];
   const ink = tint(to, 0.92);
   const sz = SIZE_CLASS[size];
 
   return (
     <div
-      className={cn("relative aspect-[16/10] max-w-full overflow-hidden rounded-[var(--radius)] bg-bg-elev-2", sz.box, className)}
+      className={cn(
+        "relative aspect-[16/10] max-w-full overflow-hidden rounded-[var(--radius)] bg-bg-elev-2",
+        sz.box,
+        className,
+      )}
       role="img"
       aria-label={`${name} — ${motif} artwork`}
     >
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full" aria-hidden>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="xMidYMid slice"
+        className="absolute inset-0 h-full w-full"
+        aria-hidden
+      >
         <defs>
           <linearGradient id={`${uid}-sky`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={from} />
@@ -315,15 +383,23 @@ export function CityPostcard({ name, motif, from, to, size = "md", subtitle, sho
 
         <rect width={W} height={H} fill={`url(#${uid}-vig)`} />
         {showName && <rect x={0} y={H * 0.55} width={W} height={H * 0.45} fill={`url(#${uid}-scrim)`} />}
-        {grain && <rect width={W} height={H} filter={`url(#${uid}-grain)`} opacity={0.07} style={{ mixBlendMode: "overlay" }} />}
+        {grain && (
+          <rect width={W} height={H} filter={`url(#${uid}-grain)`} opacity={0.07} style={{ mixBlendMode: "overlay" }} />
+        )}
       </svg>
 
       {showName && (
         <div className={cn("absolute inset-x-0 bottom-0 flex flex-col", sz.pad)} style={{ color: ink }}>
-          <div className={cn("font-display italic leading-none tracking-tight", sz.name)} style={{ fontVariationSettings: '"SOFT" 80, "WONK" 1' }}>
+          <div
+            className={cn("font-display italic leading-none tracking-tight", sz.name)}
+            style={{ fontVariationSettings: '"SOFT" 80, "WONK" 1' }}
+          >
             {name}
           </div>
-          <div className={cn("mt-1 font-mono uppercase tracking-[0.28em]", sz.sub)} style={{ color: withAlphaHex(ink, 0.7) }}>
+          <div
+            className={cn("mt-1 font-mono uppercase tracking-[0.28em]", sz.sub)}
+            style={{ color: withAlphaHex(ink, 0.7) }}
+          >
             {subtitle ?? motif}
           </div>
         </div>

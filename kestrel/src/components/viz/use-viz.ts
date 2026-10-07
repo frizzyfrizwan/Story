@@ -196,7 +196,11 @@ export function getDpr(): number {
 }
 
 /** Size a canvas's backing store for the DPR and reset its transform to CSS pixels. */
-export function prepareCanvas(canvas: HTMLCanvasElement, width: number, height: number): CanvasRenderingContext2D | null {
+export function prepareCanvas(
+  canvas: HTMLCanvasElement,
+  width: number,
+  height: number,
+): CanvasRenderingContext2D | null {
   const dpr = getDpr();
   const w = Math.max(1, Math.round(width * dpr));
   const h = Math.max(1, Math.round(height * dpr));

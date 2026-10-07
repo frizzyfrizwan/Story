@@ -88,7 +88,11 @@ interface FlapTileProps {
 }
 
 function FlapTile({ target, delay, stepMs, spin, charset, tone, reduced }: FlapTileProps) {
-  const [view, setView] = useState<{ cur: string; next: string | null; step: number }>({ cur: " ", next: null, step: 0 });
+  const [view, setView] = useState<{ cur: string; next: string | null; step: number }>({
+    cur: " ",
+    next: null,
+    step: 0,
+  });
   const curRef = useRef(" ");
 
   useEffect(() => {
@@ -138,10 +142,7 @@ function FlapTile({ target, delay, stepMs, spin, charset, tone, reduced }: FlapT
 }
 
 function normalise(text: string): string {
-  return text
-    .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
-    .toUpperCase();
+  return text.normalize("NFKD").replace(/[̀-ͯ]/g, "").toUpperCase();
 }
 
 function padLine(line: string, cols: number, align: "left" | "center" | "right"): string {
@@ -346,7 +347,11 @@ export function DepartureBoard({
           )}
           <h3 className="font-display text-lg leading-none tracking-tight sm:text-xl">{title}</h3>
         </div>
-        {subtitle && <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-fg-subtle sm:text-[11px]">{subtitle}</div>}
+        {subtitle && (
+          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-fg-subtle sm:text-[11px]">
+            {subtitle}
+          </div>
+        )}
       </header>
 
       <div className="scrollbar-none overflow-x-auto">

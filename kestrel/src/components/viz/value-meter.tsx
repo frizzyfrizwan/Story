@@ -68,8 +68,21 @@ export function ValueMeter({ score, cpp, benchmark, size = 180, caption, classNa
             <stop offset="100%" stopColor="var(--aurora)" />
           </linearGradient>
         </defs>
-        <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="var(--bg-elev-3)" strokeWidth={14} strokeLinecap="round" />
-        <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke={`url(#${id}-g)`} strokeWidth={10} strokeLinecap="round" opacity={0.95} />
+        <path
+          d="M20 100 A80 80 0 0 1 180 100"
+          fill="none"
+          stroke="var(--bg-elev-3)"
+          strokeWidth={14}
+          strokeLinecap="round"
+        />
+        <path
+          d="M20 100 A80 80 0 0 1 180 100"
+          fill="none"
+          stroke={`url(#${id}-g)`}
+          strokeWidth={10}
+          strokeLinecap="round"
+          opacity={0.95}
+        />
         {ticks.map((i) => {
           const major = i % 5 === 0;
           return (
@@ -86,19 +99,30 @@ export function ValueMeter({ score, cpp, benchmark, size = 180, caption, classNa
             />
           );
         })}
-        <g style={{ transform: `rotate(${angle}deg)`, transformOrigin: "100px 100px", transition: "transform 800ms cubic-bezier(0.2, 0.8, 0.2, 1)" }}>
+        <g
+          style={{
+            transform: `rotate(${angle}deg)`,
+            transformOrigin: "100px 100px",
+            transition: "transform 800ms cubic-bezier(0.2, 0.8, 0.2, 1)",
+          }}
+        >
           <path d="M97.5 100 L100 30 L102.5 100 Z" fill="var(--fg)" />
           <circle cx={100} cy={30} r={3} fill={verdict.colorVar} />
         </g>
         <circle cx={100} cy={100} r={6} fill="var(--bg-elev-3)" stroke="var(--fg)" strokeWidth={1.5} />
       </svg>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center" style={{ paddingBottom: size * 0.02 }}>
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center"
+        style={{ paddingBottom: size * 0.02 }}
+      >
         <div className="font-mono text-2xl font-semibold leading-none tnum" style={{ fontSize: size * 0.15 }}>
           {fmtCpp(cpp)}
         </div>
       </div>
       <div className="mt-1 flex flex-col items-center">
-        <div className={cn("font-mono text-[11px] font-semibold uppercase tracking-[0.2em]", verdict.textClass)}>{verdict.label}</div>
+        <div className={cn("font-mono text-[11px] font-semibold uppercase tracking-[0.2em]", verdict.textClass)}>
+          {verdict.label}
+        </div>
         <div className="text-[11px] text-fg-subtle">{caption ?? `vs ${fmtCpp(benchmark)} typical`}</div>
       </div>
     </div>
@@ -144,7 +168,9 @@ export function CppBar({ cpp, benchmark, max, showLabel = true, className }: Cpp
         />
       </span>
       {showLabel && (
-        <span className={cn("font-mono text-[10px] font-semibold uppercase tracking-[0.16em]", verdict.textClass)}>{verdict.label}</span>
+        <span className={cn("font-mono text-[10px] font-semibold uppercase tracking-[0.16em]", verdict.textClass)}>
+          {verdict.label}
+        </span>
       )}
     </div>
   );

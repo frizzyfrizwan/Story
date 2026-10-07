@@ -3,14 +3,6 @@ import type { AwardFare, Deal, Itinerary, LoyaltyProgram } from "@/lib/types";
 import { dealDigest, dealDigestTemplate, explainRedemption, explainRedemptionTemplate, monthNumber, tripIdeas, tripIdeasHeuristic } from "./explain";
 
 /** Minimal program fixtures so the tests don't depend on the curated dataset. */
-const PROGRAM_FIXTURES: Record<string, LoyaltyProgram> = {
-  "amex-mr": prog("amex-mr", "American Express Membership Rewards", "Amex MR", "bank", 2.0),
-  "chase-ur": prog("chase-ur", "Chase Ultimate Rewards", "Chase UR", "bank", 2.0),
-  aeroplan: prog("aeroplan", "Air Canada Aeroplan", "Aeroplan", "airline", 1.5, { surcharges: "none", oneWay: true, changeFeeUsd: 100, cancelFeeUsd: 150, bookingUrl: "https://aeroplan.com" }),
-  "american-aadvantage": prog("american-aadvantage", "American AAdvantage", "AAdvantage", "airline", 1.5),
-  "british-airways-club": prog("british-airways-club", "British Airways Club", "Avios", "airline", 1.4),
-  "alaska-mileage-plan": prog("alaska-mileage-plan", "Alaska Mileage Plan", "Mileage Plan", "airline", 1.6),
-};
 function prog(id: string, name: string, shortName: string, kind: LoyaltyProgram["kind"], valuationCpp: number, extra: Partial<LoyaltyProgram> = {}): LoyaltyProgram {
   return {
     id,
@@ -35,8 +27,15 @@ function prog(id: string, name: string, shortName: string, kind: LoyaltyProgram[
     ...extra,
   };
 }
-const getProgram = (id: string) => PROGRAM_FIXTURES[id];
-const withFixtures = { getProgram };
+const PROGRAM_FIXTURES: Record<string, LoyaltyProgram> = {
+  "amex-mr": prog("amex-mr", "American Express Membership Rewards", "Amex MR", "bank", 2.0),
+  "chase-ur": prog("chase-ur", "Chase Ultimate Rewards", "Chase UR", "bank", 2.0),
+  aeroplan: prog("aeroplan", "Air Canada Aeroplan", "Aeroplan", "airline", 1.5, { surcharges: "none", oneWay: true, changeFeeUsd: 100, cancelFeeUsd: 150, bookingUrl: "https://aeroplan.com" }),
+  "american-aadvantage": prog("american-aadvantage", "American AAdvantage", "AAdvantage", "airline", 1.5),
+  "british-airways-club": prog("british-airways-club", "British Airways Club", "Avios", "airline", 1.4),
+  "alaska-mileage-plan": prog("alaska-mileage-plan", "Alaska Mileage Plan", "Mileage Plan", "airline", 1.6),
+};
+const withFixtures = { getProgram: (id: string) => PROGRAM_FIXTURES[id] };
 
 const fare: AwardFare = {
   programId: "aeroplan",
@@ -72,42 +71,49 @@ function sentenceCount(text: string): number {
 
 describe("explainRedemptionTemplate", () => {
   it("writes a 3–5 sentence verdict with price, transfer advice and a booking tip", () => {
-    const text = explainRedemptionTemplate(fare, { itinerary, cashPriceUsd: 4500 });
+    const text = explainRedemptionTemplate(fare, { itinerary, cashPriceUsd: 4500 }, withFixtures);
     const n = sentenceCount(text);
     expect(n).toBeGreaterThanOrEqual(3);
     expect(n).toBeLessThanOrEqual(5);
     expect(text).toContain("JFK → NRT");
-    expect(text).toContain("70,000");
+    expect(text).toContain("70,000 Aeroplan points");
     expect(text).toContain("$112");
     expect(text).toContain("$4,500");
+    expect(text).toContain("we value Aeroplan points at 1.5¢");
     expect(text).toMatch(/excellent/i);
     expect(text).toContain("sweet spot, low taxes");
-    // cheapest transfer first (amex 60k with bonus), chase as the alternative
-    expect(text).toMatch(/60,000 amex-mr points \(1:1, with a 20% bonus/);
-    expect(text).toContain("70,000 chase-ur");
-    expect(text).toMatch(/only 2 seats left/);
+    // cheapest transfer first (Amex 60k with bonus), Chase as the alternative
+    expect(text).toMatch(/60,000 Amex MR points \(1:1, with a 20% bonus/);
+    expect(text).toContain("70,000 Chase UR");
+    expect(text).toMatch(/only 2 seats left at this price, so book promptly/i);
+    expect(text).toContain("changes run $100 and cancellations $150");
+    expect(text).toContain("book at https://aeroplan.com");
   });
 
   it("warns about high taxes and handles missing cash price / transfer options", () => {
     const pricey: AwardFare = { ...fare, taxesUsd: 650, cpp: undefined, transferOptions: [], badges: [], seats: null };
-    const text = explainRedemptionTemplate(pricey, { itinerary });
+    const text = explainRedemptionTemplate(pricey, { itinerary }, withFixtures);
     expect(text).toContain("Heads up");
     expect(text).toContain("$650");
-    expect(text).toMatch(/strong redemption|reasonable redemption|below-average/);
+    expect(text).toContain("strong redemption on our value score");
+    expect(text).toContain("No bank currencies transfer into Air Canada Aeroplan");
     expect(sentenceCount(text)).toBeGreaterThanOrEqual(3);
+    expect(sentenceCount(text)).toBeLessThanOrEqual(5);
   });
 
-  it("flags mixed-cabin itineraries", () => {
-    const text = explainRedemptionTemplate({ ...fare, mixedCabin: true, badges: [] }, { itinerary });
-    expect(text).toMatch(/mixed-cabin/);
+  it("flags mixed-cabin itineraries and still works with no program data at all", () => {
+    expect(explainRedemptionTemplate({ ...fare, mixedCabin: true, badges: [] }, { itinerary }, withFixtures)).toMatch(/mixed-cabin/);
+    const bare = explainRedemptionTemplate(fare, { itinerary }, { getProgram: () => undefined });
+    expect(bare).toContain("70,000 miles");
+    expect(bare).toContain("60,000 amex-mr points");
   });
 });
 
 describe("explainRedemption without a key", () => {
   it("falls back to the template when the LLM is disabled or no client exists", async () => {
-    const template = explainRedemptionTemplate(fare, { itinerary, cashPriceUsd: 4500 });
-    await expect(explainRedemption(fare, { itinerary, cashPriceUsd: 4500 }, { llm: false })).resolves.toBe(template);
-    await expect(explainRedemption(fare, { itinerary, cashPriceUsd: 4500 }, { client: null })).resolves.toBe(template);
+    const template = explainRedemptionTemplate(fare, { itinerary, cashPriceUsd: 4500 }, withFixtures);
+    await expect(explainRedemption(fare, { itinerary, cashPriceUsd: 4500 }, { llm: false, ...withFixtures })).resolves.toBe(template);
+    await expect(explainRedemption(fare, { itinerary, cashPriceUsd: 4500 }, { client: null, ...withFixtures })).resolves.toBe(template);
   });
 });
 
@@ -118,30 +124,31 @@ const deals: Deal[] = [
 
 describe("dealDigest", () => {
   it("renders a markdown digest from the template", () => {
-    const md = dealDigestTemplate(deals);
+    const md = dealDigestTemplate(deals, withFixtures);
     expect(md.startsWith("## 2 award deals")).toBe(true);
-    expect(md).toContain("JFK→DOH");
-    expect(md).toContain("7.1¢/pt");
+    expect(md).toContain("at 7.1¢ per point via AAdvantage");
+    expect(md).toContain("JFK→DOH in business on QR via AAdvantage: 70,000 + $35 (7.1¢/pt, 30% below typical) · 4 seats · 2027-02-03, 2027-02-10… · _sweet-spot_ — Wide open in February");
     expect(md).toContain("[search](/search?from=JFK&to=DOH&date=2027-02-03&cabin=business)");
     expect(md).toContain("Demo data");
   });
 
   it("handles an empty list and skips the LLM without a key", async () => {
     expect(dealDigestTemplate([])).toContain("Nothing standout");
-    await expect(dealDigest(deals, { llm: false })).resolves.toBe(dealDigestTemplate(deals));
+    await expect(dealDigest(deals, { llm: false, ...withFixtures })).resolves.toBe(dealDigestTemplate(deals, withFixtures));
     await expect(dealDigest([], { client: null })).resolves.toBe(dealDigestTemplate([]));
   });
 });
 
 describe("tripIdeas", () => {
   it("returns five affordable-first ideas from the static table", () => {
-    const ideas = tripIdeasHeuristic({ origin: "JFK", points: [{ programId: "amex-mr", amount: 80000 }], month: "May" });
+    const ideas = tripIdeasHeuristic({ origin: "JFK", points: [{ programId: "amex-mr", amount: 80000 }], month: "May" }, withFixtures);
     expect(ideas).toHaveLength(5);
     expect(new Set(ideas.map((i) => i.destination)).size).toBe(5);
     expect(ideas.some((i) => i.affordable && i.via === "amex-mr")).toBe(true);
     expect(ideas.every((i) => i.href.startsWith("/search?from=JFK&to="))).toBe(true);
     expect(ideas.every((i) => i.miles > 0 && i.title.length > 0 && i.why.length > 0)).toBe(true);
     expect(ideas.map((i) => i.destination)).not.toContain("NYC");
+    expect(ideas.find((i) => i.via === "amex-mr")?.why).toContain("Amex MR points to cover it");
     // affordable ideas sort before aspirational ones
     const firstUnaffordable = ideas.findIndex((i) => !i.affordable);
     const lastAffordable = ideas.map((i) => i.affordable).lastIndexOf(true);
@@ -149,16 +156,16 @@ describe("tripIdeas", () => {
   });
 
   it("still inspires with an empty wallet and accepts program names", () => {
-    const none = tripIdeasHeuristic({ origin: "SFO", points: [] });
+    const none = tripIdeasHeuristic({ origin: "SFO", points: [] }, withFixtures);
     expect(none).toHaveLength(5);
     expect(none.every((i) => !i.affordable)).toBe(true);
-    const named = tripIdeasHeuristic({ origin: "SFO", points: [{ programId: "Alaska miles", amount: 90000 }], month: 10 });
+    const named = tripIdeasHeuristic({ origin: "SFO", points: [{ programId: "Alaska miles", amount: 90000 }], month: 10 }, withFixtures);
     expect(named.some((i) => i.affordable && i.programId === "alaska-mileage-plan")).toBe(true);
   });
 
   it("uses the heuristic when the LLM is unavailable", async () => {
     const input = { origin: "BOS", points: [{ programId: "chase-ur", amount: 120000 }], month: 6 };
-    await expect(tripIdeas(input, { llm: false })).resolves.toEqual(tripIdeasHeuristic(input));
+    await expect(tripIdeas(input, { llm: false, ...withFixtures })).resolves.toEqual(tripIdeasHeuristic(input, withFixtures));
   });
 
   it("parses month inputs", () => {

@@ -15,8 +15,10 @@ describe("timetable", () => {
     const tt = buildTimetable(FIXTURE_ROUTES);
     const keys = tt.flights.map((f) => f.key);
     expect(new Set(keys).size).toBe(keys.length);
-    // BA JFK→LHR is listed in both directions → no synthetic mirror; LH JFK→FRA is not → mirrored FRA→JFK.
-    expect(tt.byPair.get("LHR-JFK")?.every((f) => !f.mirrored)).toBe(true);
+    // BA JFK→LHR is listed in both directions → no synthetic mirror; AA and LH one-way routes get mirrored returns.
+    const lhrJfk = tt.byPair.get("LHR-JFK")!;
+    expect(lhrJfk.filter((f) => f.carrier === "BA").every((f) => !f.mirrored)).toBe(true);
+    expect(lhrJfk.filter((f) => f.carrier === "AA").every((f) => f.mirrored)).toBe(true);
     expect(tt.byPair.get("FRA-JFK")?.some((f) => f.mirrored && f.carrier === "LH")).toBe(true);
     // 21/week → 3 daily, 14/week → 2 daily, 3/week → 1 flight on 3 weekdays.
     expect(tt.byPair.get("JFK-LHR")?.filter((f) => f.carrier === "BA")).toHaveLength(3);

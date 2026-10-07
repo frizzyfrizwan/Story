@@ -303,7 +303,7 @@ export function Globe({
         }
         ctx.stroke();
         ctx.setLineDash([]);
-        const phase = rm ? 0.5 : ((t / 4200 + i * 0.29) % 1);
+        const phase = rm ? 0.5 : (t / 4200 + i * 0.29) % 1;
         dot = interp(easeInOutSine(phase));
       }
 

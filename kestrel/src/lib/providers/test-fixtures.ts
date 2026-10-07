@@ -40,7 +40,7 @@ export const FIXTURE_ROUTES: RouteDef[] = [
   { origin: "JFK", destination: "LHR", carrier: "AA", aircraft: ["777-300ER"], durationMin: 420, weeklyFrequency: 14, cabins: ["economy", "premium", "business", "first"], flightNumber: "AA100" },
   { origin: "EWR", destination: "LHR", carrier: "UA", aircraft: ["767-300ER"], durationMin: 420, weeklyFrequency: 14, cabins: ["economy", "premium", "business"] },
   { origin: "JFK", destination: "FRA", carrier: "LH", aircraft: ["A340-600"], durationMin: 460, weeklyFrequency: 7, cabins: ["economy", "premium", "business", "first"], flightNumber: "LH401" },
-  { origin: "FRA", destination: "NRT", carrier: "LH", aircraft: ["747-8"], durationMin: 690, weeklyFrequency: 7, cabins: ["economy", "premium", "business", "first"], flightNumber: "LH716" },
+  { origin: "FRA", destination: "NRT", carrier: "LH", aircraft: ["747-8"], durationMin: 690, weeklyFrequency: 14, cabins: ["economy", "premium", "business", "first"], flightNumber: "LH716" },
   { origin: "EWR", destination: "NRT", carrier: "UA", aircraft: ["777-200ER"], durationMin: 840, weeklyFrequency: 7, cabins: ["economy", "premium", "business"] },
   { origin: "JFK", destination: "NRT", carrier: "JL", aircraft: ["777-300ER"], durationMin: 840, weeklyFrequency: 7, cabins: ["economy", "premium", "business", "first"], flightNumber: "JL5" },
   { origin: "JFK", destination: "HND", carrier: "NH", aircraft: ["777-300ER"], durationMin: 850, weeklyFrequency: 7, cabins: ["economy", "premium", "business", "first"] },

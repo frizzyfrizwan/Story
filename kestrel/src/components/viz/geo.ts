@@ -55,7 +55,7 @@ export function destinationPoint(lon: number, lat: number, headingDeg: number, d
   const cosδ = Math.cos(δ);
   const φ2 = Math.asin(sinφ1 * cosδ + cosφ1 * sinδ * Math.cos(θ));
   const λ2 = λ1 + Math.atan2(Math.sin(θ) * sinδ * cosφ1, cosδ - sinφ1 * Math.sin(φ2));
-  return [(((λ2 * DEG + 540) % 360) - 180), φ2 * DEG];
+  return [((λ2 * DEG + 540) % 360) - 180, φ2 * DEG];
 }
 
 /** Top-down airliner silhouette, nose pointing up (−y), roughly 12 units tall, centred on 0,0. */
@@ -69,7 +69,15 @@ export function planePath2D(): Path2D {
 }
 
 /** Draw the plane glyph at (x, y) rotated by `angleRad` (0 = nose up), scaled so it is `size` px tall. */
-export function drawPlane(ctx: CanvasRenderingContext2D, x: number, y: number, angleRad: number, size: number, fill: string, alpha = 1) {
+export function drawPlane(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  angleRad: number,
+  size: number,
+  fill: string,
+  alpha = 1,
+) {
   const s = size / 12;
   ctx.save();
   ctx.translate(x, y);

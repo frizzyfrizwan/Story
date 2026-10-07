@@ -146,7 +146,9 @@ export function BoardingPass({
               <div className="shrink-0">{label}</div>
             </div>
             <div className="px-4 py-4 sm:px-5">{main}</div>
-            {footer && <div className="border-t border-panel-border px-4 py-3 text-sm text-fg-muted sm:px-5">{footer}</div>}
+            {footer && (
+              <div className="border-t border-panel-border px-4 py-3 text-sm text-fg-muted sm:px-5">{footer}</div>
+            )}
           </div>
 
           <aside
@@ -195,7 +197,16 @@ function bezTangent(t: number): number {
   return (Math.atan2(dy, dx) * 180) / Math.PI;
 }
 
-export function RouteLine({ origin, destination, stops = [], durationMin, carrierColor, progress, caption, className }: RouteLineProps) {
+export function RouteLine({
+  origin,
+  destination,
+  stops = [],
+  durationMin,
+  carrierColor,
+  progress,
+  caption,
+  className,
+}: RouteLineProps) {
   const color = carrierColor ?? "var(--signal)";
   const t = progress == null ? 0.5 : Math.max(0, Math.min(1, progress));
   const [px, py] = bez(t);
@@ -203,7 +214,10 @@ export function RouteLine({ origin, destination, stops = [], durationMin, carrie
   const d = `M${P0[0]} ${P0[1]} Q${P1[0]} ${P1[1]} ${P2[0]} ${P2[1]}`;
   const line =
     caption ??
-    [durationMin != null ? fmtDuration(durationMin) : null, stops.length === 0 ? "Nonstop" : `${stops.length} stop${stops.length > 1 ? "s" : ""}`]
+    [
+      durationMin != null ? fmtDuration(durationMin) : null,
+      stops.length === 0 ? "Nonstop" : `${stops.length} stop${stops.length > 1 ? "s" : ""}`,
+    ]
       .filter(Boolean)
       .join(" · ");
 
@@ -235,7 +249,14 @@ export function RouteLine({ origin, destination, stops = [], durationMin, carrie
         return (
           <g key={`${code}-${i}`}>
             <circle cx={sx} cy={sy} r={3.5} fill="var(--bg-elev-1)" stroke={color} strokeWidth={1.5} />
-            <text x={sx} y={sy + 16} textAnchor="middle" fontSize={10} fill="var(--fg-subtle)" style={{ fontFamily: "var(--font-mono)" }}>
+            <text
+              x={sx}
+              y={sy + 16}
+              textAnchor="middle"
+              fontSize={10}
+              fill="var(--fg-subtle)"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
               {code}
             </text>
           </g>
@@ -249,14 +270,37 @@ export function RouteLine({ origin, destination, stops = [], durationMin, carrie
         </g>
       </g>
 
-      <text x={46} y={76} textAnchor="end" fontSize={22} fontWeight={600} fill="currentColor" style={{ fontFamily: "var(--font-mono)" }}>
+      <text
+        x={46}
+        y={76}
+        textAnchor="end"
+        fontSize={22}
+        fontWeight={600}
+        fill="currentColor"
+        style={{ fontFamily: "var(--font-mono)" }}
+      >
         {origin}
       </text>
-      <text x={274} y={76} textAnchor="start" fontSize={22} fontWeight={600} fill="currentColor" style={{ fontFamily: "var(--font-mono)" }}>
+      <text
+        x={274}
+        y={76}
+        textAnchor="start"
+        fontSize={22}
+        fontWeight={600}
+        fill="currentColor"
+        style={{ fontFamily: "var(--font-mono)" }}
+      >
         {destination}
       </text>
       {line && (
-        <text x={160} y={94} textAnchor="middle" fontSize={11} fill="var(--fg-muted)" style={{ fontFamily: "var(--font-mono)" }}>
+        <text
+          x={160}
+          y={94}
+          textAnchor="middle"
+          fontSize={11}
+          fill="var(--fg-muted)"
+          style={{ fontFamily: "var(--font-mono)" }}
+        >
           {line}
         </text>
       )}

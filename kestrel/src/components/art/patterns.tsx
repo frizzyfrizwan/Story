@@ -82,12 +82,23 @@ export interface RadarRingsProps {
   className?: string;
 }
 
-export function RadarRings({ size = 240, rings = 3, tone = "aurora", period = 2.8, sweep = true, className }: RadarRingsProps) {
+export function RadarRings({
+  size = 240,
+  rings = 3,
+  tone = "aurora",
+  period = 2.8,
+  sweep = true,
+  className,
+}: RadarRingsProps) {
   const color = `var(--${tone})`;
   return (
     <>
       <PatternStyles />
-      <div aria-hidden className={cn("pointer-events-none relative shrink-0", className)} style={{ width: size, height: size }}>
+      <div
+        aria-hidden
+        className={cn("pointer-events-none relative shrink-0", className)}
+        style={{ width: size, height: size }}
+      >
         {[1, 0.66, 0.33].map((s) => (
           <div
             key={s}
@@ -114,7 +125,10 @@ export function RadarRings({ size = 240, rings = 3, tone = "aurora", period = 2.
             style={{ borderColor: color, animationDuration: `${period}s`, animationDelay: `${(period / rings) * i}s` }}
           />
         ))}
-        <div className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ background: color, boxShadow: `0 0 12px ${color}` }} />
+        <div
+          className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ background: color, boxShadow: `0 0 12px ${color}` }}
+        />
       </div>
     </>
   );
@@ -136,7 +150,14 @@ export interface ContrailsProps {
   className?: string;
 }
 
-export function Contrails({ angle = -24, spacing = 160, speed = 40, opacity = 0.08, streaks = 3, className }: ContrailsProps) {
+export function Contrails({
+  angle = -24,
+  spacing = 160,
+  speed = 40,
+  opacity = 0.08,
+  streaks = 3,
+  className,
+}: ContrailsProps) {
   const pct = Math.round(opacity * 100);
   const lineStyle = (sp: number, dur: number, alpha: number): CSSProperties =>
     ({
@@ -150,10 +171,16 @@ export function Contrails({ angle = -24, spacing = 160, speed = 40, opacity = 0.
       <div
         aria-hidden
         className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}
-        style={{ maskImage: "radial-gradient(ellipse at center, #000 35%, transparent 80%)", WebkitMaskImage: "radial-gradient(ellipse at center, #000 35%, transparent 80%)" }}
+        style={{
+          maskImage: "radial-gradient(ellipse at center, #000 35%, transparent 80%)",
+          WebkitMaskImage: "radial-gradient(ellipse at center, #000 35%, transparent 80%)",
+        }}
       >
         <div className="kc-lines absolute inset-[-20%]" style={lineStyle(spacing, speed, pct)} />
-        <div className="kc-lines absolute inset-[-20%]" style={lineStyle(spacing * 0.6, speed * 1.7, Math.max(2, pct / 2))} />
+        <div
+          className="kc-lines absolute inset-[-20%]"
+          style={lineStyle(spacing * 0.6, speed * 1.7, Math.max(2, pct / 2))}
+        />
         {Array.from({ length: streaks }, (_, i) => (
           <div
             key={i}
@@ -163,7 +190,8 @@ export function Contrails({ angle = -24, spacing = 160, speed = 40, opacity = 0.
                 top: `${15 + ((i * 37) % 70)}%`,
                 left: 0,
                 "--kc-angle": `${angle}deg`,
-                background: "linear-gradient(90deg, transparent, color-mix(in srgb, var(--fg) 35%, transparent) 50%, transparent)",
+                background:
+                  "linear-gradient(90deg, transparent, color-mix(in srgb, var(--fg) 35%, transparent) 50%, transparent)",
                 animation: `kc-streak ${speed * (0.9 + i * 0.25)}s linear ${i * (speed / 3)}s infinite`,
                 transformOrigin: "left center",
               } as CSSProperties

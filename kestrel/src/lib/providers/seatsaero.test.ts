@@ -258,7 +258,10 @@ describe("seats.aero provider", () => {
     expect(deals[0].cpp).toBeGreaterThanOrEqual(deals[1].cpp);
     expect(deals[1].cpp).toBeGreaterThanOrEqual(deals[2].cpp);
     expect(deals.map((d) => d.source)).toEqual(["live", "live", "live"]);
-    expect(deals.find((d) => d.cabin === "first")?.badge).toBe("rare");
+    // Fixture scorer: high-cpp rows earn "Sweet spot"; the 200k-mile United row has no badge and few seats → "ai-pick".
+    expect(deals.find((d) => d.cabin === "first")?.badge).toBe("sweet-spot");
+    expect(deals.find((d) => d.programId === "united-mileageplus")?.badge).toBe("ai-pick");
+    expect(deals.find((d) => d.programId === "united-mileageplus")?.savingsPct).toBe(0);
     expect(deals.every((d) => d.dates.includes("2026-11-20"))).toBe(true);
     const fromJfk = await p.deals({ origin: "SFO" });
     expect(fromJfk).toHaveLength(0);

@@ -138,18 +138,29 @@ function baseFlightNumber(route: RouteDef, mirrored: boolean): number {
   return 100 + (hash32(`${route.carrier}:${route.origin}-${route.destination}`) % 850);
 }
 
-/** Realistic departure windows by block time; `k` picks the window so multi-daily routes spread out. */
-function departureSlot(route: RouteDef, k: number, seed: number): { hour: number; minute: number } {
+/**
+ * Realistic departure windows by block time; `k` picks the window so
+ * multi-daily routes spread out. Eastbound long-hauls (e.g. US → Europe)
+ * leave in the evening and arrive next morning; westbound ones fly by day.
+ */
+function departureSlot(route: RouteDef, k: number, seed: number, eastbound: boolean): { hour: number; minute: number } {
   const rng = seededRandom(seed);
   const d = route.durationMin;
   const windows: [number, number][] =
     d >= 480
-      ? [
-          [9, 14],
-          [17, 23],
-          [6, 9],
-          [22, 24],
-        ]
+      ? eastbound
+        ? [
+            [17, 23],
+            [9, 14],
+            [22, 24],
+            [6, 9],
+          ]
+        : [
+            [9, 14],
+            [17, 23],
+            [6, 9],
+            [22, 24],
+          ]
       : d >= 180
         ? [
             [7, 11],
@@ -168,7 +179,18 @@ function departureSlot(route: RouteDef, k: number, seed: number): { hour: number
   return { hour: Math.min(23, hour), minute: 5 * Math.floor(rng() * 12) };
 }
 
-export function buildTimetable(routes: RouteDef[]): Timetable {
+/** Is `destination` east of `origin` along the shorter arc? Unknown coordinates → westbound-style daytime slots. */
+function isEastbound(route: RouteDef, lonOf: (iata: string) => number | undefined): boolean {
+  const a = lonOf(route.origin);
+  const b = lonOf(route.destination);
+  if (a === undefined || b === undefined) return false;
+  let diff = b - a;
+  if (diff > 180) diff -= 360;
+  if (diff < -180) diff += 360;
+  return diff > 0;
+}
+
+export function buildTimetable(routes: RouteDef[], lonOf: (iata: string) => number | undefined = () => undefined): Timetable {
   const normalized = routes.map((r) => ({ ...r, origin: r.origin.toUpperCase(), destination: r.destination.toUpperCase(), carrier: r.carrier.toUpperCase() }));
   const defs: { route: RouteDef; mirrored: boolean }[] = normalized.map((route) => ({ route, mirrored: false }));
   const seen = new Set(normalized.map((r) => `${r.carrier}:${r.origin}-${r.destination}`));
@@ -186,13 +208,14 @@ export function buildTimetable(routes: RouteDef[]): Timetable {
     if (!count) continue;
     const taken = used.get(route.carrier) ?? new Set<number>();
     used.set(route.carrier, taken);
+    const eastbound = isEastbound(route, lonOf);
     let n = baseFlightNumber(route, mirrored);
     for (let k = 0; k < count; k++) {
       while (taken.has(n)) n = n >= 9999 ? 100 : n + 1;
       taken.add(n);
       const number = String(n);
       const seed = hash32(`${route.carrier}${number}:${route.origin}-${route.destination}`);
-      const slot = departureSlot(route, k, seed);
+      const slot = departureSlot(route, k, seed, eastbound);
       flights.push({ route, carrier: route.carrier, number, key: `${route.carrier}:${number}`, depHour: slot.hour, depMinute: slot.minute, k, mirrored, seed });
       n++;
     }
@@ -353,7 +376,7 @@ const FT_TO_M = 0.3048;
 function createSimulatorInternal(deps: Resolved) {
   const { now } = deps;
   let timetable: Timetable | null = null;
-  const schedule = (): Timetable => (timetable ??= buildTimetable(deps.routes));
+  const schedule = (): Timetable => (timetable ??= buildTimetable(deps.routes, (iata) => deps.getAirport(iata)?.lon));
 
   const tzOf = (iata: string) => deps.getAirport(iata)?.tz ?? "UTC";
   const pad2 = (n: number) => String(n).padStart(2, "0");
@@ -473,7 +496,8 @@ function createSimulatorInternal(deps: Resolved) {
   }
 
   const MIN_CONNECT_MIN = 75;
-  const MAX_LAYOVER_MIN = 600;
+  /** Award connections routinely tolerate long layovers; cap at 14 h so overnight stops still qualify. */
+  const MAX_LAYOVER_MIN = 14 * 60;
 
   /** Concrete itinerary for a leg chain on a date; null when a leg doesn't operate or can't connect. */
   function buildItinerary(legs: ScheduledFlight[], dateISO: string, wanted: Cabin): PricedItinerary | null {

@@ -76,8 +76,7 @@ export interface MapBBox {
 }
 
 export type MapHit =
-  | { kind: "aircraft"; index: number; item: MapAircraft }
-  | { kind: "marker"; index: number; item: MapMarker };
+  { kind: "aircraft"; index: number; item: MapAircraft } | { kind: "marker"; index: number; item: MapMarker };
 
 export interface MapView {
   zoom: number;
@@ -169,7 +168,15 @@ export function WorldMap({
   const canvasPath = useMemo(() => geoPath(proj), [proj]);
 
   const view = useRef<View>({ k: 1, x: 0, y: 0 });
-  const fit = useRef({ scale: 1, tx: 0, ty: 0, bounds: [[0, 0], [1, 1]] as [[number, number], [number, number]] });
+  const fit = useRef({
+    scale: 1,
+    tx: 0,
+    ty: 0,
+    bounds: [
+      [0, 0],
+      [1, 1],
+    ] as [[number, number], [number, number]],
+  });
   const pointers = useRef(new Map<number, PointerRec>());
   const drag = useRef<{ x: number; y: number; moved: number } | null>(null);
   const pinch = useRef<{ dist: number; cx: number; cy: number } | null>(null);
@@ -210,7 +217,15 @@ export function WorldMap({
     );
     const b = basePath.bounds(SPHERE);
     const t = base.translate();
-    fit.current = { scale: base.scale(), tx: t[0], ty: t[1], bounds: [[b[0][0], b[0][1]], [b[1][0], b[1][1]]] };
+    fit.current = {
+      scale: base.scale(),
+      tx: t[0],
+      ty: t[1],
+      bounds: [
+        [b[0][0], b[0][1]],
+        [b[1][0], b[1][1]],
+      ],
+    };
     return {
       sphere: basePath(SPHERE) ?? "",
       land: basePath(getLand()) ?? "",
@@ -279,7 +294,12 @@ export function WorldMap({
         const sx = (i / (cols - 1)) * w;
         const sy = (j / (rows - 1)) * h;
         const ll = proj.invert?.([sx, sy]);
-        let ok = !!ll && Number.isFinite(ll[0]) && Number.isFinite(ll[1]) && Math.abs(ll[0]) <= 180.01 && Math.abs(ll[1]) <= 90.01;
+        let ok =
+          !!ll &&
+          Number.isFinite(ll[0]) &&
+          Number.isFinite(ll[1]) &&
+          Math.abs(ll[0]) <= 180.01 &&
+          Math.abs(ll[1]) <= 90.01;
         if (ok && ll) {
           const back = proj([ll[0], ll[1]]);
           ok = !!back && Math.abs(back[0] - sx) < 1.5 && Math.abs(back[1] - sy) < 1.5;
@@ -315,139 +335,142 @@ export function WorldMap({
 
   // ─── Canvas layer ──────────────────────────────────────────
 
-  const draw = useCallback((t: number) => {
-    const canvas = canvasRef.current;
-    const p = propsRef.current;
-    const { width: w, height: h } = p.size;
-    if (!canvas || w < 2 || h < 2) return;
-    const ctx = prepareCanvas(canvas, w, h);
-    if (!ctx) return;
-    const c = p.colors;
-    const rm = p.reduced;
-    const k = view.current.k;
-    ctx.clearRect(0, 0, w, h);
-    const path = canvasPath;
-    path.context(ctx);
-    const project = (pt: [number, number]) => proj(pt) as [number, number] | null;
+  const draw = useCallback(
+    (t: number) => {
+      const canvas = canvasRef.current;
+      const p = propsRef.current;
+      const { width: w, height: h } = p.size;
+      if (!canvas || w < 2 || h < 2) return;
+      const ctx = prepareCanvas(canvas, w, h);
+      if (!ctx) return;
+      const c = p.colors;
+      const rm = p.reduced;
+      const k = view.current.k;
+      ctx.clearRect(0, 0, w, h);
+      const path = canvasPath;
+      path.context(ctx);
+      const project = (pt: [number, number]) => proj(pt) as [number, number] | null;
 
-    // Routes
-    for (let i = 0; i < p.routes.length; i++) {
-      const r = p.routes[i];
-      const color = r.color ?? c.signal;
-      const interp = geoInterpolate(r.from, r.to);
-      const full = makeLine(r.from, r.to);
-      ctx.setLineDash([]);
-      ctx.beginPath();
-      path(full);
-      ctx.strokeStyle = withAlpha(color, 0.22);
-      ctx.lineWidth = 4;
-      ctx.stroke();
-      let dot: [number, number];
-      if (typeof r.progress === "number") {
-        const pr = clamp(r.progress, 0, 1);
-        if (pr > 0.001) {
-          ctx.beginPath();
-          path(makeLine(r.from, interp(pr)));
-          ctx.strokeStyle = color;
-          ctx.lineWidth = 1.6;
-          ctx.stroke();
-        }
-        dot = interp(pr);
-      } else {
+      // Routes
+      for (let i = 0; i < p.routes.length; i++) {
+        const r = p.routes[i];
+        const color = r.color ?? c.signal;
+        const interp = geoInterpolate(r.from, r.to);
+        const full = makeLine(r.from, r.to);
+        ctx.setLineDash([]);
         ctx.beginPath();
         path(full);
-        ctx.strokeStyle = withAlpha(color, 0.9);
-        ctx.lineWidth = 1.4;
-        if (!rm) {
-          ctx.setLineDash([3, 8]);
-          ctx.lineDashOffset = -((t / 28) % 11);
+        ctx.strokeStyle = withAlpha(color, 0.22);
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        let dot: [number, number];
+        if (typeof r.progress === "number") {
+          const pr = clamp(r.progress, 0, 1);
+          if (pr > 0.001) {
+            ctx.beginPath();
+            path(makeLine(r.from, interp(pr)));
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1.6;
+            ctx.stroke();
+          }
+          dot = interp(pr);
+        } else {
+          ctx.beginPath();
+          path(full);
+          ctx.strokeStyle = withAlpha(color, 0.9);
+          ctx.lineWidth = 1.4;
+          if (!rm) {
+            ctx.setLineDash([3, 8]);
+            ctx.lineDashOffset = -((t / 28) % 11);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+          dot = interp(easeInOutSine(rm ? 0.5 : (t / 4200 + i * 0.29) % 1));
         }
-        ctx.stroke();
-        ctx.setLineDash([]);
-        dot = interp(easeInOutSine(rm ? 0.5 : (t / 4200 + i * 0.29) % 1));
+        const pt = proj(dot);
+        if (pt) {
+          ctx.beginPath();
+          ctx.arc(pt[0], pt[1], 2.6, 0, TAU);
+          ctx.fillStyle = c.fg;
+          ctx.fill();
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
       }
-      const pt = proj(dot);
-      if (pt) {
-        ctx.beginPath();
-        ctx.arc(pt[0], pt[1], 2.6, 0, TAU);
-        ctx.fillStyle = c.fg;
-        ctx.fill();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      }
-    }
 
-    // Markers
-    const mk = p.markers;
-    if (markerPositions.current.length !== mk.length * 2) markerPositions.current = new Float32Array(mk.length * 2);
-    const mpos = markerPositions.current;
-    const labelFont = `500 11px ${c.fontMono}`;
-    for (let i = 0; i < mk.length; i++) {
-      const m = mk[i];
-      const pt = proj([m.lon, m.lat]);
-      if (!pt) {
-        mpos[i * 2] = -9999;
-        mpos[i * 2 + 1] = -9999;
-        continue;
-      }
-      const [x, y] = pt;
-      mpos[i * 2] = x;
-      mpos[i * 2 + 1] = y;
-      if (x < -20 || y < -20 || x > w + 20 || y > h + 20) continue;
-      const color = m.color ?? c.signal;
-      const radius = m.size ?? 3.5;
-      const sel = !!m.id && m.id === p.selectedId;
-      ctx.beginPath();
-      ctx.arc(x, y, radius + (sel ? 5 : 3), 0, TAU);
-      ctx.fillStyle = withAlpha(color, sel ? 0.4 : 0.25);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, TAU);
-      ctx.fillStyle = color;
-      ctx.fill();
-      ctx.strokeStyle = c.bg;
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      if (m.label && (k >= 2.5 || sel)) {
-        drawLabel(ctx, m.label, x + radius + 5, y, { font: labelFont, fg: c.fg, bg: withAlpha(c.bg, 0.72) });
-      }
-    }
-
-    // Aircraft
-    const ac = p.aircraft;
-    if (positions.current.length !== ac.length * 2) positions.current = new Float32Array(ac.length * 2);
-    const pos = positions.current;
-    const glyph = clamp(7 + Math.log2(k) * 1.6, 7, 15);
-    const hovered = hoverRef.current;
-    for (let i = 0; i < ac.length; i++) {
-      const a = ac[i];
-      const pt = proj([a.lon, a.lat]);
-      if (!pt || pt[0] < -20 || pt[1] < -20 || pt[0] > w + 20 || pt[1] > h + 20) {
-        pos[i * 2] = -9999;
-        pos[i * 2 + 1] = -9999;
-        continue;
-      }
-      pos[i * 2] = pt[0];
-      pos[i * 2 + 1] = pt[1];
-      const ang = screenHeading(project, a.lon, a.lat, a.heading);
-      if (ang == null) continue;
-      const sel = a.id === p.selectedId || (hovered?.kind === "aircraft" && hovered.index === i);
-      if (sel) {
+      // Markers
+      const mk = p.markers;
+      if (markerPositions.current.length !== mk.length * 2) markerPositions.current = new Float32Array(mk.length * 2);
+      const mpos = markerPositions.current;
+      const labelFont = `500 11px ${c.fontMono}`;
+      for (let i = 0; i < mk.length; i++) {
+        const m = mk[i];
+        const pt = proj([m.lon, m.lat]);
+        if (!pt) {
+          mpos[i * 2] = -9999;
+          mpos[i * 2 + 1] = -9999;
+          continue;
+        }
+        const [x, y] = pt;
+        mpos[i * 2] = x;
+        mpos[i * 2 + 1] = y;
+        if (x < -20 || y < -20 || x > w + 20 || y > h + 20) continue;
+        const color = m.color ?? c.signal;
+        const radius = m.size ?? 3.5;
+        const sel = !!m.id && m.id === p.selectedId;
         ctx.beginPath();
-        ctx.arc(pt[0], pt[1], glyph + 4, 0, TAU);
-        ctx.fillStyle = withAlpha(a.color ?? c.sky, 0.25);
+        ctx.arc(x, y, radius + (sel ? 5 : 3), 0, TAU);
+        ctx.fillStyle = withAlpha(color, sel ? 0.4 : 0.25);
         ctx.fill();
-        ctx.strokeStyle = a.color ?? c.sky;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, TAU);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = c.bg;
         ctx.lineWidth = 1;
         ctx.stroke();
+        if (m.label && (k >= 2.5 || sel)) {
+          drawLabel(ctx, m.label, x + radius + 5, y, { font: labelFont, fg: c.fg, bg: withAlpha(c.bg, 0.72) });
+        }
       }
-      drawPlane(ctx, pt[0], pt[1], ang, sel ? glyph * 1.35 : glyph, a.color ?? c.sky, sel ? 1 : 0.9);
-      if (a.label && (sel || k >= 8)) {
-        drawLabel(ctx, a.label, pt[0] + glyph, pt[1], { font: labelFont, fg: c.fg, bg: withAlpha(c.bg, 0.72) });
+
+      // Aircraft
+      const ac = p.aircraft;
+      if (positions.current.length !== ac.length * 2) positions.current = new Float32Array(ac.length * 2);
+      const pos = positions.current;
+      const glyph = clamp(7 + Math.log2(k) * 1.6, 7, 15);
+      const hovered = hoverRef.current;
+      for (let i = 0; i < ac.length; i++) {
+        const a = ac[i];
+        const pt = proj([a.lon, a.lat]);
+        if (!pt || pt[0] < -20 || pt[1] < -20 || pt[0] > w + 20 || pt[1] > h + 20) {
+          pos[i * 2] = -9999;
+          pos[i * 2 + 1] = -9999;
+          continue;
+        }
+        pos[i * 2] = pt[0];
+        pos[i * 2 + 1] = pt[1];
+        const ang = screenHeading(project, a.lon, a.lat, a.heading);
+        if (ang == null) continue;
+        const sel = a.id === p.selectedId || (hovered?.kind === "aircraft" && hovered.index === i);
+        if (sel) {
+          ctx.beginPath();
+          ctx.arc(pt[0], pt[1], glyph + 4, 0, TAU);
+          ctx.fillStyle = withAlpha(a.color ?? c.sky, 0.25);
+          ctx.fill();
+          ctx.strokeStyle = a.color ?? c.sky;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+        drawPlane(ctx, pt[0], pt[1], ang, sel ? glyph * 1.35 : glyph, a.color ?? c.sky, sel ? 1 : 0.9);
+        if (a.label && (sel || k >= 8)) {
+          drawLabel(ctx, a.label, pt[0] + glyph, pt[1], { font: labelFont, fg: c.fg, bg: withAlpha(c.bg, 0.72) });
+        }
       }
-    }
-  }, [proj, canvasPath]);
+    },
+    [proj, canvasPath],
+  );
 
   const animating = useCallback(() => {
     const p = propsRef.current;
@@ -547,7 +570,21 @@ export function WorldMap({
       onClick,
     };
     invalidate();
-  }, [aircraft, markers, routes, selectedId, colors, reduced, size, minZoom, maxZoom, onViewportChange, onHover, onClick, invalidate]);
+  }, [
+    aircraft,
+    markers,
+    routes,
+    selectedId,
+    colors,
+    reduced,
+    size,
+    minZoom,
+    maxZoom,
+    onViewportChange,
+    onHover,
+    onClick,
+    invalidate,
+  ]);
 
   // Re-fit on resize: keep the current zoom/centre proportionally.
   useEffect(() => {
@@ -701,7 +738,8 @@ export function WorldMap({
     if (wasDrag && wasDrag.moved < 4 && e.type === "pointerup") {
       const hit = hitTest(pt.x, pt.y);
       const ll = proj.invert?.([pt.x, pt.y]);
-      const lonlat: [number, number] | null = ll && Number.isFinite(ll[0]) && Number.isFinite(ll[1]) ? [ll[0], ll[1]] : null;
+      const lonlat: [number, number] | null =
+        ll && Number.isFinite(ll[0]) && Number.isFinite(ll[1]) ? [ll[0], ll[1]] : null;
       propsRef.current.onClick?.(hit, lonlat);
     }
   };
@@ -762,7 +800,10 @@ export function WorldMap({
       role="application"
       aria-label={ariaLabel}
       tabIndex={0}
-      className={cn("relative h-full w-full min-h-[200px] touch-none select-none overflow-hidden bg-bg-elev-1 dot-grid", className)}
+      className={cn(
+        "relative h-full w-full min-h-[200px] touch-none select-none overflow-hidden bg-bg-elev-1 dot-grid",
+        className,
+      )}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -776,15 +817,36 @@ export function WorldMap({
       }}
       onKeyDown={onKeyDown}
     >
-      <svg className="absolute inset-0 h-full w-full" width={size.width || undefined} height={size.height || undefined} aria-hidden>
+      <svg
+        className="absolute inset-0 h-full w-full"
+        width={size.width || undefined}
+        height={size.height || undefined}
+        aria-hidden
+      >
         <g ref={gRef}>
           {paths && (
             <>
-              <path d={paths.sphere} className="fill-bg-elev-2 stroke-panel-border-strong" vectorEffect="non-scaling-stroke" />
-              {graticule && <path d={paths.graticule} className="fill-none stroke-fg/[0.06]" vectorEffect="non-scaling-stroke" />}
-              <path d={paths.land} className="fill-fg-faint stroke-fg-subtle/50" strokeWidth={0.6} vectorEffect="non-scaling-stroke" />
+              <path
+                d={paths.sphere}
+                className="fill-bg-elev-2 stroke-panel-border-strong"
+                vectorEffect="non-scaling-stroke"
+              />
+              {graticule && (
+                <path d={paths.graticule} className="fill-none stroke-fg/[0.06]" vectorEffect="non-scaling-stroke" />
+              )}
+              <path
+                d={paths.land}
+                className="fill-fg-faint stroke-fg-subtle/50"
+                strokeWidth={0.6}
+                vectorEffect="non-scaling-stroke"
+              />
               {borders && paths.borders && (
-                <path d={paths.borders} className="fill-none stroke-bg-elev-1/70" strokeWidth={0.5} vectorEffect="non-scaling-stroke" />
+                <path
+                  d={paths.borders}
+                  className="fill-none stroke-bg-elev-1/70"
+                  strokeWidth={0.5}
+                  vectorEffect="non-scaling-stroke"
+                />
               )}
             </>
           )}
@@ -803,11 +865,24 @@ export function WorldMap({
       )}
 
       {controls && (
-        <div className="absolute bottom-3 right-3 z-10 flex flex-col gap-1.5" onPointerDown={(e) => e.stopPropagation()}>
-          <button type="button" className={btn} aria-label="Zoom in" onClick={() => zoomAt(size.width / 2, size.height / 2, 1.6)}>
+        <div
+          className="absolute bottom-3 right-3 z-10 flex flex-col gap-1.5"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            className={btn}
+            aria-label="Zoom in"
+            onClick={() => zoomAt(size.width / 2, size.height / 2, 1.6)}
+          >
             <Plus className="h-4 w-4" />
           </button>
-          <button type="button" className={btn} aria-label="Zoom out" onClick={() => zoomAt(size.width / 2, size.height / 2, 1 / 1.6)}>
+          <button
+            type="button"
+            className={btn}
+            aria-label="Zoom out"
+            onClick={() => zoomAt(size.width / 2, size.height / 2, 1 / 1.6)}
+          >
             <Minus className="h-4 w-4" />
           </button>
           <button type="button" className={btn} aria-label="Reset view" onClick={reset}>

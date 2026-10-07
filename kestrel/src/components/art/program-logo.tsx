@@ -8,7 +8,26 @@
 import { cn, hash32 } from "@/lib/utils";
 import { shade, tint } from "./color";
 
-const STOP = new Set(["of", "the", "and", "&", "club", "plan", "rewards", "miles", "mileage", "program", "programme", "privilege", "frequent", "flyer", "go", "more", "bank", "points"]);
+const STOP = new Set([
+  "of",
+  "the",
+  "and",
+  "&",
+  "club",
+  "plan",
+  "rewards",
+  "miles",
+  "mileage",
+  "program",
+  "programme",
+  "privilege",
+  "frequent",
+  "flyer",
+  "go",
+  "more",
+  "bank",
+  "points",
+]);
 
 /** "World of Hyatt" → "WH", "Aeroplan" → "AE", "British Airways Club" → "BA" */
 export function monogram(name: string): string {
@@ -46,7 +65,7 @@ export interface ProgramLogoProps {
 export function ProgramLogo({ id, name, color, size = 40, letters, className }: ProgramLogoProps) {
   const h = hash32(id);
   const style = h % 5;
-  const ticks = 12 + (h >> 4) % 12;
+  const ticks = 12 + ((h >> 4) % 12);
   const accentAngle = ((h >> 8) % 360) * (Math.PI / 180);
   const text = (letters ?? monogram(name)).slice(0, 3);
   const ring = color ?? "var(--signal)";
@@ -63,7 +82,15 @@ export function ProgramLogo({ id, name, color, size = 40, letters, className }: 
       aria-label={`${name} logo`}
     >
       <circle cx={32} cy={32} r={31} fill="var(--bg-elev-2)" />
-      <circle cx={32} cy={32} r={29.5} fill="none" stroke={ring} strokeWidth={style === 2 ? 1.5 : 2.5} strokeDasharray={dash} />
+      <circle
+        cx={32}
+        cy={32}
+        r={29.5}
+        fill="none"
+        stroke={ring}
+        strokeWidth={style === 2 ? 1.5 : 2.5}
+        strokeDasharray={dash}
+      />
       {style === 2 && <circle cx={32} cy={32} r={25.5} fill="none" stroke={ring} strokeWidth={1} opacity={0.7} />}
       {style === 3 &&
         Array.from({ length: ticks }, (_, i) => (
@@ -83,7 +110,14 @@ export function ProgramLogo({ id, name, color, size = 40, letters, className }: 
         Array.from({ length: 24 }, (_, i) => (
           <circle key={i} cx={32} cy={6} r={1} fill={ring} opacity={0.75} transform={`rotate(${15 * i} 32 32)`} />
         ))}
-      <circle cx={32 + Math.cos(accentAngle) * 29.5} cy={32 + Math.sin(accentAngle) * 29.5} r={2.6} fill={ring} stroke="var(--bg-elev-2)" strokeWidth={1.2} />
+      <circle
+        cx={32 + Math.cos(accentAngle) * 29.5}
+        cy={32 + Math.sin(accentAngle) * 29.5}
+        r={2.6}
+        fill={ring}
+        stroke="var(--bg-elev-2)"
+        strokeWidth={1.2}
+      />
       <text
         x={32}
         y={32}

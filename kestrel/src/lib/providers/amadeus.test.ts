@@ -21,11 +21,15 @@ describe("hotel name matching", () => {
       { hotelId: "MDPAR004", name: "LE MERIDIEN ETOILE" },
     ];
     const matches = matchHotels(FIXTURE_HOTELS, live);
-    expect(matches.map((m) => [m.property.id, m.hotelId])).toEqual([
-      ["park-hyatt-paris-vendome", "HYPAR002"],
-      ["le-meridien-etoile", "MDPAR004"],
+    expect(matches.map((m) => [m.property.id, m.hotelId]).sort()).toEqual([
       ["hyatt-regency-paris-etoile", "HYPAR003"],
+      ["le-meridien-etoile", "MDPAR004"],
+      ["park-hyatt-paris-vendome", "HYPAR002"],
     ]);
+    expect(matches.every((m) => m.score >= 0.9)).toBe(true);
+    // A property can only claim one live hotel even when two live rows look alike.
+    const twins = matchHotels(FIXTURE_HOTELS, [{ hotelId: "A", name: "PARK HYATT PARIS VENDOME" }, { hotelId: "B", name: "PARK HYATT PARIS-VENDOME" }]);
+    expect(twins).toHaveLength(1);
   });
 });
 

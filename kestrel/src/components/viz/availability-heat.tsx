@@ -46,7 +46,20 @@ const LEVEL_LABEL: Record<AvailabilityLevel, string> = {
 };
 
 const WEEKDAYS = ["S", "M", "T", "W", "T", "F", "S"];
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 function describe(date: string, day?: AvailabilityDayCell): string {
   const d = parseISODate(date);
@@ -148,9 +161,14 @@ export function AvailabilityCalendar({
   }, [start, months, weekStartsOn]);
 
   const first = grids[0] ? grids[0].key : from;
-  const last = grids.length ? toISODate(new Date(grids[grids.length - 1].year, grids[grids.length - 1].month + 1, 0)) : from;
+  const last = grids.length
+    ? toISODate(new Date(grids[grids.length - 1].year, grids[grids.length - 1].month + 1, 0))
+    : from;
   const inRange = useCallback((date: string) => date >= first && date <= last, [first, last]);
-  const disabled = useCallback((date: string) => (minDate != null && date < minDate) || (maxDate != null && date > maxDate), [minDate, maxDate]);
+  const disabled = useCallback(
+    (date: string) => (minDate != null && date < minDate) || (maxDate != null && date > maxDate),
+    [minDate, maxDate],
+  );
 
   const [focused, setFocused] = useState<string>(() => (selected && inRange(selected) ? selected : from));
   const pendingFocus = useRef<string | null>(null);
@@ -232,7 +250,11 @@ export function AvailabilityCalendar({
             </div>
             <div role="row" className="mb-1 grid grid-cols-7 gap-1">
               {weekdays.map((w, i) => (
-                <div key={i} role="columnheader" className="text-center font-mono text-[10px] uppercase tracking-wider text-fg-subtle">
+                <div
+                  key={i}
+                  role="columnheader"
+                  className="text-center font-mono text-[10px] uppercase tracking-wider text-fg-subtle"
+                >
                   {w}
                 </div>
               ))}
@@ -266,7 +288,9 @@ export function AvailabilityCalendar({
                       "group relative flex flex-col justify-between rounded-[var(--radius-sm)] p-1 text-left transition-[transform,box-shadow] duration-150",
                       compact ? "h-10" : "h-12 sm:h-14",
                       level != null ? cn(LEVEL_BG[level], LEVEL_FG[level]) : "bg-bg-elev-2 text-fg-faint",
-                      isDisabled ? "cursor-not-allowed opacity-35" : "hover:-translate-y-px hover:shadow-[0_0_0_1px_var(--panel-border-strong)]",
+                      isDisabled
+                        ? "cursor-not-allowed opacity-35"
+                        : "hover:-translate-y-px hover:shadow-[0_0_0_1px_var(--panel-border-strong)]",
                       isSel && "ring-2 ring-signal ring-offset-2 ring-offset-bg",
                     )}
                   >
@@ -275,7 +299,13 @@ export function AvailabilityCalendar({
                       <SeatDots seats={day?.seats} />
                     </span>
                     {showMiles && (
-                      <span className={cn("font-mono leading-none tnum", compact ? "text-[9px]" : "text-[10px] sm:text-[11px]", "font-semibold")}>
+                      <span
+                        className={cn(
+                          "font-mono leading-none tnum",
+                          compact ? "text-[9px]" : "text-[10px] sm:text-[11px]",
+                          "font-semibold",
+                        )}
+                      >
                         {day?.miles != null ? fmtCompact(day.miles).toUpperCase() : day ? "" : "·"}
                       </span>
                     )}
@@ -305,7 +335,15 @@ export interface AvailabilityStripProps {
   className?: string;
 }
 
-export function AvailabilityStrip({ from, days, count = 14, selected, onSelect, showMiles = true, className }: AvailabilityStripProps) {
+export function AvailabilityStrip({
+  from,
+  days,
+  count = 14,
+  selected,
+  onSelect,
+  showMiles = true,
+  className,
+}: AvailabilityStripProps) {
   const byDate = useMemo(() => new Map(days.map((d) => [d.date, d])), [days]);
   const dates = useMemo(() => Array.from({ length: count }, (_, i) => addDays(from, i)), [from, count]);
   const [focused, setFocused] = useState<string>(selected && dates.includes(selected) ? selected : from);
@@ -335,7 +373,12 @@ export function AvailabilityStrip({ from, days, count = 14, selected, onSelect, 
   };
 
   return (
-    <div ref={root} role="listbox" aria-label="Availability by day" className={cn("scrollbar-none -mx-1 flex snap-x gap-1 overflow-x-auto px-1 py-1", className)}>
+    <div
+      ref={root}
+      role="listbox"
+      aria-label="Availability by day"
+      className={cn("scrollbar-none -mx-1 flex snap-x gap-1 overflow-x-auto px-1 py-1", className)}
+    >
       {dates.map((date, i) => {
         const day = byDate.get(date);
         const d = parseISODate(date);
@@ -360,10 +403,14 @@ export function AvailabilityStrip({ from, days, count = 14, selected, onSelect, 
               isSel && "ring-2 ring-signal ring-offset-2 ring-offset-bg",
             )}
           >
-            <span className="font-mono text-[9px] uppercase leading-none tracking-wider opacity-75">{WEEKDAYS[d.getDay()]}</span>
+            <span className="font-mono text-[9px] uppercase leading-none tracking-wider opacity-75">
+              {WEEKDAYS[d.getDay()]}
+            </span>
             <span className="font-mono text-sm font-semibold leading-none tnum">{d.getDate()}</span>
             {showMiles && (
-              <span className="font-mono text-[9px] leading-none tnum">{day?.miles != null ? fmtCompact(day.miles).toUpperCase() : "·"}</span>
+              <span className="font-mono text-[9px] leading-none tnum">
+                {day?.miles != null ? fmtCompact(day.miles).toUpperCase() : "·"}
+              </span>
             )}
             <SeatDots seats={day?.seats} />
           </button>

@@ -43,7 +43,10 @@ function RollChar({ ch, duration, delay }: { ch: string; duration: number; delay
     <span className="block h-[1em] overflow-hidden leading-[1em]" aria-hidden>
       <span
         className="block will-change-transform"
-        style={{ transform: `translateY(-${digit}em)`, transition: `transform ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1) ${delay}ms` }}
+        style={{
+          transform: `translateY(-${digit}em)`,
+          transition: `transform ${duration}ms cubic-bezier(0.2, 0.8, 0.2, 1) ${delay}ms`,
+        }}
       >
         {DIGITS.map((d) => (
           <span key={d} className="block h-[1em] leading-[1em]">
@@ -67,7 +70,15 @@ export interface NumberRollProps {
   className?: string;
 }
 
-export function NumberRoll({ value, format = "int", duration = 700, animateOnMount = false, prefix, suffix, className }: NumberRollProps) {
+export function NumberRoll({
+  value,
+  format = "int",
+  duration = 700,
+  animateOnMount = false,
+  prefix,
+  suffix,
+  className,
+}: NumberRollProps) {
   const target = useMemo(() => formatValue(value, format), [value, format]);
   const [shown, setShown] = useState(() => (animateOnMount ? target.replace(/\d/g, "0") : target));
 

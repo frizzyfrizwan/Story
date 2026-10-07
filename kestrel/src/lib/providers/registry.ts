@@ -109,17 +109,20 @@ async function attempt<T>(id: string, timeoutMs: number, outer: AbortSignal | un
   const onAbort = () => controller.abort();
   outer?.addEventListener("abort", onAbort, { once: true });
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let timedOut = false;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(() => {
-      controller.abort();
+      timedOut = true;
+      // Reject first so the race reports the timeout, then cancel the provider's work.
       reject(new ProviderError(id, `timed out after ${timeoutMs}ms`));
+      controller.abort();
     }, timeoutMs);
   });
   try {
     const value = await Promise.race([fn(controller.signal), timeout]);
     return { ok: true, value, ms: now() - started };
   } catch (e) {
-    return { ok: false, error: errorText(e), ms: now() - started };
+    return { ok: false, error: timedOut ? `[${id}] timed out after ${timeoutMs}ms` : errorText(e), ms: now() - started };
   } finally {
     if (timer) clearTimeout(timer);
     outer?.removeEventListener("abort", onAbort);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { AwardFare, AwardSearchQuery, AwardSearchResponse, Balance } from "@/lib/types";
+import type { AwardFare, AwardSearchQuery, AwardSearchResponse, Balance, LoyaltyProgram } from "@/lib/types";
 import { buildConciergeSystemPrompt, MAX_TOOL_ROUNDS, normalizeMessages, OFFLINE_INTRO, streamConcierge } from "./concierge";
-import { CONCIERGE_TOOLS, runConciergeTool, type ToolContext } from "./tools";
+import { CONCIERGE_TOOLS, runConciergeTool, type ConciergeDeps, type ToolContext } from "./tools";
 import { createSseParser, type SseMessage } from "./sse";
 
 async function collect(stream: ReadableStream<Uint8Array>): Promise<SseMessage[]> {
@@ -17,6 +17,41 @@ async function collect(stream: ReadableStream<Uint8Array>): Promise<SseMessage[]
   out.push(...parser.push(decoder.decode()), ...parser.flush());
   return out;
 }
+
+// ─── Fixtures (tests never depend on the curated datasets) ──────
+
+function prog(id: string, name: string, shortName: string, kind: LoyaltyProgram["kind"], valuationCpp: number): LoyaltyProgram {
+  return {
+    id,
+    name,
+    shortName,
+    kind,
+    currency: `${shortName} points`,
+    valuationCpp,
+    chartType: "zone",
+    surcharges: "low",
+    typicalTaxesUsd: { economy: 50, premium: 80, business: 120, first: 150 },
+    changeFeeUsd: 0,
+    cancelFeeUsd: 0,
+    expirationPolicy: "n/a",
+    bookingUrl: `https://${id}.example`,
+    color: "#000",
+    summary: "Fixture program.",
+    sweetSpots: [{ title: "Test spot", description: "A sweet spot.", cabin: "business", miles: 60000 }],
+    bookableCarriers: ["AC", "NH"],
+    oneWay: true,
+    routingRules: "One stopover allowed.",
+  };
+}
+const PROGRAMS: Record<string, LoyaltyProgram> = {
+  aeroplan: prog("aeroplan", "Air Canada Aeroplan", "Aeroplan", "airline", 1.5),
+  "amex-mr": prog("amex-mr", "American Express Membership Rewards", "Amex MR", "bank", 2.0),
+};
+const fixtureDeps: Partial<ConciergeDeps> = {
+  getProgram: (id) => PROGRAMS[id],
+  listPrograms: () => Object.values(PROGRAMS),
+  transfersTo: () => [],
+};
 
 const bestFare: AwardFare = {
   programId: "aeroplan",
@@ -62,7 +97,7 @@ describe("streamConcierge (offline fallback)", () => {
         client: null,
         messages: [{ role: "user", content: "JFK to NRT May 14 business for 2" }],
         context: { today: TODAY },
-        deps: { searchAwards: fakeSearch },
+        deps: { ...fixtureDeps, searchAwards: fakeSearch },
       }),
     );
     const names = events.map((e) => e.event);
@@ -81,6 +116,7 @@ describe("streamConcierge (offline fallback)", () => {
     expect(text).toContain("/search?from=JFK&to=NRT&date=2027-05-14&cabin=business&pax=2");
     expect(text).toContain("demo results");
 
+    expect(names).not.toContain("error");
     expect(names[names.length - 1]).toBe("done");
     expect(events[events.length - 1].data).toMatchObject({ offline: true, usage: { inputTokens: 0, outputTokens: 0 } });
   });
@@ -105,7 +141,7 @@ describe("streamConcierge (offline fallback)", () => {
         client: null,
         messages: [{ role: "user", content: "business class to Tokyo in May for 2" }],
         context: { today: TODAY, homeAirport: "BOS" },
-        deps: { searchAwards: fakeSearch },
+        deps: { ...fixtureDeps, searchAwards: fakeSearch },
       }),
     );
     expect(events.find((e) => e.event === "tool")?.data).toMatchObject({ input: { origin: ["BOS"], destination: ["TYO"] } });
@@ -126,16 +162,28 @@ describe("tool definitions", () => {
 });
 
 describe("runConciergeTool", () => {
-  const ctx: ToolContext = { today: TODAY };
+  const ctx: ToolContext = { today: TODAY, deps: fixtureDeps };
+  const withDeps = (deps: Partial<ConciergeDeps>, extra: Partial<ToolContext> = {}): ToolContext => ({ ...ctx, ...extra, deps: { ...fixtureDeps, ...deps } });
 
   it("search_awards renders a compact table with a search link", async () => {
-    const r = await runConciergeTool("search_awards", { origin: ["jfk"], destination: ["NRT"], date: "2027-05-14", cabin: "business", passengers: 2, flexDays: 3 }, { ...ctx, deps: { searchAwards: fakeSearch } });
+    const r = await runConciergeTool("search_awards", { origin: ["jfk"], destination: ["NRT"], date: "2027-05-14", cabin: "business", passengers: 2, flexDays: 3 }, withDeps({ searchAwards: fakeSearch }));
     expect(r.summary).toBe("1 option for JFK → NRT · J · 2027-05-14 ±3d");
     expect(r.content).toContain("| Route | Carrier | Program | Miles | Taxes | Seats | ¢/pt | Score |");
-    expect(r.content).toContain("| JFK→NRT (nonstop, 14h) | NH | aeroplan | 75,000 | $110 | 3 | 5.4¢ | 84 · Sweet spot |");
+    expect(r.content).toContain("| JFK→NRT (nonstop, 14h) | NH | Aeroplan | 75,000 | $110 | 3 | 5.4¢ | 84 · Sweet spot |");
     expect(r.content).toContain("Cash comparison ≈ $4,200");
     expect(r.content).toContain("/search?from=JFK&to=NRT&date=2027-05-14&cabin=business&pax=2&flex=3");
     expect(r.content).toContain("simulated demo results");
+  });
+
+  it("search_awards reports empty results with suggestions", async () => {
+    const r = await runConciergeTool(
+      "search_awards",
+      { origin: ["BOS"], destination: ["LON"], date: "2027-06-01", cabin: "first", passengers: 1, flexDays: 0 },
+      withDeps({ searchAwards: async (query) => ({ query, source: "live", providers: [], generatedAt: "", results: [] }) }),
+    );
+    expect(r.summary).toBe("No award space: BOS → LON · F · 2027-06-01");
+    expect(r.content).toContain("widen the date window");
+    expect(r.content).not.toContain("simulated");
   });
 
   it("rejects invalid input and unknown tools", async () => {
@@ -153,27 +201,37 @@ describe("runConciergeTool", () => {
     expect(empty.content).toContain("no balances");
 
     const w = await runConciergeTool("wallet_balances", {}, { ...ctx, wallet });
-    expect(w.summary).toBe("2 balances");
-    expect(w.content).toContain("amex-mr (amex-mr): 100,000");
-    expect(w.content).toContain("· 25K");
+    expect(w.summary).toBe("2 balances ≈ $2,150");
+    expect(w.content).toContain("American Express Membership Rewards (amex-mr): 100,000 ≈ $2,000");
+    expect(w.content).toContain("Air Canada Aeroplan (aeroplan): 10,000 ≈ $150 · 25K");
 
     const t = await runConciergeTool(
       "transfer_options",
       { programId: "Aeroplan", miles: 75000 },
-      { ...ctx, wallet, deps: { transfersTo: () => [{ from: "amex-mr", to: "aeroplan", ratio: [1, 1], transferTime: "instant", minimum: 1000 }] } },
+      withDeps({ transfersTo: () => [{ from: "amex-mr", to: "aeroplan", ratio: [1, 1], transferTime: "instant", minimum: 1000 }] }, { wallet }),
     );
-    expect(t.summary).toBe("1 transfer route into aeroplan for 75,000");
-    expect(t.content).toContain("User already holds 10,000 aeroplan directly; needs 65,000 more.");
-    expect(t.content).toContain("amex-mr: 75,000 points (1:1, posts instant) ✓ user holds 100,000");
+    expect(t.summary).toBe("1 transfer route into Aeroplan for 75,000");
+    expect(t.content).toContain("User already holds 10,000 Aeroplan directly; needs 65,000 more.");
+    expect(t.content).toContain("Amex MR: 75,000 points (1:1, posts instant) ✓ user holds 100,000");
 
-    const none = await runConciergeTool("transfer_options", { programId: "aeroplan", miles: 75000 }, { ...ctx, deps: { transfersTo: () => [] } });
-    expect(none.content).toContain("No bank currencies transfer into aeroplan");
+    const none = await runConciergeTool("transfer_options", { programId: "aeroplan", miles: 75000 }, ctx);
+    expect(none.content).toContain("No bank currencies transfer into Aeroplan");
   });
 
-  it("get_program reports unknown ids and get_deals handles empty results", async () => {
-    const p = await runConciergeTool("get_program", { id: "aeroplan" }, { ...ctx, deps: { getProgram: () => undefined, listPrograms: () => [] } });
-    expect(p.summary).toContain("Unknown program");
-    const d = await runConciergeTool("get_deals", { origin: null, cabin: null }, { ...ctx, deps: { getDeals: async () => [] } });
+  it("get_program summarises a program and reports unknown ids", async () => {
+    const p = await runConciergeTool("get_program", { id: "Aeroplan" }, ctx);
+    expect(p.summary).toBe("Looked up Air Canada Aeroplan");
+    expect(p.content).toContain("**Air Canada Aeroplan** (aeroplan)");
+    expect(p.content).toContain("- Test spot — 60,000 J: A sweet spot.");
+    expect(p.content).toContain("/programs/aeroplan");
+
+    const unknown = await runConciergeTool("get_program", { id: "zzz-points" }, ctx);
+    expect(unknown.summary).toContain("Unknown program");
+    expect(unknown.content).toContain("Known ids: aeroplan, amex-mr");
+  });
+
+  it("get_deals handles empty results", async () => {
+    const d = await runConciergeTool("get_deals", { origin: null, cabin: null }, withDeps({ getDeals: async () => [] }));
     expect(d.content).toContain("No current deals anywhere");
   });
 });

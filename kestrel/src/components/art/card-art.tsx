@@ -53,7 +53,9 @@ function Pattern({ seed, color }: { seed: number; color: string }) {
     return (
       <g fill={color}>
         {Array.from({ length: 10 }, (_, r) =>
-          Array.from({ length: 18 }, (_, c) => <circle key={`${r}-${c}`} cx={20 + c * 20} cy={20 + r * 20} r={0.9} opacity={((r + c) % 3) / 3 + 0.2} />),
+          Array.from({ length: 18 }, (_, c) => (
+            <circle key={`${r}-${c}`} cx={20 + c * 20} cy={20 + r * 20} r={0.9} opacity={((r + c) % 3) / 3 + 0.2} />
+          )),
         )}
       </g>
     );
@@ -67,7 +69,18 @@ function Pattern({ seed, color }: { seed: number; color: string }) {
   );
 }
 
-export function CardArt({ name, issuer, from, to, accent, network, last4, holder, tilt = true, className }: CardArtProps) {
+export function CardArt({
+  name,
+  issuer,
+  from,
+  to,
+  accent,
+  network,
+  last4,
+  holder,
+  tilt = true,
+  className,
+}: CardArtProps) {
   const ref = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
   const seed = hash32(name);
@@ -116,8 +129,16 @@ export function CardArt({ name, issuer, from, to, accent, network, last4, holder
         aria-label={`${issuer} ${name}`}
       >
         <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${from} 0%, ${to} 100%)` }} />
-        <div className="absolute inset-0" style={{ background: `radial-gradient(70% 90% at 85% 15%, ${withAlphaHex(accent, 0.55)}, transparent 60%)` }} />
-        <svg viewBox="0 0 340 215" preserveAspectRatio="xMidYMid slice" className="absolute inset-0 h-full w-full" aria-hidden>
+        <div
+          className="absolute inset-0"
+          style={{ background: `radial-gradient(70% 90% at 85% 15%, ${withAlphaHex(accent, 0.55)}, transparent 60%)` }}
+        />
+        <svg
+          viewBox="0 0 340 215"
+          preserveAspectRatio="xMidYMid slice"
+          className="absolute inset-0 h-full w-full"
+          aria-hidden
+        >
           <Pattern seed={seed} color={withAlphaHex(accent, 0.35)} />
         </svg>
         <motion.div className="absolute inset-0" style={{ background: holo, mixBlendMode: "screen" }} aria-hidden />
@@ -125,10 +146,21 @@ export function CardArt({ name, issuer, from, to, accent, network, last4, holder
 
         <div className="absolute inset-0 flex flex-col justify-between p-[6%]" style={{ color: ink }}>
           <div className="flex items-start justify-between">
-            <div className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.3em] sm:text-[0.7rem]" style={{ color: muted }}>
+            <div
+              className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.3em] sm:text-[0.7rem]"
+              style={{ color: muted }}
+            >
               {issuer}
             </div>
-            <svg viewBox="0 0 24 24" className="h-[9%] w-auto min-h-5" aria-hidden fill="none" stroke={muted} strokeWidth={1.8} strokeLinecap="round">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-[9%] w-auto min-h-5"
+              aria-hidden
+              fill="none"
+              stroke={muted}
+              strokeWidth={1.8}
+              strokeLinecap="round"
+            >
               <path d="M6 8.5a6 6 0 0 1 0 7" />
               <path d="M9.5 6a9.5 9.5 0 0 1 0 12" />
               <path d="M13 3.5a13 13 0 0 1 0 17" />
@@ -144,7 +176,15 @@ export function CardArt({ name, issuer, from, to, accent, network, last4, holder
                   <stop offset="100%" stopColor="#b9892f" />
                 </linearGradient>
               </defs>
-              <rect x={0.5} y={0.5} width={39} height={29} rx={5} fill={`url(#chip-${seed})`} stroke="rgba(0,0,0,0.25)" />
+              <rect
+                x={0.5}
+                y={0.5}
+                width={39}
+                height={29}
+                rx={5}
+                fill={`url(#chip-${seed})`}
+                stroke="rgba(0,0,0,0.25)"
+              />
               <g fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth={1}>
                 <path d="M0.5 10 H12 V20 H0.5 M39.5 10 H28 V20 H39.5 M12 10 V0.5 M12 20 V29.5 M28 10 V0.5 M28 20 V29.5 M12 15 H28" />
               </g>
@@ -158,17 +198,26 @@ export function CardArt({ name, issuer, from, to, accent, network, last4, holder
 
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
-              <div className="truncate font-display text-[1.05rem] leading-tight tracking-tight sm:text-[1.3rem]" style={{ fontVariationSettings: '"SOFT" 60, "WONK" 1' }}>
+              <div
+                className="truncate font-display text-[1.05rem] leading-tight tracking-tight sm:text-[1.3rem]"
+                style={{ fontVariationSettings: '"SOFT" 60, "WONK" 1' }}
+              >
                 {name}
               </div>
               {holder && (
-                <div className="mt-0.5 truncate font-mono text-[0.6rem] uppercase tracking-[0.2em] sm:text-[0.68rem]" style={{ color: muted }}>
+                <div
+                  className="mt-0.5 truncate font-mono text-[0.6rem] uppercase tracking-[0.2em] sm:text-[0.68rem]"
+                  style={{ color: muted }}
+                >
                   {holder}
                 </div>
               )}
             </div>
             {network && (
-              <div className="shrink-0 font-display text-[0.95rem] font-semibold italic leading-none tracking-tight sm:text-[1.15rem]" style={{ color: ink }}>
+              <div
+                className="shrink-0 font-display text-[0.95rem] font-semibold italic leading-none tracking-tight sm:text-[1.15rem]"
+                style={{ color: ink }}
+              >
                 {NETWORK_LABEL[network] ?? network}
               </div>
             )}
