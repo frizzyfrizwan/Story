@@ -99,7 +99,7 @@ export function AddBalanceDialog({ open, onOpenChange, programs, initial, onSubm
         >
           <Field label="Program" required>
             <Select<string>
-              value={programId || undefined}
+              value={programId}
               onValueChange={(v) => {
                 setProgramId(v);
                 setError(null);
