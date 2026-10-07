@@ -184,7 +184,7 @@ export default async function ProgramPage({ params }: { params: Promise<Params> 
           </div>
 
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <StatTile label="Kestrel valuation" value={program.valuationCpp} format={fmtCpp} tone="signal" hint="per point, editorial" animate />
+            <StatTile label="Kestrel valuation" value={program.valuationCpp} format={fmtCpp} tone="signal" hint="per point, editorial" />
             <StatTile label="Change fee" value={program.changeFeeUsd} format={fmtUsd} tone="sky" hint={program.changeFeeUsd === 0 ? "free changes" : "per award ticket"} />
             <StatTile label="Cancel fee" value={program.cancelFeeUsd} format={fmtUsd} tone="violet" hint={program.cancelFeeUsd === 0 ? "free redeposit" : "to redeposit"} />
             <StatTile

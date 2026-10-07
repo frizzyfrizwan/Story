@@ -66,7 +66,8 @@ export function LoginShowcase({ className }: { className?: string }) {
         subtitle="Illustrative"
         size="xs"
         live={false}
-        className="hidden max-w-xl lg:block"
+        columns={["time", "flight", "destination", "cabin", "status"]}
+        className="hidden max-w-2xl lg:block"
       />
     </div>
   );

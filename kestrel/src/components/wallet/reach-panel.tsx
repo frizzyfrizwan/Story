@@ -20,10 +20,11 @@ export interface ReachPanelProps {
   programs: Record<string, LoyaltyProgram>;
   asOf: string;
   limit?: number;
+  className?: string;
 }
 
 /** Top programs by total reach: a stacked bar of what is held directly vs reachable by transfer. */
-export function ReachPanel({ balances, links, programs, asOf, limit = 8 }: ReachPanelProps) {
+export function ReachPanel({ balances, links, programs, asOf, limit = 8, className }: ReachPanelProps) {
   const rows = useMemo(() => {
     const reach = reachByProgram(balances, links, asOf);
     return Object.entries(reach)
@@ -37,6 +38,7 @@ export function ReachPanel({ balances, links, programs, asOf, limit = 8 }: Reach
 
   return (
     <Panel
+      className={className}
       eyebrow="Reach"
       title="Where your points can go"
       description={sentence ?? "Add a bank currency to see how far transfers take you."}

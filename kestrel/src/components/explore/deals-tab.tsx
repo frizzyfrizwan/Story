@@ -15,11 +15,7 @@ import type { Balance, Cabin, Deal } from "@/lib/types";
 import { planPayment, type PaymentPlan } from "@/lib/wallet/affordability";
 import { cn, fmtInt } from "@/lib/utils";
 import { DealCard, DealCardSkeleton } from "./deal-card";
-import { relativeTime } from "./format";
-
-export type DealSort = "value" | "miles" | "savings";
-
-export const DEAL_SORTS: readonly DealSort[] = ["value", "miles", "savings"] as const;
+import { relativeTime, type DealSort } from "./format";
 
 interface DealsPayload {
   deals: Deal[];

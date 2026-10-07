@@ -201,6 +201,7 @@ export async function buildHotelDetail(
     .filter((r): r is HotelResult => r !== null);
 
   return {
+    stay,
     result,
     nights: detail.nights,
     freeNights: detail.freeNights,

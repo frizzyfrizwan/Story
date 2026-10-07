@@ -5,7 +5,7 @@ import { ROUTES } from "@/data/routes";
 import { AIRPORTS } from "@/data/airports";
 import { ProgramLogo } from "@/components/art";
 import { Marquee } from "@/components/ui/marquee";
-import { StatTile } from "@/components/ui/stat";
+import { CoverageStats } from "./coverage-stats";
 import { Accent, HomeSection } from "./home-section";
 import { Reveal } from "./reveal";
 
@@ -44,21 +44,15 @@ export function Coverage({ finds }: { finds: number }) {
         </Marquee>
       </Reveal>
 
-      <Reveal delay={0.1} className="mt-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile label="Programs searched" value={PROGRAMS.length} animate tone="aurora" hint="airline, hotel and bank" />
-        <StatTile
-          label="Hotels with charts"
-          value={HOTELS.length}
-          animate
-          tone="gold"
-          hint={`across ${HOTEL_CITIES.length} cities`}
+      <Reveal delay={0.1} className="mt-10">
+        <CoverageStats
+          programs={PROGRAMS.length}
+          hotels={HOTELS.length}
+          cities={HOTEL_CITIES.length}
+          routes={routes}
+          airports={AIRPORTS.length}
+          finds={finds}
         />
-        {routes > 0 ? (
-          <StatTile label="Nonstop routes" value={routes} animate tone="sky" hint="modelled with real schedules" />
-        ) : (
-          <StatTile label="Airports indexed" value={AIRPORTS.length} animate tone="sky" hint="with metro groups" />
-        )}
-        <StatTile label="Community finds" value={finds} animate tone="signal" hint="posted by members" />
       </Reveal>
     </HomeSection>
   );

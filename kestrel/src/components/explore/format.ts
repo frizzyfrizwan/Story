@@ -1,5 +1,16 @@
 import type { AwardRegion, Cabin } from "@/lib/types";
 
+/*
+ * Plain (no "use client") module: constants and helpers shared by the server page and the client
+ * tabs. Anything exported from a client module would arrive on the server as a client reference.
+ */
+
+export type ExploreView = "deals" | "calendar" | "reach";
+export const EXPLORE_VIEWS: readonly ExploreView[] = ["deals", "calendar", "reach"] as const;
+
+export type DealSort = "value" | "miles" | "savings";
+export const DEAL_SORTS: readonly DealSort[] = ["value", "miles", "savings"] as const;
+
 /** "just now" · "4m ago" · "2h ago" · "3d ago" · "Mar 4" — for "checked 4m ago" style captions. */
 export function relativeTime(iso: string | null | undefined, now: number = Date.now()): string {
   if (!iso) return "never";

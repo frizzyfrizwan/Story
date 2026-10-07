@@ -175,7 +175,7 @@ export function useCreateAlert() {
 export function useUpdateAlert() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<AlertInput> & { maxMiles?: number | null } }) =>
+    mutationFn: ({ id, input }: { id: string; input: Omit<Partial<AlertInput>, "maxMiles"> & { maxMiles?: number | null } }) =>
       apiPatch<{ alert: AlertRule }>(`/api/alerts/${id}`, input),
     onSuccess: ({ alert }) => {
       patchCaches(qc, alert.id, () => alert);

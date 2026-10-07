@@ -18,7 +18,7 @@ import { fmtWindow, relativeTime, searchHref } from "@/components/explore/format
 import { getAirline } from "@/data/airlines";
 import { getProgram } from "@/data/programs";
 import { ApiError, loginHref } from "@/lib/client/api";
-import { CABIN_LABEL, type AlertHit, type AlertRule } from "@/lib/types";
+import { CABIN_LABEL, type AlertHit } from "@/lib/types";
 import { cn, fmtCompact, fmtDate, fmtInt, fmtUsd, parseISODate } from "@/lib/utils";
 import { AlertFormDialog, type AlertFormMode } from "./alert-form-dialog";
 import { RouteChips } from "./alert-card";

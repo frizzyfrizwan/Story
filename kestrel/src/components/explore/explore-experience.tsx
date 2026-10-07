@@ -12,11 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Cabin } from "@/lib/types";
 import { fetchAirports, POPULAR_ORIGINS } from "./airports";
 import { CalendarTab } from "./calendar-tab";
-import { DealsTab, type DealSort } from "./deals-tab";
+import { DealsTab } from "./deals-tab";
+import type { DealSort, ExploreView } from "./format";
 import { ReachTab } from "./reach-tab";
-
-export type ExploreView = "deals" | "calendar" | "reach";
-export const EXPLORE_VIEWS: readonly ExploreView[] = ["deals", "calendar", "reach"] as const;
 
 export interface ExploreState {
   view: ExploreView;

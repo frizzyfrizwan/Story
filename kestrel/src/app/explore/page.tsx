@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { auth } from "@/auth";
-import { ExploreExperience, EXPLORE_VIEWS, type ExploreView } from "@/components/explore/explore-experience";
-import { DEAL_SORTS, type DealSort } from "@/components/explore/deals-tab";
+import { ExploreExperience } from "@/components/explore/explore-experience";
+import { DEAL_SORTS, EXPLORE_VIEWS, type DealSort, type ExploreView } from "@/components/explore/format";
 import { getProfile } from "@/lib/repo/profiles";
 import { CABINS, type Cabin } from "@/lib/types";
 

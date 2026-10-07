@@ -172,6 +172,7 @@ export interface HotelSearchResult {
 }
 
 export interface HotelDetailPayload {
+  stay: StayParams;
   result: HotelResult;
   nights: NightQuote[];
   freeNights: number;

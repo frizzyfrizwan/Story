@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, BedDouble, ExternalLink, Plane, Search, StickyNote, Trash2 } from "lucide-react";
 import { CABIN_LABEL, type Cabin } from "@/lib/types";
-import { cn, daysBetween, fmtDate, fmtInt, fmtUsd, parseISODate, pluralize } from "@/lib/utils";
+import { cn, daysBetween, fmtDate, fmtInt, fmtUsd, pluralize } from "@/lib/utils";
 import { ApiError, apiPost, buildQuery } from "@/lib/client/api";
 import { Badge, CabinBadge, ProgramChip } from "@/components/ui/badge";
 import { Button, IconButton } from "@/components/ui/button";
