@@ -85,23 +85,22 @@ function useManualBalances() {
   return { rows, update, hydrated };
 }
 
+/** Fallbacks mirror the dark tokens; the real values are read from CSS on the client. */
+const CABIN_FALLBACK: Record<Cabin, string> = { economy: "#7dd3fc", premium: "#a78bfa", business: "#5eead4", first: "#f5c76a" };
+
+function readCabinColors(): Record<Cabin, string> {
+  if (typeof window === "undefined") return CABIN_FALLBACK;
+  const cs = getComputedStyle(document.documentElement);
+  const get = (cabin: Cabin) => cs.getPropertyValue(CABIN_VAR[cabin]).trim() || CABIN_FALLBACK[cabin];
+  return { economy: get("economy"), premium: get("premium"), business: get("business"), first: get("first") };
+}
+
 /** Cabin colours resolved from CSS variables — the map's canvas layer can't read tokens itself. */
 function useCabinColors(): Record<Cabin, string> {
-  const read = () => {
-    if (typeof window === "undefined") return { economy: "#7dd3fc", premium: "#a78bfa", business: "#5eead4", first: "#f5c76a" };
-    const cs = getComputedStyle(document.documentElement);
-    const get = (v: string, fallback: string) => cs.getPropertyValue(v).trim() || fallback;
-    return {
-      economy: get(CABIN_VAR.economy, "#7dd3fc"),
-      premium: get(CABIN_VAR.premium, "#a78bfa"),
-      business: get(CABIN_VAR.business, "#5eead4"),
-      first: get(CABIN_VAR.first, "#f5c76a"),
-    };
-  };
-  const [colors, setColors] = useState(read);
+  const [colors, setColors] = useState<Record<Cabin, string>>(CABIN_FALLBACK);
   useEffect(() => {
-    setColors(read());
-    const obs = new MutationObserver(() => setColors(read()));
+    setColors(readCabinColors());
+    const obs = new MutationObserver(() => setColors(readCabinColors()));
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     return () => obs.disconnect();
   }, []);

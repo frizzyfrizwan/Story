@@ -259,6 +259,20 @@ function ConciergeChat({ signedIn, initialPrompt, initialMessages }: ConciergeCh
     }, 60);
   }, []);
 
+  // Focus the composer on desktop only (phones would pop the keyboard on load), and again when a turn ends.
+  useEffect(() => {
+    if (initialMessages.length || initialPrompt) return;
+    if (!window.matchMedia("(min-width: 1024px)").matches) return;
+    textareaRef.current?.focus({ preventScroll: true });
+  }, [initialMessages.length, initialPrompt]);
+  const wasStreaming = useRef(false);
+  useEffect(() => {
+    if (wasStreaming.current && !streaming && window.matchMedia("(min-width: 1024px)").matches) {
+      textareaRef.current?.focus({ preventScroll: true });
+    }
+    wasStreaming.current = streaming;
+  }, [streaming]);
+
   // `?q=` from the landing page: send once, then clean the URL.
   const sentInitial = useRef(false);
   useEffect(() => {
@@ -375,7 +389,6 @@ function ConciergeChat({ signedIn, initialPrompt, initialMessages }: ConciergeCh
               onStop={stop}
               streaming={streaming}
               textareaRef={textareaRef}
-              autoFocus={isEmpty && !initialPrompt}
             />
           </div>
         </div>

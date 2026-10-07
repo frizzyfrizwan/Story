@@ -26,7 +26,6 @@ export interface ComposerProps {
   onStop: () => void;
   streaming: boolean;
   textareaRef: RefObject<HTMLTextAreaElement | null>;
-  autoFocus?: boolean;
   className?: string;
 }
 
@@ -35,7 +34,7 @@ export interface ComposerProps {
  * line), a primary send button, Stop while streaming and a counter near the
  * 4,000-character limit.
  */
-export function Composer({ value, onChange, onSend, onStop, streaming, textareaRef, autoFocus, className }: ComposerProps) {
+export function Composer({ value, onChange, onSend, onStop, streaming, textareaRef, className }: ComposerProps) {
   const id = useId();
   const hintId = `${id}-hint`;
   const length = value.length;
@@ -84,7 +83,6 @@ export function Composer({ value, onChange, onSend, onStop, streaming, textareaR
         onKeyDown={onKeyDown}
         disabled={streaming}
         maxLength={MAX_PROMPT_CHARS}
-        autoFocus={autoFocus}
         autoComplete="off"
         spellCheck
         enterKeyHint="send"

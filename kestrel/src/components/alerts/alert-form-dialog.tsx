@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { Button } from "@/components/ui/button";
@@ -98,14 +98,17 @@ export function AlertFormDialog({ open, onOpenChange, mode, alert, prefill, onSa
   const [upgrade, setUpgrade] = useState<string | null>(null);
   const [programQuery, setProgramQuery] = useState("");
 
-  // Re-seed the form every time the dialog opens.
+  // Re-seed the form on the closed → open edge only, so a background refetch of `alert` never wipes edits in progress.
+  const wasOpen = useRef(false);
   useEffect(() => {
-    if (!open) return;
-    setErrors({});
-    setUpgrade(null);
-    setProgramQuery("");
-    if (alert && mode !== "create") setValues(fromRule(alert, mode));
-    else setValues({ ...defaults(), ...stripUndefined(prefill ?? {}) });
+    if (open && !wasOpen.current) {
+      setErrors({});
+      setUpgrade(null);
+      setProgramQuery("");
+      if (alert && mode !== "create") setValues(fromRule(alert, mode));
+      else setValues({ ...defaults(), ...stripUndefined(prefill ?? {}) });
+    }
+    wasOpen.current = open;
   }, [open, alert, mode, prefill]);
 
   const set = <K extends keyof AlertFormValues>(key: K, value: AlertFormValues[K]) => setValues((v) => ({ ...v, [key]: value }));

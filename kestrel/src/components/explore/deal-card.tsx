@@ -57,6 +57,7 @@ export function DealCard({ deal, plan, className }: DealCardProps) {
           to={art.to}
           subtitle={art.subtitle}
           size="md"
+          grain={false}
           className="w-full aspect-[16/8] rounded-none"
         >
           <div className="flex items-start justify-between p-3">

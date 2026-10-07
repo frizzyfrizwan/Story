@@ -69,6 +69,7 @@ export function DealsTab({ origin, cabin, sort, onSortChange, mine, onMineChange
   }, [allDeals, balances, mine, signedIn]);
 
   const deals = useMemo(() => {
+    // The API already orders by the engine's value score; "Best value" keeps that order.
     const list = mine && signedIn ? allDeals.filter((d) => plans.get(d.id)?.affordable) : allDeals.slice();
     switch (sort) {
       case "miles":
@@ -76,7 +77,7 @@ export function DealsTab({ origin, cabin, sort, onSortChange, mine, onMineChange
       case "savings":
         return list.sort((a, b) => b.savingsPct - a.savingsPct || b.cpp - a.cpp);
       default:
-        return list.sort((a, b) => b.cpp - a.cpp || b.savingsPct - a.savingsPct);
+        return list;
     }
   }, [allDeals, plans, mine, signedIn, sort]);
 

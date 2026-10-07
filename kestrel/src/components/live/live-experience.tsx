@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type FormEvent,
   type ReactNode,
   type RefObject,
@@ -96,6 +97,16 @@ type Lookup = { flight: string; date: string };
 type Selection = { id: string; snapshot: LiveAircraft };
 
 // ─── Small pieces ─────────────────────────────────────────────
+
+const noopSubscribe = () => () => {};
+/** False during SSR + hydration, true afterwards — so viewport-dependent overlays never mount in the wrong mode. */
+function useHydrated(): boolean {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+}
 
 function useTicker(ms: number): number {
   const [now, setNow] = useState(() => Date.now());
@@ -398,6 +409,7 @@ function Controls({
 // ─── Main ─────────────────────────────────────────────────────
 
 export function LiveExperience({ initialFlight, initialAirport }: LiveExperienceProps) {
+  const hydrated = useHydrated();
   const desktop = useMediaQuery("(min-width: 1024px)", false);
   const colors = useThemeColors();
   const mapRef = useRef<WorldMapHandle | null>(null);
@@ -880,7 +892,7 @@ export function LiveExperience({ initialFlight, initialAirport }: LiveExperience
 
         {/* First load */}
         {live.isLoading && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-16 z-10 flex justify-center lg:bottom-6">
+          <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center lg:top-3">
             <div className="flex items-center gap-2.5 rounded-full border border-panel-border bg-bg-elev-1/90 px-4 py-2 text-sm text-fg-muted shadow-panel backdrop-blur">
               <Spinner variant="radar" size="sm" className="text-aurora" label="" />
               Scanning airspace…
@@ -933,7 +945,7 @@ export function LiveExperience({ initialFlight, initialAirport }: LiveExperience
 
       {/* Mobile: bottom sheet */}
       <Sheet
-        open={!desktop && panelOpen}
+        open={hydrated && !desktop && panelOpen}
         onOpenChange={(o) => {
           if (!o) closePanel();
         }}

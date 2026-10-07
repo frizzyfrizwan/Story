@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { CalendarDays, Compass, Tag, X } from "lucide-react";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { Button } from "@/components/ui/button";
@@ -54,14 +54,15 @@ export function ExploreExperience({ initial, signedIn, homeAirport }: ExploreExp
   const router = useRouter();
   const pathname = usePathname();
   const [state, setState] = useState<ExploreState>(() => ({ ...initial, from: initial.from || homeAirport || "" }));
+  // Latest state outside React's batching so rapid updates (sort then switch) never clobber each other.
+  const latest = useRef(state);
 
   const update = useCallback(
     (patch: Partial<ExploreState>) => {
-      setState((prev) => {
-        const next = { ...prev, ...patch };
-        router.replace(`${pathname}${toQuery(next)}`, { scroll: false });
-        return next;
-      });
+      const next = { ...latest.current, ...patch };
+      latest.current = next;
+      setState(next);
+      router.replace(`${pathname}${toQuery(next)}`, { scroll: false });
     },
     [router, pathname],
   );
