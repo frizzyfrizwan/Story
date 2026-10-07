@@ -636,7 +636,7 @@ const ONEWORLD_PROGRAMS: LoyaltyProgram[] = [
       { title: "Europe business for 57.5k", description: "Finnair, Iberia (low surcharges) or British Airways (high surcharges) across the Atlantic at a fixed price when AA's own flights price dynamically at 80k+.", cabin: "business", miles: 57500, tags: ["europe"] },
       { title: "Cathay or JAL First for 110k", description: "North America–Hong Kong or Tokyo in First on the Asia chart; Cathay's own program now wants 160k.", cabin: "first", miles: 110000, tags: ["first"] },
       { title: "Web Special saver fares", description: "AA's own discounted awards — domestic economy from 5k–7.5k, transcon business from ~25k — appear in the award calendar's lowest tier.", cabin: "economy", miles: 5000, tags: ["domestic", "promo"] },
-      { title: "South America business for 57.5k", description: "LATAM is gone but Qatar? No — use AA's own 787 business to Buenos Aires, Santiago or São Paulo, often at the 57.5k saver level.", cabin: "business", miles: 57500, tags: ["south-america"] },
+      { title: "South America business for 57.5k", description: "AA's own 787 and 777 business to Buenos Aires, Santiago, São Paulo or Lima regularly prices at the 57.5k saver level, and the partner chart matches it for the region.", cabin: "business", miles: 57500, tags: ["south-america"] },
     ],
     bookableCarriers: uniq(ONEWORLD, ["EY", "G3", "TN", "CZ", "9K", "JX", "EI"]),
     oneWay: true,
@@ -1268,3 +1268,225 @@ const OTHER_PROGRAMS: LoyaltyProgram[] = [
     routingRules: "One-ways allowed; no stopovers; LATAM-operated awards are dynamically priced, partner awards use fixed zone tables.",
   },
 ];
+
+// ─── Hotel programs ───────────────────────────────────────────
+
+const HOTELS: LoyaltyProgram[] = [
+  {
+    id: "world-of-hyatt",
+    name: "World of Hyatt",
+    shortName: "Hyatt",
+    kind: "hotel",
+    currency: "World of Hyatt points",
+    valuationCpp: 1.9,
+    chartType: "fixed",
+    surcharges: "none",
+    typicalTaxesUsd: tx(0, 0, 0, 0),
+    changeFeeUsd: 0,
+    cancelFeeUsd: 0,
+    expirationPolicy: "Expire after 24 months without earning activity.",
+    bookingUrl: "https://world.hyatt.com",
+    color: "#8B7340",
+    summary:
+      "Still the most valuable hotel currency thanks to a published category chart — now five price tiers per category since 20 May 2026 (Category 1: 3k–9k; Category 4: 12k–25k; Category 7: 25k–55k; Category 8: 35k–75k) — no resort fees on award nights, Points + Cash and suite awards. Chase transfers 1:1 from the Sapphire Reserve (4:3 from Sapphire Preferred/Ink Preferred from Oct 2026) and Bilt at 1:1; nothing else feeds it.",
+    sweetSpots: [
+      { title: "Category 1–2 from 3,000 points", description: "Hyatt Place and Hyatt House properties across the US, Asia and Latin America at the 'Lowest' tier — often $150+ rooms.", miles: 3000, tags: ["value"] },
+      { title: "Park Hyatt Tokyo, Paris-Vendôme and the Maldives", description: "Category 8 tops out at 75k but 'Lowest' dates still go for 35k–40k where cash is $1,200+.", miles: 40000, tags: ["luxury"] },
+      { title: "Miraval, Alila Ventana and all-inclusives", description: "All-inclusive awards (Miraval, Ventana Big Sur, Hyatt Ziva/Zilara, Secrets, Dreams) include food, drink and spa credits at fixed points.", tags: ["all-inclusive"] },
+      { title: "Guest of Honor and no resort fees", description: "Globalists can book awards for friends with elite benefits; award stays waive resort and destination fees everywhere.", tags: ["elite"] },
+      { title: "Free night certificates", description: "The World of Hyatt card's Category 1–4 certificate covers 'Upper' and 'Top' dates now priced at 25k.", tags: ["cardholder"] },
+    ],
+    bookableCarriers: [],
+    oneWay: true,
+    routingRules: "Award nights cancellable per the property's cash policy (usually 48 hours); 5th night free does not apply; suites and premium rooms at fixed multiples.",
+  },
+  {
+    id: "marriott-bonvoy",
+    name: "Marriott Bonvoy",
+    shortName: "Marriott",
+    kind: "hotel",
+    currency: "Bonvoy points",
+    valuationCpp: 0.75,
+    chartType: "dynamic",
+    surcharges: "none",
+    typicalTaxesUsd: tx(0, 0, 0, 0),
+    changeFeeUsd: 0,
+    cancelFeeUsd: 0,
+    expirationPolicy: "Expire after 24 months without earning activity.",
+    bookingUrl: "https://www.marriott.com/loyalty",
+    color: "#E8562A",
+    summary:
+      "The largest footprint (9,000+ hotels across 30 brands) with fully dynamic award pricing since 2022, so value lives in the 5th-night-free rule, off-season luxury (Ritz-Carlton, St. Regis, EDITION) and the 35k/50k/85k free-night certificates from co-branded cards. Bonvoy is also a back-door airline currency: 3:1 to 40 airlines with a 5k bonus per 60k, including Alaska, Korean, Asiana, Miles & More and others no bank touches. Amex, Chase and Bilt transfer 1:1.",
+    sweetSpots: [
+      { title: "5th night free", description: "Book five award nights and pay for four — a 20% discount at any property, best at 80k+/night resorts.", tags: ["stay-rule"] },
+      { title: "Off-peak luxury", description: "St. Regis Bali, Ritz-Carlton Kyoto or Al Maha often drop to 60k–90k off-peak against $900+ cash rates.", miles: 70000, tags: ["luxury"] },
+      { title: "35k and 85k free-night certificates", description: "Card certificates can be topped up with 15k points, stretching the Boundless cert to 50k-point nights.", tags: ["cardholder"] },
+      { title: "Airline transfers at 3:1 with 25% bonus", description: "60k Bonvoy → 25k miles into Alaska Atmos, Korean SKYPASS, Asiana, Miles & More, JAL or 35 others.", tags: ["airline-transfer"] },
+      { title: "Category-free cheap nights", description: "Dynamic pricing means many Fairfield, Courtyard and Moxy nights price 10k–20k in low season.", miles: 12000, tags: ["value"] },
+    ],
+    bookableCarriers: [],
+    oneWay: true,
+    routingRules: "Dynamic nightly pricing with 5th night free on award stays; Points Advance lets you book before you have the points; cancellation follows the property's cash policy.",
+  },
+  {
+    id: "hilton-honors",
+    name: "Hilton Honors",
+    shortName: "Hilton",
+    kind: "hotel",
+    currency: "Hilton Honors points",
+    valuationCpp: 0.5,
+    chartType: "dynamic",
+    surcharges: "none",
+    typicalTaxesUsd: tx(0, 0, 0, 0),
+    changeFeeUsd: 0,
+    cancelFeeUsd: 0,
+    expirationPolicy: "Do not expire with any activity every 24 months.",
+    bookingUrl: "https://www.hilton.com/en/hilton-honors/",
+    color: "#104C97",
+    summary:
+      "Low value per point (half a cent) but easy to accumulate: Amex transfers at 1:2 with frequent 20–30% bonuses, Bilt at 1:1, and Hilton co-brand cards earn 7–14x. Dynamic awards run from ~5k at Hamptons to 150k at the Waldorf Astoria Maldives, with the 5th night free for Silver and above and no resort fees on award stays. The Aspire card's free-night certificates are good at any property.",
+    sweetSpots: [
+      { title: "Waldorf Astoria and Conrad resorts with 5th night free", description: "Maldives, Los Cabos and Bora Bora at 95k–150k/night, with four-night cash prices well over $4,000 and the fifth night free.", miles: 120000, tags: ["luxury"] },
+      { title: "Amex 1:2 plus a 30% bonus", description: "100k Membership Rewards → 260k Honors points during a bonus: two Conrad nights.", tags: ["transfer"] },
+      { title: "Aspire free-night certificates", description: "Annual (and spend-based) certificates valid any night of the week at any Hilton, including $1,500 Waldorfs.", tags: ["cardholder"] },
+      { title: "Cheap standard rooms under 10k", description: "Hampton, Tru and Hilton Garden Inn nights in the 5k–10k range beat the 0.5¢ valuation easily.", miles: 7000, tags: ["value"] },
+    ],
+    bookableCarriers: [],
+    oneWay: true,
+    routingRules: "Dynamic pricing with a published maximum per property; 5th night free for Silver+ members; Points & Money slider lets you mix cash and points.",
+  },
+  {
+    id: "ihg-one-rewards",
+    name: "IHG One Rewards",
+    shortName: "IHG",
+    kind: "hotel",
+    currency: "IHG One Rewards points",
+    valuationCpp: 0.55,
+    chartType: "dynamic",
+    surcharges: "none",
+    typicalTaxesUsd: tx(0, 0, 0, 0),
+    changeFeeUsd: 0,
+    cancelFeeUsd: 0,
+    expirationPolicy: "Expire after 12 months without activity (never for elites and cardholders).",
+    bookingUrl: "https://www.ihg.com/onerewards",
+    color: "#1F6E5A",
+    summary:
+      "Dynamic pricing across 6,000+ InterContinental, Kimpton, Six Senses, Holiday Inn and Crowne Plaza hotels, worth about half a cent a point. The value comes from the 4th-night-free benefit on IHG credit cards, frequent buy-points sales at 0.5¢ and Points & Cash. Chase and Bilt transfer 1:1.",
+    sweetSpots: [
+      { title: "4th night free with an IHG card", description: "Any award stay of four or more nights drops the fourth night's points — a 25% discount, stackable with cash-and-points.", tags: ["cardholder"] },
+      { title: "Six Senses and InterContinental in Asia", description: "Six Senses Laamu or InterContinental Bali for 60k–90k in low season against $600+ cash.", miles: 70000, tags: ["luxury"] },
+      { title: "Buy points at 0.5¢ in sales", description: "IHG sells points at ~0.5¢ with 100% bonuses, so a 25k Holiday Inn night costs ~$125 outright.", tags: ["buy-points"] },
+      { title: "Kimpton and Hotel Indigo city hotels", description: "Boutique city stays in New York, London or Paris from ~30k during the week.", miles: 30000, tags: ["city"] },
+    ],
+    bookableCarriers: [],
+    oneWay: true,
+    routingRules: "Dynamic nightly pricing; 4th night free on award stays with an IHG credit card; Points & Cash available at most properties.",
+  },
+  {
+    id: "accor-all",
+    name: "Accor Live Limitless (ALL)",
+    shortName: "Accor",
+    kind: "hotel",
+    currency: "ALL Reward points",
+    valuationCpp: 2.2,
+    chartType: "fixed",
+    surcharges: "none",
+    typicalTaxesUsd: tx(0, 0, 0, 0),
+    changeFeeUsd: 0,
+    cancelFeeUsd: 0,
+    expirationPolicy: "Expire after 12 months without earning activity.",
+    bookingUrl: "https://all.accor.com",
+    color: "#1E1852",
+    summary:
+      "A fixed-value program: every 2,000 ALL Reward points are worth €40 off any stay at 5,600+ Sofitel, Fairmont, Raffles, Pullman, Novotel, ibis and Mövenpick hotels (and some restaurants and Eurostar). That makes it easy maths and good for Europe, Asia-Pacific and the Middle East where Accor dominates. Capital One and Citi transfer at 2:1 and Bilt at 3:2, so effective value is ~1.1¢ per bank point.",
+    sweetSpots: [
+      { title: "Fairmont, Raffles and Sofitel at fixed value", description: "Pay down a €600 Raffles Singapore or Fairmont Banff Springs rate in €40 blocks with no award inventory to find.", tags: ["luxury"] },
+      { title: "Europe and Asia-Pacific coverage", description: "ibis/Novotel density across France, Germany, Australia and Southeast Asia means points work where Hyatt and Hilton are thin.", tags: ["coverage"] },
+      { title: "Bilt 3:2 during Rent Day", description: "Occasional Bilt bonuses lift the effective value above 1.5¢ per Bilt point.", tags: ["transfer"] },
+    ],
+    bookableCarriers: [],
+    oneWay: true,
+    routingRules: "Fixed value: 2,000 points = €40 toward any stay booked on all.accor.com; redeem in 2,000-point increments on top of any rate, including member discounts.",
+  },
+  {
+    id: "choice-privileges",
+    name: "Choice Privileges",
+    shortName: "Choice",
+    kind: "hotel",
+    currency: "Choice Privileges points",
+    valuationCpp: 0.6,
+    chartType: "fixed",
+    surcharges: "none",
+    typicalTaxesUsd: tx(0, 0, 0, 0),
+    changeFeeUsd: 0,
+    cancelFeeUsd: 0,
+    expirationPolicy: "Expire after 18 months without activity.",
+    bookingUrl: "https://www.choicehotels.com/choice-privileges",
+    color: "#0B5FAE",
+    summary:
+      "Comfort, Quality, Cambria, Ascend and Radisson Americas hotels on a property-level chart from 6k–8k points, with the real value in the ratios banks offer: Wells Fargo 1:2, Citi 1:1.5, Amex and Capital One 1:1. Choice's Japan (Comfort Hotel) and Preferred Hotels partnerships put 8k–16k nights in places where $200+ is normal.",
+    sweetSpots: [
+      { title: "Wells Fargo 1:2", description: "A 16k Choice night costs just 8k Wells Fargo points — the cheapest hotel night from any transferable currency.", miles: 16000, tags: ["transfer"] },
+      { title: "Comfort Hotels Japan from 8k", description: "Clean, central Comfort Hotels in Tokyo, Kyoto and Osaka for 8k–12k points during peak cherry-blossom weeks.", miles: 8000, tags: ["japan"] },
+      { title: "Preferred Hotels & Resorts via Choice", description: "Select Preferred and Ascend Collection properties bookable for 20k–35k — some are genuine luxury.", miles: 25000, tags: ["luxury"] },
+      { title: "Radisson Americas and Cambria city hotels", description: "Cambria in Chicago, Nashville or Washington for 16k–25k on weekends.", miles: 20000, tags: ["city"] },
+    ],
+    bookableCarriers: [],
+    oneWay: true,
+    routingRules: "Fixed points per property per night; award bookings often open only 100 days out for US properties; cancellations follow hotel policy.",
+  },
+  {
+    id: "wyndham-rewards",
+    name: "Wyndham Rewards",
+    shortName: "Wyndham",
+    kind: "hotel",
+    currency: "Wyndham Rewards points",
+    valuationCpp: 1.1,
+    chartType: "fixed",
+    surcharges: "none",
+    typicalTaxesUsd: tx(0, 0, 0, 0),
+    changeFeeUsd: 0,
+    cancelFeeUsd: 0,
+    expirationPolicy: "Expire after 18 months without activity (4 years hard expiry).",
+    bookingUrl: "https://www.wyndhamhotels.com/wyndham-rewards",
+    color: "#1E3F8F",
+    summary:
+      "The simplest chart in hotels: every one of 9,000+ Wyndham, Ramada, La Quinta, Wingate, Dolce and Registry Collection properties costs 7.5k, 15k or 30k points a night, with Wyndham card holders getting 10% off. Now fed by Chase (1:1 since Feb 2026), Citi and Capital One at 1:1 and Wells Fargo at a generous 1:2; Caesars Rewards status matches make Diamond useful in Las Vegas.",
+    sweetSpots: [
+      { title: "30k-point Registry Collection and Dolce resorts", description: "Luxury-tier Wyndham properties and Vacation-club style resorts top out at 30k (27k with the card).", miles: 30000, tags: ["luxury"] },
+      { title: "Wells Fargo 1:2", description: "A 15k La Quinta or Wingate night for 7.5k Wells Fargo points.", miles: 15000, tags: ["transfer"] },
+      { title: "7.5k nights on road trips", description: "Days Inn, Super 8 and Microtel properties at 7.5k (6.75k with the card) along US interstates.", miles: 7500, tags: ["value"] },
+      { title: "Caesars Rewards status match", description: "Wyndham Diamond matches to Caesars Diamond for free Vegas rooms and waived resort fees.", tags: ["elite"] },
+    ],
+    bookableCarriers: [],
+    oneWay: true,
+    routingRules: "Three fixed tiers (7.5k/15k/30k per night) with no blackout dates; Wyndham card holders get a 10% points discount; cancellations per property policy.",
+  },
+];
+
+// ─── Exports ──────────────────────────────────────────────────
+
+export const PROGRAMS: LoyaltyProgram[] = [
+  ...BANKS,
+  ...STAR_PROGRAMS,
+  ...ONEWORLD_PROGRAMS,
+  ...SKYTEAM_PROGRAMS,
+  ...OTHER_PROGRAMS,
+  ...HOTELS,
+];
+
+export const PROGRAM_BY_ID: Record<string, LoyaltyProgram> = Object.fromEntries(PROGRAMS.map((p) => [p.id, p]));
+
+export function getProgram(id: string): LoyaltyProgram | undefined {
+  return PROGRAM_BY_ID[id];
+}
+
+export const AIRLINE_PROGRAMS = PROGRAMS.filter((p) => p.kind === "airline");
+export const BANK_PROGRAMS = PROGRAMS.filter((p) => p.kind === "bank");
+export const HOTEL_LOYALTY_PROGRAMS = PROGRAMS.filter((p) => p.kind === "hotel");
+
+/** Programs that can book a given operating carrier (IATA). */
+export function programsForCarrier(carrier: string): LoyaltyProgram[] {
+  const c = carrier.toUpperCase();
+  return AIRLINE_PROGRAMS.filter((p) => p.bookableCarriers.includes(c));
+}
