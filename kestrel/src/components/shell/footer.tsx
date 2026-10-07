@@ -35,20 +35,19 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
     title: "Company",
     links: [
-      { label: "About", href: "/about" },
       { label: "Pricing", href: "/pricing" },
-      { label: "Changelog", href: "/changelog" },
-      { label: "Blog", href: "/blog" },
-      { label: "Contact", href: "/contact" },
-      { label: "Status", href: "/status" },
+      { label: "Concierge", href: "/concierge" },
+      { label: "Community Finds", href: "/finds" },
+      { label: "Integrations", href: "/settings/integrations" },
+      { label: "System health", href: "/api/health" },
     ],
   },
 ];
 
 const LEGAL = [
-  { label: "Terms", href: "/terms" },
-  { label: "Privacy", href: "/privacy" },
-  { label: "Cookies", href: "/cookies" },
+  { label: "Terms", href: "/legal#terms" },
+  { label: "Privacy", href: "/legal#privacy" },
+  { label: "Cookies", href: "/legal#cookies" },
 ];
 
 const link = cn("rounded-[4px] text-sm text-fg-muted transition-colors hover:text-fg", focusRing);

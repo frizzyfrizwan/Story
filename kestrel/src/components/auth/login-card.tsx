@@ -362,11 +362,11 @@ export function LoginCard({ next, error, status, className }: LoginCardProps) {
 
       <p className="text-[12px] leading-relaxed text-fg-subtle">
         By continuing you agree to Kestrel&apos;s{" "}
-        <Link href="/terms" className={cn("underline underline-offset-2 hover:text-fg", focusRing)}>
+        <Link href="/legal#terms" className={cn("underline underline-offset-2 hover:text-fg", focusRing)}>
           Terms
         </Link>{" "}
         and{" "}
-        <Link href="/privacy" className={cn("underline underline-offset-2 hover:text-fg", focusRing)}>
+        <Link href="/legal#privacy" className={cn("underline underline-offset-2 hover:text-fg", focusRing)}>
           Privacy Policy
         </Link>
         . We only ever email you links you asked for.
