@@ -10,6 +10,16 @@ export async function seedDemoContent(db: Db, opts: { force?: boolean } = {}): P
   const [{ n }] = await db.select({ n: sql<number>`count(*)` }).from(schema.finds);
   if (Number(n) > 0 && !opts.force) return { seeded: false, finds: Number(n) };
 
+  // Several server processes can boot at once (build workers, serverless cold starts).
+  // The first one to claim the lock row seeds; the others skip.
+  if (opts.force) await db.delete(schema.appMeta).where(eq(schema.appMeta.key, "demo-seeded"));
+  const claimed = await db
+    .insert(schema.appMeta)
+    .values({ key: "demo-seeded", value: new Date().toISOString() })
+    .onConflictDoNothing()
+    .returning({ key: schema.appMeta.key });
+  if (!claimed.length) return { seeded: false, finds: Number(n) };
+
   const userIdByHandle = new Map<string, string>();
   for (const p of SEED_PERSONAS) {
     const existing = await db.query.users.findFirst({ where: eq(schema.users.email, p.email) });

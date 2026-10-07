@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
-/** Shimmering placeholder block. Size it with h-*/w-* classes. */
+/** Shimmering placeholder block. Size it with height and width utility classes. */
 export function Skeleton({ className, ...props }: ComponentProps<"div">) {
   return <div aria-hidden="true" className={cn("skeleton", className)} {...props} />;
 }

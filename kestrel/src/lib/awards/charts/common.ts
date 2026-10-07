@@ -422,6 +422,57 @@ export function govTaxes(input: PriceInput): number {
   return roundTo((departure + arrival) * jitter(`tax:${origin}${destination}:${cabin}`, 0.08), 1);
 }
 
+// ─── Carrier-imposed surcharges (YQ) ──────────────────────────
+
+/**
+ * Typical one-way carrier surcharges in USD on long-haul (> 2,000 mi) awards,
+ * for programs that pass them through. Short-haul segments charge ≈ 25 %.
+ * Carriers absent from the table levy none (United, Delta, American, Alaska,
+ * Avianca, Copa, JetBlue, Southwest, Air Canada on Aeroplan…).
+ */
+export const CARRIER_YQ: Record<string, Record<Cabin, number>> = {
+  LH: { economy: 150, premium: 200, business: 350, first: 450 },
+  LX: { economy: 150, premium: 200, business: 350, first: 450 },
+  OS: { economy: 150, premium: 200, business: 350, first: 450 },
+  SN: { economy: 120, premium: 160, business: 280, first: 280 },
+  BA: { economy: 180, premium: 300, business: 420, first: 480 },
+  VS: { economy: 250, premium: 350, business: 450, first: 450 },
+  EK: { economy: 150, premium: 220, business: 330, first: 400 },
+  TK: { economy: 120, premium: 160, business: 220, first: 260 },
+  AF: { economy: 100, premium: 140, business: 180, first: 180 },
+  KL: { economy: 100, premium: 140, business: 180, first: 180 },
+  TG: { economy: 80, premium: 100, business: 150, first: 150 },
+  QF: { economy: 80, premium: 120, business: 180, first: 220 },
+  EY: { economy: 50, premium: 80, business: 120, first: 180 },
+  JL: { economy: 60, premium: 90, business: 140, first: 160 },
+  CX: { economy: 50, premium: 70, business: 110, first: 130 },
+  KE: { economy: 50, premium: 70, business: 100, first: 150 },
+  SQ: { economy: 20, premium: 30, business: 40, first: 60 },
+  NH: { economy: 50, premium: 70, business: 100, first: 120 },
+  BR: { economy: 60, premium: 80, business: 120, first: 120 },
+  OZ: { economy: 50, premium: 70, business: 100, first: 120 },
+  AY: { economy: 60, premium: 90, business: 130, first: 130 },
+  IB: { economy: 30, premium: 50, business: 70, first: 70 },
+  TP: { economy: 80, premium: 100, business: 150, first: 150 },
+  SK: { economy: 80, premium: 100, business: 150, first: 150 },
+  AI: { economy: 60, premium: 80, business: 100, first: 120 },
+  MH: { economy: 50, premium: 70, business: 110, first: 110 },
+  QR: { economy: 60, premium: 60, business: 90, first: 120 },
+  NZ: { economy: 60, premium: 90, business: 140, first: 140 },
+  SA: { economy: 80, premium: 100, business: 150, first: 150 },
+  ET: { economy: 60, premium: 80, business: 120, first: 120 },
+  AZ: { economy: 90, premium: 120, business: 160, first: 160 },
+  LA: { economy: 40, premium: 60, business: 80, first: 80 },
+  AM: { economy: 40, premium: 60, business: 60, first: 60 },
+  VA: { economy: 40, premium: 60, business: 80, first: 80 },
+};
+
+export function carrierSurcharge(carrier: string, cabin: Cabin, distanceMiles: number): number {
+  const yq = CARRIER_YQ[carrier.toUpperCase()];
+  if (!yq) return 0;
+  return distanceMiles > 2000 ? yq[cabin] : Math.round(yq[cabin] * 0.25);
+}
+
 /** Convenience: final quote with integer miles and whole-dollar taxes. */
 export function quote(
   miles: number,

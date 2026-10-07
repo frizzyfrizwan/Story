@@ -339,6 +339,13 @@ export const notifications = sqliteTable(
   (t) => [index("notification_user").on(t.userId, t.read)],
 );
 
+/** Small key/value store for process-level flags (seed lock, schema notes). */
+export const appMeta = sqliteTable("app_meta", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  updatedAt: text("updated_at").notNull().$defaultFn(now),
+});
+
 export type User = typeof users.$inferSelect;
 export type Profile = typeof profiles.$inferSelect;
 export type BalanceRow = typeof balances.$inferSelect;

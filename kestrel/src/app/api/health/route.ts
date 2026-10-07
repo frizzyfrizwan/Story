@@ -2,6 +2,7 @@ import { integrationStatus } from "@/env";
 import { getDb } from "@/db";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const started = Date.now();

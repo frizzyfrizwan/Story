@@ -4,6 +4,7 @@ import { TRANSFER_LINKS } from "@/data/transfers";
 import { getDb } from "@/db";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 /** Programs + transfer matrix, with any admin-maintained bonuses from the DB merged in. */
 export const GET = handler(async () => {

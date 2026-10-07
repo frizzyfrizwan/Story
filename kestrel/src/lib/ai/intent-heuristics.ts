@@ -936,7 +936,7 @@ function parsePlaces(work: string, resolver: AirportResolver): { work: string; o
     const words = work.split(/\s+/).filter(Boolean);
     outer: for (let i = 0; i < words.length; i++) {
       for (let n = 3; n >= 1; n--) {
-        if (i + n > words.length) break;
+        if (i + n > words.length) continue;
         const cand = words
           .slice(i, i + n)
           .join(" ")

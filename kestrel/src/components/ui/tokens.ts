@@ -17,7 +17,7 @@ export const focusField =
  * wait for the animation before unmounting.
  */
 export const popIn =
-  "data-[state=open]:animate-[rise_180ms_cubic-bezier(0.2,0.8,0.2,1)_both] data-[state=closed]:animate-[rise_140ms_ease-in_reverse_both] data-[state=delayed-open]:animate-[rise_180ms_cubic-bezier(0.2,0.8,0.2,1)_both]";
+  "data-[state=open]:animate-[rise_180ms_cubic-bezier(0.2,0.8,0.2,1)_both] data-[state=closed]:animate-[rise_140ms_ease-in_reverse_both] data-[state=delayed-open]:animate-[rise_180ms_cubic-bezier(0.2,0.8,0.2,1)_both] data-[state=instant-open]:animate-[rise_120ms_ease-out_both]";
 
 /** Glass surface for floating layers. */
 export const floating = "panel panel-strong z-50 shadow-panel";

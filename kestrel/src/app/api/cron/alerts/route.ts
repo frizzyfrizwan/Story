@@ -6,6 +6,7 @@ import { sendAlertEmail } from "@/lib/email";
 import { getDb, schema } from "@/db";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**

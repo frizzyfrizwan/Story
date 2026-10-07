@@ -101,3 +101,46 @@ export function getHotelProgram(id: string): HotelProgram | undefined {
 }
 
 export const HOTEL_PROGRAM_IDS: readonly string[] = HOTEL_PROGRAMS.map((p) => p.id);
+
+export type HyattSeasonTier = "off-peak" | "standard" | "peak";
+
+/**
+ * World of Hyatt standard-room award chart (2025), points per night by category.
+ * Index 0 is unused so `HYATT_CATEGORY_CHART[category]` reads naturally.
+ */
+export const HYATT_CATEGORY_CHART: readonly Record<HyattSeasonTier, number>[] = [
+  { "off-peak": 0, standard: 0, peak: 0 },
+  { "off-peak": 3_500, standard: 5_000, peak: 6_500 },
+  { "off-peak": 6_500, standard: 8_000, peak: 9_500 },
+  { "off-peak": 9_000, standard: 12_000, peak: 15_000 },
+  { "off-peak": 12_000, standard: 15_000, peak: 18_000 },
+  { "off-peak": 17_000, standard: 20_000, peak: 23_000 },
+  { "off-peak": 21_000, standard: 25_000, peak: 29_000 },
+  { "off-peak": 25_000, standard: 30_000, peak: 35_000 },
+  { "off-peak": 35_000, standard: 40_000, peak: 45_000 },
+];
+
+/** Points per night for a Hyatt category at a given season tier; categories outside 1–8 clamp. */
+export function hyattPoints(category: number, tier: HyattSeasonTier = "standard"): number {
+  const cat = Math.min(8, Math.max(1, Math.round(category)));
+  return HYATT_CATEGORY_CHART[cat][tier];
+}
+
+/** Dynamic-program pricing constants: points ≈ cash × k, clamped to [floor, ceiling], rounded to `step`. */
+export const DYNAMIC_PRICING: Record<string, { k: number; floor: number; ceiling: number; step: number }> = {
+  "marriott-bonvoy": { k: 1 / 0.0075, floor: 7_500, ceiling: 150_000, step: 500 },
+  "hilton-honors": { k: 1 / 0.005, floor: 5_000, ceiling: 150_000, step: 1_000 },
+  "ihg-one-rewards": { k: 1 / 0.0055, floor: 8_000, ceiling: 120_000, step: 500 },
+};
+
+/** Accor ALL: every 2,000 points is worth €40 off a booking. */
+export const ACCOR_POINTS_PER_BLOCK = 2_000;
+export const ACCOR_EUR_PER_BLOCK = 40;
+/** Editorial USD→EUR rate used for Accor math (no FX I/O in the engine). */
+export const USD_TO_EUR = 0.92;
+
+/** Wyndham Rewards "go free" tiers. */
+export const WYNDHAM_TIERS = [7_500, 15_000, 30_000] as const;
+
+/** Choice Privileges award levels. */
+export const CHOICE_LEVELS = [8_000, 10_000, 12_000, 16_000, 20_000, 25_000, 30_000, 35_000] as const;
