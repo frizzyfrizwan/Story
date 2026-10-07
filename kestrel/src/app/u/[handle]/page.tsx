@@ -108,8 +108,8 @@ export default async function ProfilePage({ params }: { params: Params }) {
 
         {/* ── Stats ────────────────────────────────────── */}
         <div className="mt-5 grid grid-cols-3 gap-3 sm:gap-4">
-          <StatTile label="Finds" value={stats.finds} format={fmtInt} tone="signal" size="sm" animate />
-          <StatTile label="Likes received" value={stats.likes} format={fmtInt} tone="aurora" size="sm" animate />
+          <StatTile label="Finds" value={stats.finds} format="int" tone="signal" size="sm" animate />
+          <StatTile label="Likes received" value={stats.likes} format="int" tone="aurora" size="sm" animate />
           <StatTile label="Member since" value={<span className="font-display text-xl tracking-tight sm:text-[1.5rem]">{memberSince || "—"}</span>} tone="sky" size="sm" />
         </div>
 

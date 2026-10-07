@@ -2,7 +2,28 @@
 
 import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { useInView, useReducedMotion } from "motion/react";
-import { cn, clamp } from "@/lib/utils";
+import { cn, clamp, fmtCompact, fmtCpp, fmtInt, fmtUsd } from "@/lib/utils";
+
+/**
+ * Serialisable format keys — use these from server components (functions cannot
+ * cross the server → client boundary). Client components may pass a function.
+ */
+export type NumberFormatKey = "int" | "compact" | "usd" | "cpp" | "percent";
+export type NumberFormat = NumberFormatKey | ((n: number) => string);
+
+const FORMATS: Record<NumberFormatKey, (n: number) => string> = {
+  int: fmtInt,
+  compact: fmtCompact,
+  usd: fmtUsd,
+  cpp: fmtCpp,
+  percent: (n) => `${n.toLocaleString("en-US", { maximumFractionDigits: 1 })}%`,
+};
+
+export function resolveNumberFormat(format: NumberFormat | undefined, decimals = 0): (n: number) => string {
+  if (typeof format === "function") return format;
+  if (format && FORMATS[format]) return FORMATS[format];
+  return (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
 
 export interface NumberTickerProps extends Omit<ComponentProps<"span">, "children"> {
   value: number;
@@ -12,7 +33,8 @@ export interface NumberTickerProps extends Omit<ComponentProps<"span">, "childre
   duration?: number;
   delay?: number;
   decimals?: number;
-  format?: (n: number) => string;
+  /** A format key (safe from server components) or a function (client components only). */
+  format?: NumberFormat;
   /** Wait until the element scrolls into view before counting. */
   startOnView?: boolean;
 }
@@ -37,9 +59,7 @@ export function NumberTicker({
   const [display, setDisplay] = useState(from);
   const latest = useRef(from);
 
-  const fmt =
-    format ??
-    ((n: number) => n.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }));
+  const fmt = resolveNumberFormat(format, decimals);
 
   useEffect(() => {
     if (startOnView && !inView) return;

@@ -321,7 +321,7 @@ function FlightItem({ item, removing, onRemove }: { item: TripItemView; removing
   const taxes = num(p.taxesUsd);
   const duration = num(p.durationMin);
   const seats = num(p.seats);
-  const searchHref = `/search${buildQuery({ origin, destination, date, cabin })}`;
+  const searchHref = `/search${buildQuery({ from: origin, to: destination, date, cabin })}`;
 
   return (
     <li className="panel grain p-4 sm:p-5">

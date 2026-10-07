@@ -256,7 +256,7 @@ function IdeasSection({ ideas, loading, error, origin, onOriginChange, onInsert 
                       </span>
                     </div>
                   </button>
-                  <a
+                  <Link
                     href={idea.href}
                     aria-label={`Search ${origin} to ${idea.destination} in ${CABIN_LABEL[idea.cabin]}`}
                     title="Open in Search"
@@ -266,7 +266,7 @@ function IdeasSection({ ideas, loading, error, origin, onOriginChange, onInsert 
                     )}
                   >
                     <ArrowUpRight className="size-3.5" aria-hidden="true" />
-                  </a>
+                  </Link>
                 </div>
               </li>
             );

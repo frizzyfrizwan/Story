@@ -146,7 +146,7 @@ export function AppShell({
               )}
             >
               <Search className="size-3.5" aria-hidden="true" />
-              <span className="pr-3">Search or jump to…</span>
+              <span className="whitespace-nowrap pr-3">Search or jump to…</span>
               <Kbd keys={["mod", "K"]} />
             </button>
             <IconButton

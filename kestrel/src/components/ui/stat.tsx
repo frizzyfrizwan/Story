@@ -1,7 +1,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NumberTicker } from "./number-ticker";
+import { NumberTicker, resolveNumberFormat, type NumberFormat } from "./number-ticker";
 import { Skeleton } from "./skeleton";
 
 export type StatTone = "signal" | "aurora" | "violet" | "gold" | "sky" | "rose";
@@ -27,7 +27,8 @@ export interface StatTileProps extends Omit<ComponentProps<"div">, "title"> {
   label: ReactNode;
   /** Number → mono tnum (animated when `animate`); ReactNode → rendered as is. */
   value: number | ReactNode;
-  format?: (n: number) => string;
+  /** Format key ("int" | "compact" | "usd" | "cpp" | "percent") — required form when `animate` is used from a server component — or a function. */
+  format?: NumberFormat;
   /** Count up on mount (numbers only). */
   animate?: boolean;
   /** Signed change, e.g. +12 for +12%. */
@@ -52,7 +53,7 @@ const VALUE_SIZE = { sm: "text-xl", md: "text-[1.75rem]", lg: "text-4xl" } as co
 export function StatTile({
   label,
   value,
-  format = (n) => n.toLocaleString("en-US"),
+  format,
   animate,
   delta,
   deltaFormat = (n) =>
@@ -68,6 +69,7 @@ export function StatTile({
   className,
   ...props
 }: StatTileProps) {
+  const fmt = resolveNumberFormat(format);
   const direction = delta == null || delta === 0 ? "flat" : delta > 0 ? "up" : "down";
   const good = direction === "flat" ? null : (direction === "up") === upIsGood;
   const DeltaIcon = direction === "up" ? TrendingUp : direction === "down" ? TrendingDown : Minus;
@@ -92,7 +94,7 @@ export function StatTile({
         <Skeleton className={cn("w-2/3", size === "lg" ? "h-10" : size === "sm" ? "h-6" : "h-8")} />
       ) : (
         <div className={cn("font-mono tnum font-medium leading-none tracking-tight text-fg", VALUE_SIZE[size])}>
-          {typeof value === "number" ? animate ? <NumberTicker value={value} format={format} /> : format(value) : value}
+          {typeof value === "number" ? animate ? <NumberTicker value={value} format={format} /> : fmt(value) : value}
         </div>
       )}
 

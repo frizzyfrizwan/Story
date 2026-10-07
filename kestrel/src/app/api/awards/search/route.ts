@@ -2,6 +2,8 @@ import { z } from "zod";
 import { handler, ok, fail, parseBody, rateLimit, clientKey } from "@/lib/api";
 import { searchAwards } from "@/lib/providers";
 import { CABINS } from "@/lib/types";
+import { getProgram } from "@/data/programs";
+import { transfersFrom } from "@/data/transfers";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -29,7 +31,19 @@ async function run(input: unknown, req: Request) {
   const rl = rateLimit(`awards:${clientKey(req)}`, { limit: 60, windowMs: 60_000 });
   if (!rl.allowed) return fail("Too many searches — try again in a minute", 429);
   const q = querySchema.parse(input);
-  const res = await searchAwards({ ...q, cabin: q.cabin as (typeof CABINS)[number] });
+  // Bank currencies (amex-mr, chase-ur…) expand to the airline programs they transfer into.
+  const programs = q.programs?.length
+    ? Array.from(
+        new Set(
+          q.programs.flatMap((id) => {
+            const program = getProgram(id);
+            if (program?.kind === "bank") return transfersFrom(id).map((l) => l.to);
+            return [id];
+          }),
+        ),
+      )
+    : undefined;
+  const res = await searchAwards({ ...q, programs, cabin: q.cabin as (typeof CABINS)[number] });
   return ok(res, { headers: { "cache-control": "private, max-age=30" } });
 }
 

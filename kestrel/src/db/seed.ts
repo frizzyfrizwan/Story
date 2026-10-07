@@ -2,6 +2,18 @@ import { eq, sql } from "drizzle-orm";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import * as schema from "./schema";
 import { SEED_PERSONAS, SEED_FINDS, SEED_TRANSFER_BONUSES, SEED_BALANCES, SEED_ALERTS } from "./seed-data";
+import { airportDistanceMiles } from "@/data/airports";
+import { estimateCashFare, cpp as cppOf } from "@/lib/awards";
+
+/** Cents per point for a seeded flight redemption, using the cash-fare model for the route. */
+function seedCpp(f: { origin?: string; destination?: string; cabin?: "economy" | "premium" | "business" | "first"; miles?: number; taxesUsd?: number; travelDate?: string }): number | null {
+  if (!f.origin || !f.destination || !f.cabin || !f.miles) return null;
+  const distance = airportDistanceMiles(f.origin, f.destination);
+  if (!distance) return null;
+  const cash = estimateCashFare(distance, f.cabin, f.travelDate);
+  const value = cppOf(f.miles, f.taxesUsd ?? 0, cash);
+  return value > 0 ? Math.round(value * 10) / 10 : null;
+}
 
 type Db = LibSQLDatabase<typeof schema>;
 
@@ -44,7 +56,7 @@ export async function seedDemoContent(db: Db, opts: { force?: boolean } = {}): P
     const userId = userIdByHandle.get(f.handle);
     if (!userId) continue;
     const createdAt = new Date(now - f.daysAgo * 86_400_000 - (f.title.length % 7) * 3_600_000).toISOString();
-    const cpp = f.miles && f.miles > 0 ? undefined : undefined;
+    const cpp = seedCpp(f);
     await db.insert(schema.finds).values({
       userId,
       title: f.title,

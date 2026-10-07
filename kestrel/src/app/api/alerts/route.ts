@@ -5,6 +5,7 @@ import { listAlerts, createAlert, listHits } from "@/lib/repo/alerts";
 import { getProfile } from "@/lib/repo/profiles";
 import { FREE_ALERT_LIMIT } from "@/lib/billing/stripe";
 import { CABINS } from "@/lib/types";
+import { expandMetro } from "@/data/airports";
 
 export const runtime = "nodejs";
 
@@ -38,6 +39,13 @@ export const POST = handler(async (req: Request) => {
   if (profile?.plan !== "pro" && existing.filter((a) => a.active).length >= FREE_ALERT_LIMIT) {
     return fail(`Free plan includes ${FREE_ALERT_LIMIT} active alerts. Upgrade to Pro for unlimited alerts.`, 402, { upgrade: true });
   }
-  const alert = await createAlert(session.user.id, { ...input, cabin: input.cabin as (typeof CABINS)[number] });
+  // Metro codes (NYC, LON, TYO) expand to their member airports so the checker queries real routes.
+  const expand = (codes: string[]) => Array.from(new Set(codes.flatMap((c) => expandMetro(c)))).slice(0, 8);
+  const alert = await createAlert(session.user.id, {
+    ...input,
+    origins: expand(input.origins),
+    destinations: expand(input.destinations),
+    cabin: input.cabin as (typeof CABINS)[number],
+  });
   return ok({ alert }, { status: 201 });
 });

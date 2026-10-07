@@ -965,6 +965,13 @@ export interface Simulator {
   hotelProvider: HotelProvider;
 }
 
+/**
+ * Programs whose "points" are a fixed-value currency (Air New Zealand Airpoints Dollars ≈ NZ$1 each).
+ * Their award prices are not comparable to mileage charts, so the simulator leaves them out of
+ * search, calendars and deals rather than letting them masquerade as 60¢-per-point bargains.
+ */
+const CURRENCY_DENOMINATED_PROGRAMS = new Set(["air-new-zealand-airpoints"]);
+
 export function createSimulator(overrides: SimulatorDeps = {}): Simulator {
   const deps: Resolved = {
     routes: overrides.routes ?? ROUTES,
@@ -972,7 +979,8 @@ export function createSimulator(overrides: SimulatorDeps = {}): Simulator {
     getAirline: overrides.getAirline ?? getAirline,
     expandMetro: overrides.expandMetro ?? expandMetro,
     regionOf: overrides.regionOf ?? regionOf,
-    programsForCarrier: overrides.programsForCarrier ?? programsForCarrier,
+    programsForCarrier: (carrier: string) =>
+      (overrides.programsForCarrier ?? programsForCarrier)(carrier).filter((p) => !CURRENCY_DENOMINATED_PROGRAMS.has(p.id)),
     getProgram: overrides.getProgram ?? getProgram,
     transfersTo: overrides.transfersTo ?? transfersTo,
     priceAward: overrides.priceAward ?? priceAward,
