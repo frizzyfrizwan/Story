@@ -18,7 +18,6 @@ import {
   demandOf,
   govTaxes,
   isAsia,
-  lerp,
   lookupPair,
   macroOf,
   quote,
@@ -80,7 +79,13 @@ function priceANA(input: PriceInput): PriceQuote | null {
   if (miles == null) return null;
   // Taxes for the round trip: Japanese departure tax + US fees + ANA's modest surcharge.
   const taxes = govTaxes(input) * 2 + (input.cabin === "economy" ? 40 : 80);
-  return quote(miles, taxes, "chart", `Virgin Atlantic × ANA: ${zoneLabel} — ROUND-TRIP award (one-way not available); shown value is the round-trip requirement`, ukSchoolPeak(input.date) ? "peak" : "off-peak");
+  return quote(
+    miles,
+    taxes,
+    "chart",
+    `Virgin Atlantic × ANA: ${zoneLabel} — ROUND-TRIP award (one-way not available); shown value is the round-trip requirement`,
+    ukSchoolPeak(input.date) ? "peak" : "off-peak",
+  );
 }
 
 // ─── Delta (one-way) ───────────────────────────────────────────
@@ -107,10 +112,19 @@ function priceDelta(input: PriceInput): PriceQuote | null {
   const za = deltaZone(input, "origin");
   const zb = deltaZone(input, "destination");
   const chartRow = lookupPair(DELTA, za, zb);
-  if (!chartRow) return genericEstimate(input, { factor: 0.9, note: "Virgin Atlantic × Delta: estimate (zone pair not published)" });
+  if (!chartRow)
+    return genericEstimate(input, { factor: 0.9, note: "Virgin Atlantic × Delta: estimate (zone pair not published)" });
   let miles = chartRow[input.cabin];
   if (miles == null) return null;
-  if (za === "NA" && zb === "NA" && input.distanceMiles > 1500) miles = input.cabin === "economy" ? 12_500 : input.cabin === "premium" ? 17_500 : input.cabin === "business" ? 27_500 : 40_000;
+  if (za === "NA" && zb === "NA" && input.distanceMiles > 1500)
+    miles =
+      input.cabin === "economy"
+        ? 12_500
+        : input.cabin === "premium"
+          ? 17_500
+          : input.cabin === "business"
+            ? 27_500
+            : 40_000;
   return quote(miles, govTaxes(input), "chart", `Virgin Atlantic × Delta: ${za} ↔ ${zb} partner chart (no surcharges)`);
 }
 
@@ -168,7 +182,12 @@ const VS_YQ_TO_UK: Record<Cabin, number> = { economy: 60, premium: 120, business
 function priceVirgin(input: PriceInput): PriceQuote | null {
   const ukOrigin = UK_AIRPORTS.has(input.origin);
   const ukDest = UK_AIRPORTS.has(input.destination);
-  if (!ukOrigin && !ukDest) return genericEstimate(input, { factor: 1.1, surcharge: { economy: 80, premium: 150, business: 250, first: 250 }, note: "Virgin Atlantic: estimate (non-UK routing)" });
+  if (!ukOrigin && !ukDest)
+    return genericEstimate(input, {
+      factor: 1.1,
+      surcharge: { economy: 80, premium: 150, business: 250, first: 250 },
+      note: "Virgin Atlantic: estimate (non-UK routing)",
+    });
   const other = ukOrigin ? input.destination : input.origin;
   const zone = VS_ZONES.find((z) => z.airports?.has(other));
   const peak = ukSchoolPeak(input.date);
@@ -187,7 +206,13 @@ function priceVirgin(input: PriceInput): PriceQuote | null {
   // 2025 variable pricing: the legacy level is the floor; busy dates run ≈ 1.5×.
   const miles = roundTo(base * (1 + Math.max(0, d - 0.4) * 0.85), 500);
   const taxes = govTaxes(input) + (ukOrigin ? VS_YQ_EX_UK : VS_YQ_TO_UK)[input.cabin];
-  return quote(miles, taxes, "dynamic", `Virgin Atlantic: ${label}, ${peak ? "peak" : "off-peak"} floor ${base.toLocaleString("en-US")} (variable)`, peak ? "peak" : "off-peak");
+  return quote(
+    miles,
+    taxes,
+    "dynamic",
+    `Virgin Atlantic: ${label}, ${peak ? "peak" : "off-peak"} floor ${base.toLocaleString("en-US")} (variable)`,
+    peak ? "peak" : "off-peak",
+  );
 }
 
 // ─── Dispatcher ────────────────────────────────────────────────
@@ -210,6 +235,10 @@ export const virginAtlanticFlyingClub: ChartFn = (input) => {
     case "VS":
       return priceVirgin(input);
     default:
-      return genericEstimate(input, { factor: 1.05, surcharge: PARTNER_YQ[carrier], note: `Virgin Atlantic × ${carrier}: partner estimate` });
+      return genericEstimate(input, {
+        factor: 1.05,
+        surcharge: PARTNER_YQ[carrier],
+        note: `Virgin Atlantic × ${carrier}: partner estimate`,
+      });
   }
 };

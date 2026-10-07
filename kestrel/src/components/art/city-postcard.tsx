@@ -138,7 +138,7 @@ function Coast({ rng, c, sea }: { rng: Rng; c: string[]; sea: string }) {
   );
 }
 
-function Mountain({ rng, c }: { rng: Rng; c: string[] }) {
+function Mountain({ rng, c, mist }: { rng: Rng; c: string[]; mist: string }) {
   const far = ridge(rng, 92, 26, [18, 34]);
   const mid = ridge(rng, 122, 20, [20, 40]);
   const near = ridge(rng, 156, 14, [26, 48]);
@@ -149,7 +149,7 @@ function Mountain({ rng, c }: { rng: Rng; c: string[] }) {
       {caps.map(([x, y], i) => (
         <path key={i} d={`M${x - 7} ${y + 7} L${x} ${y} L${x + 7} ${y + 7} Z`} fill={SNOW} opacity={0.55} />
       ))}
-      <rect x={0} y={100} width={W} height={40} fill={`url(#mist)`} />
+      <rect x={0} y={100} width={W} height={40} fill={`url(#${mist})`} />
       <path d={`${polyline(mid)} L${W + 10} ${H + 10} L-10 ${H + 10} Z`} fill={c[1]} opacity={0.9} />
       <path d={`${polyline(near)} L${W + 10} ${H + 10} L-10 ${H + 10} Z`} fill={c[2]} />
     </g>
@@ -198,7 +198,7 @@ function Island({ rng, c, sea }: { rng: Rng; c: string[]; sea: string }) {
   );
 }
 
-function Forest({ rng, c }: { rng: Rng; c: string[] }) {
+function Forest({ rng, c, mist }: { rng: Rng; c: string[]; mist: string }) {
   const layers = [
     { fill: c[0], op: 0.6, h: [26, 56], base: 150 },
     { fill: c[1], op: 0.9, h: [40, 80], base: 176 },
@@ -227,7 +227,7 @@ function Forest({ rng, c }: { rng: Rng; c: string[] }) {
         }
         return (
           <g key={li}>
-            {li > 0 && <rect x={0} y={L.base - 70} width={W} height={60} fill="url(#mist)" opacity={0.8} />}
+            {li > 0 && <rect x={0} y={L.base - 70} width={W} height={60} fill={`url(#${mist})`} opacity={0.8} />}
             <g fill={L.fill} opacity={L.op}>
               {trees}
             </g>
@@ -275,7 +275,7 @@ export function CityPostcard({ name, motif, from, to, size = "md", subtitle, sho
             <stop offset="0%" stopColor={from} />
             <stop offset="100%" stopColor={to} />
           </linearGradient>
-          <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id={`${uid}-mist`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={to} stopOpacity={0} />
             <stop offset="100%" stopColor={to} stopOpacity={0.7} />
           </linearGradient>
@@ -308,10 +308,10 @@ export function CityPostcard({ name, motif, from, to, size = "md", subtitle, sho
 
         {motif === "skyline" && <Skyline rng={rng} c={sil} />}
         {motif === "coast" && <Coast rng={rng} c={sil} sea={sea} />}
-        {motif === "mountain" && <Mountain rng={rng} c={sil} />}
+        {motif === "mountain" && <Mountain rng={rng} c={sil} mist={`${uid}-mist`} />}
         {motif === "desert" && <Desert rng={rng} c={sil} />}
         {motif === "island" && <Island rng={rng} c={sil} sea={sea} />}
-        {motif === "forest" && <Forest rng={rng} c={sil} />}
+        {motif === "forest" && <Forest rng={rng} c={sil} mist={`${uid}-mist`} />}
 
         <rect width={W} height={H} fill={`url(#${uid}-vig)`} />
         {showName && <rect x={0} y={H * 0.55} width={W} height={H * 0.45} fill={`url(#${uid}-scrim)`} />}

@@ -21,8 +21,10 @@ export interface ProceduralAvatarProps {
 export function ProceduralAvatar({ seed, size = 40, square = false, alt, className }: ProceduralAvatarProps) {
   const h = hash32(seed);
   const rng = seededRandom(h);
-  const a = PALETTE[h % PALETTE.length];
-  const b = PALETTE[(h % PALETTE.length) + 1 + ((h >> 3) % (PALETTE.length - 1)) < PALETTE.length ? (h % PALETTE.length) + 1 + ((h >> 3) % (PALETTE.length - 1)) : ((h >> 3) % (PALETTE.length - 1))];
+  const ai = h % PALETTE.length;
+  const bi = (ai + 1 + ((h >> 3) % (PALETTE.length - 1))) % PALETTE.length; // always a different token
+  const a = PALETTE[ai];
+  const b = PALETTE[bi];
   const count = 5 + (h % 4);
   const spread = 110 + ((h >> 5) % 60);
   const length = 22 + rng() * 8;

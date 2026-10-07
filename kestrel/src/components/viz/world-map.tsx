@@ -21,7 +21,7 @@ import {
   type ReactNode,
   type Ref,
 } from "react";
-import { geoGraticule10, geoInterpolate, geoNaturalEarth1, geoPath, type GeoProjection } from "d3-geo";
+import { geoGraticule10, geoInterpolate, geoNaturalEarth1, geoPath } from "d3-geo";
 import type { LineString, MultiLineString } from "geojson";
 import { Minus, Plus, LocateFixed } from "lucide-react";
 import { cn, clamp } from "@/lib/utils";

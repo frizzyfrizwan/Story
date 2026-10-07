@@ -20,13 +20,42 @@ const mk = (o: Partial<PriceInput>): PriceInput => ({ ...base, ...o });
 describe("priceAward — dispatch", () => {
   it("covers every airline program id from docs/ARCHITECTURE.md", () => {
     const expected = [
-      "aeroplan", "united-mileageplus", "ana-mileage-club", "singapore-krisflyer", "avianca-lifemiles",
-      "turkish-miles-smiles", "eva-infinity", "thai-royal-orchid", "asiana-club", "lufthansa-miles-more",
-      "american-aadvantage", "british-airways-club", "qatar-privilege-club", "cathay-asia-miles", "jal-mileage-bank",
-      "alaska-mileage-plan", "qantas-frequent-flyer", "iberia-plus", "finnair-plus", "aer-lingus-aerclub",
-      "delta-skymiles", "flying-blue", "virgin-atlantic-flying-club", "korean-air-skypass", "aeromexico-rewards",
-      "etihad-guest", "emirates-skywards", "jetblue-trueblue", "southwest-rapid-rewards", "virgin-australia-velocity",
-      "copa-connectmiles", "latam-pass", "air-india-maharaja", "air-new-zealand-airpoints", "sas-eurobonus", "tap-miles-go",
+      "aeroplan",
+      "united-mileageplus",
+      "ana-mileage-club",
+      "singapore-krisflyer",
+      "avianca-lifemiles",
+      "turkish-miles-smiles",
+      "eva-infinity",
+      "thai-royal-orchid",
+      "asiana-club",
+      "lufthansa-miles-more",
+      "american-aadvantage",
+      "british-airways-club",
+      "qatar-privilege-club",
+      "cathay-asia-miles",
+      "jal-mileage-bank",
+      "alaska-mileage-plan",
+      "qantas-frequent-flyer",
+      "iberia-plus",
+      "finnair-plus",
+      "aer-lingus-aerclub",
+      "delta-skymiles",
+      "flying-blue",
+      "virgin-atlantic-flying-club",
+      "korean-air-skypass",
+      "aeromexico-rewards",
+      "etihad-guest",
+      "emirates-skywards",
+      "jetblue-trueblue",
+      "southwest-rapid-rewards",
+      "virgin-australia-velocity",
+      "copa-connectmiles",
+      "latam-pass",
+      "air-india-maharaja",
+      "air-new-zealand-airpoints",
+      "sas-eurobonus",
+      "tap-miles-go",
     ];
     for (const id of expected) expect(ALL_CHART_PROGRAM_IDS, id).toContain(id);
     expect(ALL_CHART_PROGRAM_IDS).toHaveLength(expected.length);
@@ -67,14 +96,20 @@ describe("priceAward — dispatch", () => {
   });
 
   it("Aeroplan: Air Canada metal is dynamic and scales with demand", () => {
-    const lo = priceAward(mk({ programId: "aeroplan", carrier: "AC", destination: "FRA", distanceMiles: 3851, demand: 0 }));
-    const hi = priceAward(mk({ programId: "aeroplan", carrier: "AC", destination: "FRA", distanceMiles: 3851, demand: 1 }));
+    const lo = priceAward(
+      mk({ programId: "aeroplan", carrier: "AC", destination: "FRA", distanceMiles: 3851, demand: 0 }),
+    );
+    const hi = priceAward(
+      mk({ programId: "aeroplan", carrier: "AC", destination: "FRA", distanceMiles: 3851, demand: 1 }),
+    );
     expect(lo!.basis).toBe("dynamic");
     expect(hi!.miles).toBeGreaterThan(lo!.miles);
   });
 
   it("LifeMiles prices North America ↔ Europe business at 63,000 with no surcharges", () => {
-    const q = priceAward(mk({ programId: "avianca-lifemiles", carrier: "LH", destination: "FRA", distanceMiles: 3851 }));
+    const q = priceAward(
+      mk({ programId: "avianca-lifemiles", carrier: "LH", destination: "FRA", distanceMiles: 3851 }),
+    );
     expect(q!.miles).toBe(63_000);
     expect(q!.basis).toBe("chart");
     expect(q!.taxesUsd).toBeLessThan(120);
@@ -95,7 +130,17 @@ describe("priceAward — dispatch", () => {
     expect(q).not.toBeNull();
     expect(q!.miles).toBe(45_000);
     expect(q!.note).toMatch(/ROUND-TRIP/i);
-    const first = priceAward(mk({ programId: "virgin-atlantic-flying-club", carrier: "NH", origin: "JFK", destination: "HND", destinationRegion: "north-asia", distanceMiles: 6730, cabin: "first" }));
+    const first = priceAward(
+      mk({
+        programId: "virgin-atlantic-flying-club",
+        carrier: "NH",
+        origin: "JFK",
+        destination: "HND",
+        destinationRegion: "north-asia",
+        distanceMiles: 6730,
+        cabin: "first",
+      }),
+    );
     expect(first!.miles).toBe(85_000);
   });
 
@@ -111,13 +156,25 @@ describe("priceAward — dispatch", () => {
     expect(priceAward(mk({ programId: "aeroplan", carrier: "BA" }))).toBeNull(); // oneworld on a Star program
     expect(priceAward(mk({ programId: "british-airways-club", carrier: "UA" }))).toBeNull();
     expect(priceAward(mk({ programId: "delta-skymiles", carrier: "AA" }))).toBeNull();
-    expect(priceAward(mk({ programId: "southwest-rapid-rewards", carrier: "WN", cabin: "business", distanceMiles: 800 }))).toBeNull();
+    expect(
+      priceAward(mk({ programId: "southwest-rapid-rewards", carrier: "WN", cabin: "business", distanceMiles: 800 })),
+    ).toBeNull();
   });
 
   it("normalises carrier case and never returns non-positive miles", () => {
     const q = priceAward(mk({ carrier: "ba" }));
     expect(q!.miles).toBe(50_000);
-    const tiny = priceAward(mk({ programId: "aeroplan", carrier: "ua", origin: "LGA", destination: "BOS", destinationRegion: "north-america", distanceMiles: 0, cabin: "economy" }));
+    const tiny = priceAward(
+      mk({
+        programId: "aeroplan",
+        carrier: "ua",
+        origin: "LGA",
+        destination: "BOS",
+        destinationRegion: "north-america",
+        distanceMiles: 0,
+        cabin: "economy",
+      }),
+    );
     expect(tiny!.miles).toBeGreaterThan(0);
     expect(Number.isInteger(tiny!.miles)).toBe(true);
     expect(Number.isInteger(tiny!.taxesUsd)).toBe(true);
@@ -142,7 +199,9 @@ describe("buildTransferOptions", () => {
 
   it("applies a running transfer bonus", () => {
     const [plain] = buildTransferOptions(60_000, [link()]);
-    const [bonus] = buildTransferOptions(60_000, [link({ bonus: { percent: 30, startsAt: "2026-01-01", endsAt: "2026-02-01", verifiedAt: "2026-01-01" } })]);
+    const [bonus] = buildTransferOptions(60_000, [
+      link({ bonus: { percent: 30, startsAt: "2026-01-01", endsAt: "2026-02-01", verifiedAt: "2026-01-01" } }),
+    ]);
     expect(plain.bankPointsNeeded).toBe(60_000);
     expect(plain.bonusPercent).toBeUndefined();
     expect(bonus.bankPointsNeeded).toBe(47_000); // 60,000 / 1.3 = 46,154 → next 1,000

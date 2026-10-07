@@ -56,6 +56,8 @@ interface ChromeProps {
   hideClose?: boolean;
   /** Remove body padding for edge-to-edge content (lists, maps). */
   flush?: boolean;
+  /** No header/footer chrome at all — the children own the surface (command palette). Title stays for screen readers. */
+  bare?: boolean;
   bodyClassName?: string;
 }
 
@@ -66,10 +68,20 @@ function Chrome({
   footer,
   hideClose,
   flush,
+  bare,
   bodyClassName,
   children,
   scrollBody,
 }: ChromeProps & { children: ReactNode; scrollBody?: boolean }) {
+  if (bare) {
+    return (
+      <>
+        <DialogPrimitive.Title className="sr-only">{title ?? "Dialog"}</DialogPrimitive.Title>
+        {description && <DialogPrimitive.Description className="sr-only">{description}</DialogPrimitive.Description>}
+        {children}
+      </>
+    );
+  }
   return (
     <>
       <div className={cn("flex items-start gap-4 px-5 pt-5 sm:px-6", !title && !description && "pt-3")}>
@@ -137,6 +149,7 @@ export function DialogContent({
   footer,
   hideClose,
   flush,
+  bare,
   bodyClassName,
   className,
   children,
@@ -144,6 +157,8 @@ export function DialogContent({
 }: DialogContentProps) {
   const { open } = useContext(DialogContext);
   const reduce = useReducedMotion();
+  // Without a Description, Radix would still emit aria-describedby pointing nowhere.
+  const describedBy = description ? {} : { "aria-describedby": undefined };
   return (
     <AnimatePresence>
       {open && (
@@ -158,7 +173,7 @@ export function DialogContent({
             />
           </DialogPrimitive.Overlay>
           <div className="pointer-events-none fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-6">
-            <DialogPrimitive.Content asChild forceMount aria-describedby={description ? undefined : undefined} {...props}>
+            <DialogPrimitive.Content asChild forceMount {...describedBy} {...props}>
               <motion.div
                 className={cn(
                   SURFACE,
@@ -179,6 +194,7 @@ export function DialogContent({
                   footer={footer}
                   hideClose={hideClose}
                   flush={flush}
+                  bare={bare}
                   bodyClassName={bodyClassName}
                   scrollBody
                 >
@@ -212,6 +228,7 @@ export function SheetContent({
   footer,
   hideClose,
   flush,
+  bare,
   bodyClassName,
   className,
   children,
@@ -221,6 +238,7 @@ export function SheetContent({
   const desktop = useIsDesktop();
   const reduce = useReducedMotion();
   const bottom = !desktop || side === "bottom";
+  const describedBy = description ? {} : { "aria-describedby": undefined };
 
   const hidden = reduce ? { opacity: 0 } : bottom ? { y: "100%" } : side === "right" ? { x: "100%" } : { x: "-100%" };
   const shown = reduce ? { opacity: 1 } : bottom ? { y: 0 } : { x: 0 };
@@ -244,7 +262,7 @@ export function SheetContent({
               bottom ? "items-end justify-center" : side === "right" ? "justify-end" : "justify-start",
             )}
           >
-            <DialogPrimitive.Content asChild forceMount aria-describedby={description ? undefined : undefined} {...props}>
+            <DialogPrimitive.Content asChild forceMount {...describedBy} {...props}>
               <motion.div
                 className={cn(
                   SURFACE,
@@ -281,6 +299,7 @@ export function SheetContent({
                   footer={footer}
                   hideClose={hideClose}
                   flush={flush}
+                  bare={bare}
                   bodyClassName={bodyClassName}
                   scrollBody
                 >

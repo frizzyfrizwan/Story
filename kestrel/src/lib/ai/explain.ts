@@ -21,6 +21,13 @@ export interface AiCallOptions {
   client?: Anthropic | null;
   userId?: string | null;
   signal?: AbortSignal;
+  /** Program lookup (tests inject fixtures); defaults to src/data/programs. */
+  getProgram?: (id: string) => LoyaltyProgram | undefined;
+}
+
+type ProgramLookup = (id: string) => LoyaltyProgram | undefined;
+function lookupFor(opts: Pick<AiCallOptions, "getProgram">): ProgramLookup {
+  return opts.getProgram ?? getProgram;
 }
 
 function pickClient(opts: AiCallOptions): Anthropic | null {
@@ -51,13 +58,14 @@ export interface ExplainContext {
   program?: LoyaltyProgram;
 }
 
-function bankName(id: string): string {
-  return getProgram(id)?.shortName ?? id;
+function bankName(id: string, lookup: ProgramLookup): string {
+  return lookup(id)?.shortName ?? id;
 }
 
 /** Deterministic 3–5 sentence verdict built from cpp, badges, transfers and program rules. */
-export function explainRedemptionTemplate(fare: AwardFare, ctx: ExplainContext): string {
-  const program = ctx.program ?? getProgram(fare.programId);
+export function explainRedemptionTemplate(fare: AwardFare, ctx: ExplainContext, opts: Pick<AiCallOptions, "getProgram"> = {}): string {
+  const lookup = lookupFor(opts);
+  const program = ctx.program ?? lookup(fare.programId);
   const name = program?.name ?? fare.programId;
   const currency = program?.currency ?? "miles";
   const segs = ctx.itinerary.segments;
@@ -95,9 +103,9 @@ export function explainRedemptionTemplate(fare: AwardFare, ctx: ExplainContext):
   if (fare.transferOptions.length) {
     const sorted = [...fare.transferOptions].sort((a, b) => a.bankPointsNeeded - b.bankPointsNeeded);
     const best = sorted[0];
-    const alt = sorted.slice(1, 3).map((o) => `${fmtInt(o.bankPointsNeeded)} ${bankName(o.bankProgramId)}`);
+    const alt = sorted.slice(1, 3).map((o) => `${fmtInt(o.bankPointsNeeded)} ${bankName(o.bankProgramId, lookup)}`);
     sentences.push(
-      `The cheapest way in is transferring ${fmtInt(best.bankPointsNeeded)} ${bankName(best.bankProgramId)} points (${best.ratio[0]}:${best.ratio[1]}${best.bonusPercent ? `, with a ${best.bonusPercent}% bonus` : ""}, posting ${best.transferTime})${alt.length ? `, or ${alt.join(" / ")}` : ""}.`,
+      `The cheapest way in is transferring ${fmtInt(best.bankPointsNeeded)} ${bankName(best.bankProgramId, lookup)} points (${best.ratio[0]}:${best.ratio[1]}${best.bonusPercent ? `, with a ${best.bonusPercent}% bonus` : ""}, posting ${best.transferTime})${alt.length ? `, or ${alt.join(" / ")}` : ""}.`,
     );
   } else if (program?.kind === "airline" || program?.kind === "hotel") {
     sentences.push(`No bank currencies transfer into ${name} in our data, so you'd need ${currency} earned directly.`);
@@ -128,11 +136,11 @@ export function explainRedemptionTemplate(fare: AwardFare, ctx: ExplainContext):
 
 /** Plain-English verdict on a fare. LLM (fast model, low effort) when available, else the template. */
 export async function explainRedemption(fare: AwardFare, ctx: ExplainContext, opts: AiCallOptions = {}): Promise<string> {
-  const template = explainRedemptionTemplate(fare, ctx);
+  const template = explainRedemptionTemplate(fare, ctx, opts);
   const client = pickClient(opts);
   if (!client) return template;
 
-  const program = ctx.program ?? getProgram(fare.programId);
+  const program = ctx.program ?? lookupFor(opts)(fare.programId);
   const facts = {
     route: ctx.itinerary.segments.map((s) => `${s.carrier}${s.flightNumber} ${s.origin}-${s.destination} ${s.departure} (${fmtDuration(s.durationMin)}${s.aircraft ? `, ${s.aircraft}` : ""})`),
     stops: ctx.itinerary.stops,
@@ -173,13 +181,14 @@ export async function explainRedemption(fare: AwardFare, ctx: ExplainContext, op
 
 // ─── dealDigest ─────────────────────────────────────────────────
 
-export function dealDigestTemplate(deals: Deal[]): string {
+export function dealDigestTemplate(deals: Deal[], opts: Pick<AiCallOptions, "getProgram"> = {}): string {
   if (!deals.length) return "## Award deals\n\nNothing standout right now — check back soon, or set an alert at /alerts so we ping you when space opens.";
+  const lookup = lookupFor(opts);
   const ranked = [...deals].sort((a, b) => b.cpp - a.cpp || b.savingsPct - a.savingsPct);
   const top = ranked.slice(0, 6);
   const best = ranked[0];
   const lines = top.map((d) => {
-    const prog = getProgram(d.programId)?.shortName ?? d.programId;
+    const prog = lookup(d.programId)?.shortName ?? d.programId;
     const href = queryToSearchHref({ origin: [d.origin], destination: [d.destination], date: d.dates[0] ?? "", cabin: d.cabin });
     return `- **${d.title}** — ${d.origin}→${d.destination} in ${CABIN_LABEL[d.cabin].toLowerCase()} on ${d.carrier} via ${prog}: ${fmtInt(d.miles)} + ${fmtUsd(d.taxesUsd)} (${fmtCpp(d.cpp)}/pt, ${d.savingsPct}% below typical) · ${d.seats} seat${d.seats === 1 ? "" : "s"}${d.dates.length ? ` · ${d.dates.slice(0, 2).join(", ")}${d.dates.length > 2 ? "…" : ""}` : ""} · _${d.badge}_${d.note ? ` — ${d.note}` : ""} · [search](${href})`;
   });
@@ -187,7 +196,7 @@ export function dealDigestTemplate(deals: Deal[]): string {
   return [
     `## ${deals.length} award deal${deals.length === 1 ? "" : "s"} worth a look`,
     "",
-    `Best value today: **${best.origin}→${best.destination} ${CABIN_LABEL[best.cabin].toLowerCase()}** at ${fmtCpp(best.cpp)} per point via ${getProgram(best.programId)?.shortName ?? best.programId}.`,
+    `Best value today: **${best.origin}→${best.destination} ${CABIN_LABEL[best.cabin].toLowerCase()}** at ${fmtCpp(best.cpp)} per point via ${lookup(best.programId)?.shortName ?? best.programId}.`,
     "",
     ...lines,
     simulated ? "\n_Demo data — connect a live award provider for real inventory._" : "",
@@ -198,7 +207,7 @@ export function dealDigestTemplate(deals: Deal[]): string {
 
 /** Short markdown digest of deals. LLM (fast model) when available, else the template. */
 export async function dealDigest(deals: Deal[], opts: AiCallOptions = {}): Promise<string> {
-  const template = dealDigestTemplate(deals);
+  const template = dealDigestTemplate(deals, opts);
   const client = pickClient(opts);
   if (!client || !deals.length) return template;
   try {
@@ -505,7 +514,8 @@ function ideaDate(month: number | undefined, today = new Date()): string {
 const CABIN_RANK: Record<Cabin, number> = { economy: 0, premium: 1, business: 2, first: 3 };
 
 /** Deterministic trip ideas from the static table, ranked by what the wallet can actually afford. */
-export function tripIdeasHeuristic(input: TripIdeaInput): TripIdea[] {
+export function tripIdeasHeuristic(input: TripIdeaInput, opts: Pick<AiCallOptions, "getProgram"> = {}): TripIdea[] {
+  const lookup = lookupFor(opts);
   const origin = input.origin.toUpperCase();
   const originRegion = regionOf(origin) ?? "north-america";
   const month = monthNumber(input.month);
@@ -540,7 +550,7 @@ export function tripIdeasHeuristic(input: TripIdeaInput): TripIdea[] {
         }
         const inSeason = month ? def.bestMonths.includes(month) : false;
         const score = (affordable ? 100 : 0) + CABIN_RANK[cabin] * 12 + (inSeason ? 15 : 0) - price.miles / 10000 + (wallet.size === 0 ? CABIN_RANK[cabin] * 5 : 0);
-        const programName = getProgram(price.programId)?.shortName ?? price.programId;
+        const programName = lookup(price.programId)?.shortName ?? price.programId;
         const candidate: Scored = {
           title: `${def.city} in ${CABIN_LABEL[cabin].toLowerCase()} for ${fmtInt(price.miles)} ${programName}`,
           destination: def.destination,
@@ -548,7 +558,7 @@ export function tripIdeasHeuristic(input: TripIdeaInput): TripIdea[] {
           cabin,
           programId: price.programId,
           miles: price.miles,
-          why: `${def.why}${via ? ` Transfer ${fmtInt(Math.max(0, price.miles - direct))} ${getProgram(via)?.shortName ?? via} points to cover it.` : affordable ? " Your balance already covers it." : wallet.size ? ` You're ${fmtInt(price.miles - direct)} short — a transfer bonus or a cheaper date could close the gap.` : ""}`,
+          why: `${def.why}${via ? ` Transfer ${fmtInt(Math.max(0, price.miles - direct))} ${lookup(via)?.shortName ?? via} points to cover it.` : affordable ? " Your balance already covers it." : wallet.size ? ` You're ${fmtInt(price.miles - direct)} short — a transfer bonus or a cheaper date could close the gap.` : ""}`,
           bestMonths: def.bestMonths,
           href: queryToSearchHref({ origin: [origin], destination: [def.destination], date: ideaDate(month), cabin }),
           affordable,
@@ -583,7 +593,7 @@ const IdeasSchema = z.object({
 
 /** Five trip ideas for a wallet. LLM (fast model + structured output) when available, else the heuristic table. */
 export async function tripIdeas(input: TripIdeaInput, opts: AiCallOptions = {}): Promise<TripIdea[]> {
-  const heuristic = tripIdeasHeuristic(input);
+  const heuristic = tripIdeasHeuristic(input, opts);
   const client = pickClient(opts);
   if (!client) return heuristic;
 

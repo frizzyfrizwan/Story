@@ -55,7 +55,12 @@ function zoneOf(m: Macro): Zone {
 /** [low, high] saver-level ranges by cabin, one-way (partner metal). */
 type Range = [number, number];
 type RangeRow = Record<Cabin, Range | null>;
-const r = (e: Range, p: Range | null, b: Range, f: Range | null): RangeRow => ({ economy: e, premium: p, business: b, first: f });
+const r = (e: Range, p: Range | null, b: Range, f: Range | null): RangeRow => ({
+  economy: e,
+  premium: p,
+  business: b,
+  first: f,
+});
 
 const SAVER: Record<string, RangeRow> = {
   "NA|NA": r([6_500, 30_000], [12_000, 40_000], [12_500, 50_000], [25_000, 70_000]),
@@ -90,7 +95,8 @@ export const unitedMileagePlus: ChartFn = (input) => {
   const za = zoneOf(macroOf(input.originRegion));
   const zb = zoneOf(macroOf(input.destinationRegion));
   const rowRanges = lookupPair(SAVER, za, zb);
-  if (!rowRanges) return genericEstimate(input, { dynamic: 0.5, note: "United: dynamic estimate (region pair not modelled)" });
+  if (!rowRanges)
+    return genericEstimate(input, { dynamic: 0.5, note: "United: dynamic estimate (region pair not modelled)" });
   const range = rowRanges[input.cabin];
   if (!range) return null;
 

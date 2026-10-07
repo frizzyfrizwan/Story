@@ -97,32 +97,90 @@ const IBERIA_ZONES: { label: string; test: (iata: string, m: string) => boolean;
     off: row(21_250, 32_000, 42_500, null),
     peak: row(32_000, 42_500, 62_500, null),
   },
-  { label: "Spain ↔ Caribbean / Central America", test: (_, m) => m === "cc", off: row(21_250, 32_000, 42_500, null), peak: row(32_000, 42_500, 62_500, null) },
-  { label: "Spain ↔ South America", test: (_, m) => m === "sa", off: row(21_250, 32_000, 42_500, null), peak: row(32_000, 42_500, 62_500, null) },
-  { label: "Spain ↔ Middle East / Asia", test: (_, m) => m === "me" || m === "sasia" || m === "nasia" || m === "seasia", off: row(25_500, 38_000, 51_000, null), peak: row(38_000, 51_000, 75_000, null) },
-  { label: "Spain ↔ Africa", test: (_, m) => m === "af", off: row(12_000, 18_000, 25_500, null), peak: row(18_000, 25_500, 38_000, null) },
+  {
+    label: "Spain ↔ Caribbean / Central America",
+    test: (_, m) => m === "cc",
+    off: row(21_250, 32_000, 42_500, null),
+    peak: row(32_000, 42_500, 62_500, null),
+  },
+  {
+    label: "Spain ↔ South America",
+    test: (_, m) => m === "sa",
+    off: row(21_250, 32_000, 42_500, null),
+    peak: row(32_000, 42_500, 62_500, null),
+  },
+  {
+    label: "Spain ↔ Middle East / Asia",
+    test: (_, m) => m === "me" || m === "sasia" || m === "nasia" || m === "seasia",
+    off: row(25_500, 38_000, 51_000, null),
+    peak: row(38_000, 51_000, 75_000, null),
+  },
+  {
+    label: "Spain ↔ Africa",
+    test: (_, m) => m === "af",
+    off: row(12_000, 18_000, 25_500, null),
+    peak: row(18_000, 25_500, 38_000, null),
+  },
 ];
 
 /** Aer Lingus zone chart from Ireland (Aer Lingus-operated), off-peak / peak. */
-const AER_LINGUS_ZONES: { label: string; test: (iata: string, m: string) => boolean; off: CabinRow; peak: CabinRow }[] = [
-  { label: "Ireland ↔ US East / Canada", test: (iata, m) => m === "na" && !US_WEST_COAST.has(iata), off: row(13_000, null, 50_000, null), peak: row(20_000, null, 60_000, null) },
-  { label: "Ireland ↔ US West", test: (iata, m) => m === "na" && US_WEST_COAST.has(iata), off: row(16_250, null, 62_500, null), peak: row(25_000, null, 75_000, null) },
-];
+const AER_LINGUS_ZONES: { label: string; test: (iata: string, m: string) => boolean; off: CabinRow; peak: CabinRow }[] =
+  [
+    {
+      label: "Ireland ↔ US East / Canada",
+      test: (iata, m) => m === "na" && !US_WEST_COAST.has(iata),
+      off: row(13_000, null, 50_000, null),
+      peak: row(20_000, null, 60_000, null),
+    },
+    {
+      label: "Ireland ↔ US West",
+      test: (iata, m) => m === "na" && US_WEST_COAST.has(iata),
+      off: row(16_250, null, 62_500, null),
+      peak: row(25_000, null, 75_000, null),
+    },
+  ];
 
 const SPAIN = new Set(["MAD", "BCN", "AGP", "PMI", "VLC", "SVQ", "BIO", "ALC"]);
 const IRELAND = new Set(["DUB", "SNN", "ORK"]);
 
 /** Carrier-imposed surcharges by operating carrier, USD one-way: [short-haul, long-haul] per cabin. */
 const YQ: Record<string, { short: Record<Cabin, number>; long: Record<Cabin, number> }> = {
-  BA: { short: { economy: 25, premium: 25, business: 45, first: 45 }, long: { economy: 180, premium: 300, business: 420, first: 480 } },
-  IB: { short: { economy: 10, premium: 10, business: 20, first: 20 }, long: { economy: 30, premium: 50, business: 70, first: 70 } },
-  QR: { short: { economy: 20, premium: 20, business: 40, first: 40 }, long: { economy: 60, premium: 60, business: 90, first: 120 } },
-  AY: { short: { economy: 15, premium: 15, business: 25, first: 25 }, long: { economy: 60, premium: 90, business: 130, first: 130 } },
-  EI: { short: { economy: 10, premium: 10, business: 20, first: 20 }, long: { economy: 25, premium: 40, business: 100, first: 100 } },
-  CX: { short: { economy: 15, premium: 15, business: 25, first: 25 }, long: { economy: 50, premium: 70, business: 110, first: 130 } },
-  JL: { short: { economy: 15, premium: 15, business: 25, first: 25 }, long: { economy: 60, premium: 90, business: 140, first: 160 } },
-  QF: { short: { economy: 20, premium: 20, business: 30, first: 30 }, long: { economy: 80, premium: 120, business: 180, first: 220 } },
-  MH: { short: { economy: 15, premium: 15, business: 25, first: 25 }, long: { economy: 50, premium: 70, business: 110, first: 110 } },
+  BA: {
+    short: { economy: 25, premium: 25, business: 45, first: 45 },
+    long: { economy: 180, premium: 300, business: 420, first: 480 },
+  },
+  IB: {
+    short: { economy: 10, premium: 10, business: 20, first: 20 },
+    long: { economy: 30, premium: 50, business: 70, first: 70 },
+  },
+  QR: {
+    short: { economy: 20, premium: 20, business: 40, first: 40 },
+    long: { economy: 60, premium: 60, business: 90, first: 120 },
+  },
+  AY: {
+    short: { economy: 15, premium: 15, business: 25, first: 25 },
+    long: { economy: 60, premium: 90, business: 130, first: 130 },
+  },
+  EI: {
+    short: { economy: 10, premium: 10, business: 20, first: 20 },
+    long: { economy: 25, premium: 40, business: 100, first: 100 },
+  },
+  CX: {
+    short: { economy: 15, premium: 15, business: 25, first: 25 },
+    long: { economy: 50, premium: 70, business: 110, first: 130 },
+  },
+  JL: {
+    short: { economy: 15, premium: 15, business: 25, first: 25 },
+    long: { economy: 60, premium: 90, business: 140, first: 160 },
+  },
+  QF: {
+    short: { economy: 20, premium: 20, business: 30, first: 30 },
+    long: { economy: 80, premium: 120, business: 180, first: 220 },
+  },
+  MH: {
+    short: { economy: 15, premium: 15, business: 25, first: 25 },
+    long: { economy: 50, premium: 70, business: 110, first: 110 },
+  },
 };
 
 function surcharge(carrier: string, input: PriceInput): number {
@@ -177,7 +235,13 @@ function zoneChart(
   const miles = (peak ? zone.peak : zone.off)[input.cabin];
   if (miles == null) return null;
   const taxes = govTaxes(input) + surcharge(carrier, input);
-  return quote(miles, taxes, "chart", `${programLabel(input.programId)}: ${zone.label}, ${peak ? "peak" : "off-peak"}`, peak ? "peak" : "off-peak");
+  return quote(
+    miles,
+    taxes,
+    "chart",
+    `${programLabel(input.programId)}: ${zone.label}, ${peak ? "peak" : "off-peak"}`,
+    peak ? "peak" : "off-peak",
+  );
 }
 
 // ─── British Airways Club ──────────────────────────────────────
@@ -191,7 +255,12 @@ export const britishAirwaysClub: ChartFn = (input) => {
   if (!canBook(carrier, BA_BOOKABLE)) return null;
   const own = OFF_PEAK_METAL.has(carrier);
   const q = baTable(input, own, own ? `${carrier}-operated` : `${carrier} partner`);
-  if (q && carrier === "BA" && (UK_AIRPORTS.has(input.origin) || UK_AIRPORTS.has(input.destination)) && input.distanceMiles > 2000) {
+  if (
+    q &&
+    carrier === "BA" &&
+    (UK_AIRPORTS.has(input.origin) || UK_AIRPORTS.has(input.destination)) &&
+    input.distanceMiles > 2000
+  ) {
     q.note = `${q.note} — high BA surcharges`;
   }
   return q;
@@ -223,7 +292,13 @@ export const qatarPrivilegeClub: ChartFn = (input) => {
     const bi = bandIndex(input.distanceMiles, AVIOS_BANDS);
     const miles = QATAR_OWN[bi][input.cabin];
     if (miles == null) return null;
-    return quote(miles, govTaxes(input) + surcharge("QR", input), "chart", `Qatar Privilege Club: Qatar-operated, ${bandLabel(bi, AVIOS_BANDS)}`, "standard");
+    return quote(
+      miles,
+      govTaxes(input) + surcharge("QR", input),
+      "chart",
+      `Qatar Privilege Club: Qatar-operated, ${bandLabel(bi, AVIOS_BANDS)}`,
+      "standard",
+    );
   }
   return baTable(input, false, `${carrier} partner`);
 };

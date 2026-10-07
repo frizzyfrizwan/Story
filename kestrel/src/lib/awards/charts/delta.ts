@@ -54,7 +54,12 @@ function zoneOf(m: Macro): Zone {
 
 type Range = [number, number];
 type RangeRow = Record<Cabin, Range | null>;
-const r = (e: Range, p: Range, b: Range, f: Range | null): RangeRow => ({ economy: e, premium: p, business: b, first: f });
+const r = (e: Range, p: Range, b: Range, f: Range | null): RangeRow => ({
+  economy: e,
+  premium: p,
+  business: b,
+  first: f,
+});
 
 const RANGES: Record<string, RangeRow> = {
   "NA|NA": r([5_000, 30_000], [8_000, 40_000], [15_000, 60_000], [25_000, 90_000]),
@@ -94,10 +99,16 @@ export const deltaSkyMiles: ChartFn = (input) => {
   if (!ranges) return genericEstimate(input, { factor: 1.6, dynamic: 0.6, note: "SkyMiles: dynamic estimate" });
   const range = ranges[input.cabin];
   if (!range) {
-    // Delta sells no international First; price it as a Delta One premium estimate.
+    // Delta sells no international First; partner First (e.g. Korean Air) prices ≈ 35 % above Delta One.
     if (input.cabin === "first" && ranges.business) {
       const d = demandOf(input);
-      return quote(roundTo(lerp(ranges.business[0], ranges.business[1], d) * 1.8, 1000), govTaxes(input), "estimate", "SkyMiles: no First cabin — estimated above Delta One", peakFromDemand(d));
+      return quote(
+        roundTo(lerp(ranges.business[0], ranges.business[1], d) * 1.35, 1000),
+        govTaxes(input),
+        "estimate",
+        "SkyMiles: no First cabin — estimated above Delta One",
+        peakFromDemand(d),
+      );
     }
     return null;
   }
@@ -109,7 +120,14 @@ export const deltaSkyMiles: ChartFn = (input) => {
   const miles = isDelta ? lerp(lo, hi, d) : lerp(lo, lo + (hi - lo) * 0.55, d);
 
   let taxes = govTaxes(input) + (YQ[carrier]?.[input.cabin] ?? 0);
-  if ((carrier === "AF" || carrier === "KL") && macroOf(input.originRegion) === "eu") taxes += EU_ORIGIN_AFKL_YQ[input.cabin] ?? 0;
+  if ((carrier === "AF" || carrier === "KL") && macroOf(input.originRegion) === "eu")
+    taxes += EU_ORIGIN_AFKL_YQ[input.cabin] ?? 0;
 
-  return quote(roundTo(miles, 500), taxes, "dynamic", `SkyMiles: ${za} ↔ ${zb} ${isDelta ? "Delta-operated" : "partner"} dynamic`, peakFromDemand(d));
+  return quote(
+    roundTo(miles, 500),
+    taxes,
+    "dynamic",
+    `SkyMiles: ${za} ↔ ${zb} ${isDelta ? "Delta-operated" : "partner"} dynamic`,
+    peakFromDemand(d),
+  );
 };

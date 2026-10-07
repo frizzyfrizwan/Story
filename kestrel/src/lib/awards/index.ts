@@ -117,7 +117,9 @@ export function priceAward(input: PriceInput): PriceQuote | null {
   const chart = CHARTS[normalized.programId];
   const quote = chart
     ? chart(normalized)
-    : genericEstimate(normalized, { note: `${normalized.programId}: no published chart on file — generic zone estimate` });
+    : genericEstimate(normalized, {
+        note: `${normalized.programId}: no published chart on file — generic zone estimate`,
+      });
   if (!quote) return null;
   return {
     ...quote,

@@ -43,7 +43,23 @@ const BOOKABLE = allow(STAR, ["VS", "EY", "GA", "VN", "PR"]);
 
 const JAPAN = new Set(["NRT", "HND", "KIX", "ITM", "NGO", "FUK", "CTS", "OKA", "HIJ", "SDJ"]);
 const KOREA = new Set(["ICN", "GMP", "PUS", "CJU"]);
-const ASIA1 = new Set(["PEK", "PKX", "PVG", "SHA", "CAN", "SZX", "HKG", "TPE", "TSA", "MNL", "CEB", "HGH", "TAO", "DLC", "XIY"]);
+const ASIA1 = new Set([
+  "PEK",
+  "PKX",
+  "PVG",
+  "SHA",
+  "CAN",
+  "SZX",
+  "HKG",
+  "TPE",
+  "TSA",
+  "MNL",
+  "CEB",
+  "HGH",
+  "TAO",
+  "DLC",
+  "XIY",
+]);
 
 type Season = "low" | "regular" | "high";
 
@@ -66,13 +82,44 @@ const s = (
 /** ANA-operated: keyed by the non-Japan endpoint's zone. Round-trip values. */
 const NH_ZONES: Record<string, { label: string; rowValues: SeasonRow }> = {
   korea: { label: "Japan ↔ Korea", rowValues: s([12_000, 15_000, 18_000], null, [25_000, 30_000, 33_000], null) },
-  asia1: { label: "Japan ↔ Asia 1", rowValues: s([17_000, 20_000, 23_000], [30_000, 33_000, 36_000], [35_000, 40_000, 43_000], null) },
-  asia2: { label: "Japan ↔ Asia 2 / India", rowValues: s([30_000, 35_000, 38_000], [45_000, 50_000, 53_000], [55_000, 60_000, 63_000], null) },
-  hawaii: { label: "Japan ↔ Hawaii", rowValues: s([35_000, 40_000, 43_000], [58_000, 63_000, 68_000], [60_000, 65_000, 68_000], null) },
-  na: { label: "Japan ↔ North America", rowValues: s([40_000, 50_000, 55_000], [62_000, 72_000, 77_000], [75_000, 85_000, 90_000], [150_000, 165_000, 180_000]) },
-  eu: { label: "Japan ↔ Europe", rowValues: s([45_000, 55_000, 60_000], [67_000, 77_000, 82_000], [80_000, 90_000, 95_000], [165_000, 180_000, 195_000]) },
-  oce: { label: "Japan ↔ Oceania", rowValues: s([37_500, 45_000, 50_000], [55_000, 62_000, 67_000], [65_000, 75_000, 80_000], null) },
-  me: { label: "Japan ↔ Middle East", rowValues: s([45_000, 55_000, 60_000], [67_000, 77_000, 82_000], [80_000, 90_000, 95_000], null) },
+  asia1: {
+    label: "Japan ↔ Asia 1",
+    rowValues: s([17_000, 20_000, 23_000], [30_000, 33_000, 36_000], [35_000, 40_000, 43_000], null),
+  },
+  asia2: {
+    label: "Japan ↔ Asia 2 / India",
+    rowValues: s([30_000, 35_000, 38_000], [45_000, 50_000, 53_000], [55_000, 60_000, 63_000], null),
+  },
+  hawaii: {
+    label: "Japan ↔ Hawaii",
+    rowValues: s([35_000, 40_000, 43_000], [58_000, 63_000, 68_000], [60_000, 65_000, 68_000], null),
+  },
+  na: {
+    label: "Japan ↔ North America",
+    rowValues: s(
+      [40_000, 50_000, 55_000],
+      [62_000, 72_000, 77_000],
+      [75_000, 85_000, 90_000],
+      [150_000, 165_000, 180_000],
+    ),
+  },
+  eu: {
+    label: "Japan ↔ Europe",
+    rowValues: s(
+      [45_000, 55_000, 60_000],
+      [67_000, 77_000, 82_000],
+      [80_000, 90_000, 95_000],
+      [165_000, 180_000, 195_000],
+    ),
+  },
+  oce: {
+    label: "Japan ↔ Oceania",
+    rowValues: s([37_500, 45_000, 50_000], [55_000, 62_000, 67_000], [65_000, 75_000, 80_000], null),
+  },
+  me: {
+    label: "Japan ↔ Middle East",
+    rowValues: s([45_000, 55_000, 60_000], [67_000, 77_000, 82_000], [80_000, 90_000, 95_000], null),
+  },
 };
 
 function nhZone(iata: string, region: AwardRegion): string | null {
@@ -168,7 +215,8 @@ function priceNH(input: PriceInput): PriceQuote | null {
     if (input.cabin !== "economy") return null;
     return quote(miles, govTaxes(input), "chart", "ANA: domestic Japan award (one-way, regular season)");
   }
-  if (!jpOrigin && !jpDest) return genericEstimate(input, { note: "ANA: estimate (ANA-operated flights all touch Japan)" });
+  if (!jpOrigin && !jpDest)
+    return genericEstimate(input, { note: "ANA: estimate (ANA-operated flights all touch Japan)" });
   const other = jpOrigin ? input.destination : input.origin;
   const otherRegion = jpOrigin ? input.destinationRegion : input.originRegion;
   const zoneKey = nhZone(other, otherRegion);

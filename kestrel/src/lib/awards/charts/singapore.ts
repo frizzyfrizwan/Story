@@ -10,7 +10,7 @@
  * Advantage awards (when Saver space is gone) run ≈ 1.6× — modelled when demand is high.
  * SQ levies only a small surcharge on its own awards; LH-group partners carry YQ.
  */
-import type { AwardRegion, Cabin } from "@/lib/types";
+import type { AwardRegion } from "@/lib/types";
 import {
   allow,
   canBook,
@@ -46,7 +46,10 @@ function sqZone(iata: string, region: AwardRegion, distance: number): { label: s
   const m = macroOf(region);
   if (m === "na") {
     const east = US_EAST_GATEWAYS.has(iata) || !US_WEST_COAST.has(iata);
-    return { label: east ? "Singapore ↔ USA East" : "Singapore ↔ USA West", rowValues: row(44_000, 75_000, east ? 107_000 : 99_000, 150_000) };
+    return {
+      label: east ? "Singapore ↔ USA East" : "Singapore ↔ USA West",
+      rowValues: row(44_000, 75_000, east ? 107_000 : 99_000, 150_000),
+    };
   }
   if (m === "hi") return { label: "Singapore ↔ Hawaii", rowValues: row(40_000, 65_000, 90_000, null) };
   if (m === "eu") return { label: "Singapore ↔ Europe", rowValues: row(38_000, 58_000, 92_000, 142_000) };
@@ -58,11 +61,13 @@ function sqZone(iata: string, region: AwardRegion, distance: number): { label: s
   }
   if (m === "sasia") return { label: "Singapore ↔ India / Sri Lanka", rowValues: row(15_000, 25_000, 36_000, null) };
   if (m === "nasia") {
-    if (JAPAN_KOREA.has(iata)) return { label: "Singapore ↔ Japan / Korea", rowValues: row(27_000, 42_000, 61_000, 95_000) };
+    if (JAPAN_KOREA.has(iata))
+      return { label: "Singapore ↔ Japan / Korea", rowValues: row(27_000, 42_000, 61_000, 95_000) };
     return { label: "Singapore ↔ China / Hong Kong / Taiwan", rowValues: row(14_000, 24_000, 36_000, 60_000) };
   }
   // Southeast Asia, distance-tiered.
-  if (distance <= 700) return { label: "Singapore ↔ Southeast Asia (short)", rowValues: row(6_500, null, 14_000, null) };
+  if (distance <= 700)
+    return { label: "Singapore ↔ Southeast Asia (short)", rowValues: row(6_500, null, 14_000, null) };
   return { label: "Singapore ↔ Southeast Asia", rowValues: row(10_000, 16_000, 22_000, null) };
 }
 
@@ -146,7 +151,13 @@ function priceSQ(input: PriceInput): PriceQuote | null {
   const advantage = d > 0.78;
   const miles = advantage ? roundTo(saver * 1.6, 500) : saver;
   const taxes = govTaxes(input) + carrierSurcharge("SQ", input.cabin, input.distanceMiles);
-  return quote(miles, taxes, advantage ? "dynamic" : "chart", `KrisFlyer: ${label}, ${advantage ? "Advantage (Saver sold out)" : "Saver"}`, advantage ? "peak" : "standard");
+  return quote(
+    miles,
+    taxes,
+    advantage ? "dynamic" : "chart",
+    `KrisFlyer: ${label}, ${advantage ? "Advantage (Saver sold out)" : "Saver"}`,
+    advantage ? "peak" : "standard",
+  );
 }
 
 export const singaporeKrisFlyer: ChartFn = (input) => {

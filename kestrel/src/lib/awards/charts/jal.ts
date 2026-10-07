@@ -61,7 +61,9 @@ function jlZone(iata: string, region: PriceInput["originRegion"]): { label: stri
 }
 
 /** Partner chart, one-way bands (half the published round-trip bands). */
-const PARTNER_BANDS: readonly number[] = [500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 10_000, 12_500, 14_500, 17_000];
+const PARTNER_BANDS: readonly number[] = [
+  500, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 10_000, 12_500, 14_500, 17_000,
+];
 const PARTNER: readonly CabinRow[] = [
   row(6_000, 7_500, 9_000, 12_500),
   row(7_500, 10_000, 12_500, 17_500),
@@ -83,10 +85,18 @@ function priceJL(input: PriceInput): PriceQuote | null {
   const jpDest = JAPAN.has(input.destination);
   if (jpOrigin && jpDest) {
     if (input.cabin === "first" || input.cabin === "premium") return null;
-    const miles = input.cabin === "economy" ? (input.distanceMiles <= 400 ? 6_000 : 7_500) : input.distanceMiles <= 400 ? 10_000 : 12_000;
+    const miles =
+      input.cabin === "economy"
+        ? input.distanceMiles <= 400
+          ? 6_000
+          : 7_500
+        : input.distanceMiles <= 400
+          ? 10_000
+          : 12_000;
     return quote(miles, govTaxes(input), "chart", "JAL Mileage Bank: domestic Japan award");
   }
-  if (!jpOrigin && !jpDest) return genericEstimate(input, { note: "JAL Mileage Bank: estimate (JAL-operated flights touch Japan)" });
+  if (!jpOrigin && !jpDest)
+    return genericEstimate(input, { note: "JAL Mileage Bank: estimate (JAL-operated flights touch Japan)" });
   const other = jpOrigin ? input.destination : input.origin;
   const zone = jlZone(other, jpOrigin ? input.destinationRegion : input.originRegion);
   if (!zone) return genericEstimate(input, { note: "JAL Mileage Bank: estimate" });
@@ -96,7 +106,13 @@ function priceJL(input: PriceInput): PriceQuote | null {
   const plus = d > 0.72;
   const miles = plus ? roundTo(base * 1.5, 500) : base;
   const taxes = govTaxes(input) + carrierSurcharge("JL", input.cabin, input.distanceMiles);
-  return quote(miles, taxes, plus ? "dynamic" : "chart", `JAL Mileage Bank: ${zone.label}, ${plus ? "PLUS (Standard sold out)" : "Standard"}`, plus ? "peak" : "standard");
+  return quote(
+    miles,
+    taxes,
+    plus ? "dynamic" : "chart",
+    `JAL Mileage Bank: ${zone.label}, ${plus ? "PLUS (Standard sold out)" : "Standard"}`,
+    plus ? "peak" : "standard",
+  );
 }
 
 export const jalMileageBank: ChartFn = (input) => {
@@ -107,5 +123,10 @@ export const jalMileageBank: ChartFn = (input) => {
   const miles = PARTNER[bi][input.cabin];
   if (miles == null) return null;
   const taxes = govTaxes(input) + carrierSurcharge(carrier, input.cabin, input.distanceMiles);
-  return quote(miles, taxes, "chart", `JAL Mileage Bank: ${carrier} partner distance chart, ${bandLabel(bi, PARTNER_BANDS)} (one-way = ½ round trip)`);
+  return quote(
+    miles,
+    taxes,
+    "chart",
+    `JAL Mileage Bank: ${carrier} partner distance chart, ${bandLabel(bi, PARTNER_BANDS)} (one-way = ½ round trip)`,
+  );
 };

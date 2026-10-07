@@ -4,13 +4,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type { ParsedTravelIntent } from "@/lib/types";
 import { clamp } from "@/lib/utils";
 import { AI_FAST_MODEL, Anthropic, getAnthropic } from "./client";
-import {
-  intentToQuery,
-  METRO_CODES,
-  parseIntentHeuristic,
-  type AirportResolver,
-  type HeuristicOptions,
-} from "./intent-heuristics";
+import { METRO_CODES, parseIntentHeuristic, type AirportResolver, type HeuristicOptions } from "./intent-heuristics";
 import { getAirport as defaultGetAirport, searchAirports as defaultSearchAirports } from "@/data/airports";
 import { CANONICAL_PROGRAM_IDS, resolveProgramId } from "./program-synonyms";
 import { recordAiUsage } from "./usage";

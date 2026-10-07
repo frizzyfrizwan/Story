@@ -39,7 +39,11 @@ export const emiratesSkywards: ChartFn = (input) => {
   const carrier = input.carrier.toUpperCase();
   if (!canBook(carrier, BOOKABLE)) return null;
   if (!EK_METAL.has(carrier)) {
-    return genericEstimate(input, { factor: 1.15, surcharge: { economy: 60, premium: 90, business: 150, first: 200 }, note: `Skywards: ${carrier} partner estimate` });
+    return genericEstimate(input, {
+      factor: 1.15,
+      surcharge: { economy: 60, premium: 90, business: 150, first: 200 },
+      note: `Skywards: ${carrier} partner estimate`,
+    });
   }
   const bi = bandIndex(input.distanceMiles, BANDS);
   const saver = SAVER[bi][input.cabin];
@@ -48,5 +52,11 @@ export const emiratesSkywards: ChartFn = (input) => {
   const tier = d > 0.85 ? "Flex Plus" : d > 0.7 ? "Flex" : "Saver";
   const miles = tier === "Saver" ? saver : roundTo(saver * (tier === "Flex" ? 1.5 : 2), 250);
   const taxes = govTaxes(input) + carrierSurcharge("EK", input.cabin, input.distanceMiles);
-  return quote(miles, taxes, tier === "Saver" ? "chart" : "dynamic", `Skywards: Emirates-operated ${bandLabel(bi, BANDS)}, Classic ${tier} (high surcharges)`, tier === "Saver" ? "standard" : "peak");
+  return quote(
+    miles,
+    taxes,
+    tier === "Saver" ? "chart" : "dynamic",
+    `Skywards: Emirates-operated ${bandLabel(bi, BANDS)}, Classic ${tier} (high surcharges)`,
+    tier === "Saver" ? "standard" : "peak",
+  );
 };

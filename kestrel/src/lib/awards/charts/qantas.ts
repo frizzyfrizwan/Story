@@ -51,5 +51,11 @@ export const qantasFrequentFlyer: ChartFn = (input) => {
   const premiumCabin = input.cabin === "business" || input.cabin === "first";
   const miles = own || !premiumCabin ? base : roundTo(base * 1.1, 100);
   const taxes = govTaxes(input) + carrierSurcharge(carrier, input.cabin, input.distanceMiles);
-  return quote(miles, taxes, "chart", `Qantas: Classic Reward zone ${bi + 1} (${bandLabel(bi, BANDS)}), ${own ? "Qantas-operated" : `${carrier} partner`}`, "standard");
+  return quote(
+    miles,
+    taxes,
+    "chart",
+    `Qantas: Classic Reward zone ${bi + 1} (${bandLabel(bi, BANDS)}), ${own ? "Qantas-operated" : `${carrier} partner`}`,
+    "standard",
+  );
 };

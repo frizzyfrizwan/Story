@@ -126,7 +126,18 @@ export const americanAAdvantage: ChartFn = (input) => {
     // AA metal: web-special floors (~0.6× saver) at low demand up to AAnytime levels (~3× saver).
     const d = demandOf(input);
     const miles = roundTo(lerp(saver * 0.6, saver * 3, d), 500);
-    return quote(miles, taxes, "dynamic", `AAdvantage: ${za} ↔ ${zb}, American-operated dynamic (saver ${saver.toLocaleString("en-US")})`, peakFromDemand(d));
+    return quote(
+      miles,
+      taxes,
+      "dynamic",
+      `AAdvantage: ${za} ↔ ${zb}, American-operated dynamic (saver ${saver.toLocaleString("en-US")})`,
+      peakFromDemand(d),
+    );
   }
-  return quote(saver, taxes, "chart", `AAdvantage: ${za} ↔ ${zb} partner MileSAAver${carrier === "BA" ? " (BA surcharges apply)" : ""}`);
+  return quote(
+    saver,
+    taxes,
+    "chart",
+    `AAdvantage: ${za} ↔ ${zb} partner MileSAAver${carrier === "BA" ? " (BA surcharges apply)" : ""}`,
+  );
 };

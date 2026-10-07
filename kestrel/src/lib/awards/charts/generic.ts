@@ -25,7 +25,10 @@ export function genericEstimate(input: PriceInput, opts: GenericOptions = {}): P
   const typical = typicalMilesFor(input.cabin, input.distanceMiles);
   // Demand swings the price around the typical value: −20 % at d=0, +dyn·100 % at d=1.
   const demandMul = 1 - 0.2 * dyn * 2 + d * dyn * 2.4;
-  const miles = roundTo(typical * factor * demandMul * jitter(`${input.programId}:${input.origin}${input.destination}`, 0.03), 100);
+  const miles = roundTo(
+    typical * factor * demandMul * jitter(`${input.programId}:${input.origin}${input.destination}`, 0.03),
+    100,
+  );
   const taxes = govTaxes(input) + (opts.surcharge?.[input.cabin] ?? 0);
   return quote(
     miles,

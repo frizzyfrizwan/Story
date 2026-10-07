@@ -116,7 +116,8 @@ function priceKE(input: PriceInput): PriceQuote | null {
     if (input.cabin !== "economy" && input.cabin !== "business") return null;
     return quote(input.cabin === "economy" ? 5_000 : 7_500, govTaxes(input), "chart", "SKYPASS: domestic Korea award");
   }
-  if (!krOrigin && !krDest) return genericEstimate(input, { note: "SKYPASS: estimate (Korean-operated flights touch Korea)" });
+  if (!krOrigin && !krDest)
+    return genericEstimate(input, { note: "SKYPASS: estimate (Korean-operated flights touch Korea)" });
   const zone = keZone(krOrigin ? input.destinationRegion : input.originRegion);
   if (!zone) return genericEstimate(input, { note: "SKYPASS: estimate" });
   const base = zone.rowValues[input.cabin];
@@ -124,7 +125,13 @@ function priceKE(input: PriceInput): PriceQuote | null {
   const peak = kePeak(input.date);
   const miles = peak ? Math.round(base * 1.5) : base;
   const taxes = govTaxes(input) + carrierSurcharge("KE", input.cabin, input.distanceMiles);
-  return quote(miles, taxes, "chart", `SKYPASS: ${zone.label}, ${peak ? "peak season (+50 %)" : "off-peak"}`, peak ? "peak" : "off-peak");
+  return quote(
+    miles,
+    taxes,
+    "chart",
+    `SKYPASS: ${zone.label}, ${peak ? "peak season (+50 %)" : "off-peak"}`,
+    peak ? "peak" : "off-peak",
+  );
 }
 
 export const koreanAirSkypass: ChartFn = (input) => {

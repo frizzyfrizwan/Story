@@ -56,9 +56,21 @@ export const alaskaMileagePlan: ChartFn = (input) => {
   const taxes = govTaxes(input) + (carrier === "BA" ? carrierSurcharge("BA", input.cabin, input.distanceMiles) : 0);
   if (AS_METAL.has(carrier)) {
     const miles = roundTo(base * (0.9 + d * 1.4), 500);
-    return quote(miles, taxes, "dynamic", `Mileage Plan: ${bandLabel(bi, BANDS)}, Alaska-operated dynamic`, peakFromDemand(d));
+    return quote(
+      miles,
+      taxes,
+      "dynamic",
+      `Mileage Plan: ${bandLabel(bi, BANDS)}, Alaska-operated dynamic`,
+      peakFromDemand(d),
+    );
   }
   // Partner space above the floor on busy dates (≈ up to 1.6×).
   const miles = roundTo(base * (1 + Math.max(0, d - 0.5) * 1.2), 500);
-  return quote(miles, taxes, "chart", `Mileage Plan: ${bandLabel(bi, BANDS)} partner award starting at ${base.toLocaleString("en-US")}`, peakFromDemand(d));
+  return quote(
+    miles,
+    taxes,
+    "chart",
+    `Mileage Plan: ${bandLabel(bi, BANDS)} partner award starting at ${base.toLocaleString("en-US")}`,
+    peakFromDemand(d),
+  );
 };

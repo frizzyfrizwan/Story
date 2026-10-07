@@ -57,7 +57,13 @@ export const cathayAsiaMiles: ChartFn = (input) => {
     const d = demandOf(input);
     const choice = d > 0.8;
     const miles = choice ? roundTo(base * 1.5, 500) : base;
-    return quote(miles, taxes, choice ? "dynamic" : "chart", `Asia Miles: Cathay-operated ${bandLabel(bi, BANDS)}, ${choice ? "Choice (Standard sold out)" : "Standard"}`, choice ? "peak" : "standard");
+    return quote(
+      miles,
+      taxes,
+      choice ? "dynamic" : "chart",
+      `Asia Miles: Cathay-operated ${bandLabel(bi, BANDS)}, ${choice ? "Choice (Standard sold out)" : "Standard"}`,
+      choice ? "peak" : "standard",
+    );
   }
   return quote(base, taxes, "chart", `Asia Miles: ${carrier} single-partner award, ${bandLabel(bi, BANDS)}`);
 };

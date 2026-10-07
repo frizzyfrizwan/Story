@@ -124,7 +124,8 @@ export function Calendar({
     const iso = toISODate(next);
     setFocusIso(iso);
     pendingFocus.current = iso;
-    if (!isVisible(iso)) setMonth(iso < month ? addMonths(startOfMonth(next), 1 - numberOfMonths) : startOfMonth(next));
+    // Backwards: the target month becomes the first visible one. Forwards: it becomes the last.
+    if (!isVisible(iso)) setMonth(iso < month ? startOfMonth(next) : addMonths(startOfMonth(next), 1 - numberOfMonths));
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {

@@ -17,24 +17,121 @@ interface Route {
 }
 
 const R = {
-  JFK_LHR: { origin: "JFK", destination: "LHR", originRegion: "north-america", destinationRegion: "europe", distanceMiles: 3451 },
-  JFK_FRA: { origin: "JFK", destination: "FRA", originRegion: "north-america", destinationRegion: "europe", distanceMiles: 3851 },
-  SFO_SIN: { origin: "SFO", destination: "SIN", originRegion: "north-america", destinationRegion: "southeast-asia", distanceMiles: 8446 },
-  SFO_HND: { origin: "SFO", destination: "HND", originRegion: "north-america", destinationRegion: "north-asia", distanceMiles: 5130 },
-  HKG_JFK: { origin: "HKG", destination: "JFK", originRegion: "north-asia", destinationRegion: "north-america", distanceMiles: 8072 },
-  DOH_LHR: { origin: "DOH", destination: "LHR", originRegion: "middle-east", destinationRegion: "europe", distanceMiles: 3253 },
-  DXB_LHR: { origin: "DXB", destination: "LHR", originRegion: "middle-east", destinationRegion: "europe", distanceMiles: 3414 },
-  SYD_LAX: { origin: "SYD", destination: "LAX", originRegion: "oceania", destinationRegion: "north-america", distanceMiles: 7488 },
-  LAX_HNL: { origin: "LAX", destination: "HNL", originRegion: "north-america", destinationRegion: "hawaii", distanceMiles: 2556 },
-  ORD_DEN: { origin: "ORD", destination: "DEN", originRegion: "north-america", destinationRegion: "north-america", distanceMiles: 888 },
-  ICN_JFK: { origin: "ICN", destination: "JFK", originRegion: "north-asia", destinationRegion: "north-america", distanceMiles: 6879 },
-  NRT_LAX: { origin: "NRT", destination: "LAX", originRegion: "north-asia", destinationRegion: "north-america", distanceMiles: 5451 },
-  LHR_JFK: { origin: "LHR", destination: "JFK", originRegion: "europe", destinationRegion: "north-america", distanceMiles: 3451 },
-  AUH_LHR: { origin: "AUH", destination: "LHR", originRegion: "middle-east", destinationRegion: "europe", distanceMiles: 3410 },
-  MIA_GRU: { origin: "MIA", destination: "GRU", originRegion: "north-america", destinationRegion: "south-america", distanceMiles: 4078 },
+  JFK_LHR: {
+    origin: "JFK",
+    destination: "LHR",
+    originRegion: "north-america",
+    destinationRegion: "europe",
+    distanceMiles: 3451,
+  },
+  JFK_FRA: {
+    origin: "JFK",
+    destination: "FRA",
+    originRegion: "north-america",
+    destinationRegion: "europe",
+    distanceMiles: 3851,
+  },
+  SFO_SIN: {
+    origin: "SFO",
+    destination: "SIN",
+    originRegion: "north-america",
+    destinationRegion: "southeast-asia",
+    distanceMiles: 8446,
+  },
+  SFO_HND: {
+    origin: "SFO",
+    destination: "HND",
+    originRegion: "north-america",
+    destinationRegion: "north-asia",
+    distanceMiles: 5130,
+  },
+  HKG_JFK: {
+    origin: "HKG",
+    destination: "JFK",
+    originRegion: "north-asia",
+    destinationRegion: "north-america",
+    distanceMiles: 8072,
+  },
+  DOH_LHR: {
+    origin: "DOH",
+    destination: "LHR",
+    originRegion: "middle-east",
+    destinationRegion: "europe",
+    distanceMiles: 3253,
+  },
+  DXB_LHR: {
+    origin: "DXB",
+    destination: "LHR",
+    originRegion: "middle-east",
+    destinationRegion: "europe",
+    distanceMiles: 3414,
+  },
+  SYD_LAX: {
+    origin: "SYD",
+    destination: "LAX",
+    originRegion: "oceania",
+    destinationRegion: "north-america",
+    distanceMiles: 7488,
+  },
+  LAX_HNL: {
+    origin: "LAX",
+    destination: "HNL",
+    originRegion: "north-america",
+    destinationRegion: "hawaii",
+    distanceMiles: 2556,
+  },
+  ORD_DEN: {
+    origin: "ORD",
+    destination: "DEN",
+    originRegion: "north-america",
+    destinationRegion: "north-america",
+    distanceMiles: 888,
+  },
+  ICN_JFK: {
+    origin: "ICN",
+    destination: "JFK",
+    originRegion: "north-asia",
+    destinationRegion: "north-america",
+    distanceMiles: 6879,
+  },
+  NRT_LAX: {
+    origin: "NRT",
+    destination: "LAX",
+    originRegion: "north-asia",
+    destinationRegion: "north-america",
+    distanceMiles: 5451,
+  },
+  LHR_JFK: {
+    origin: "LHR",
+    destination: "JFK",
+    originRegion: "europe",
+    destinationRegion: "north-america",
+    distanceMiles: 3451,
+  },
+  AUH_LHR: {
+    origin: "AUH",
+    destination: "LHR",
+    originRegion: "middle-east",
+    destinationRegion: "europe",
+    distanceMiles: 3410,
+  },
+  MIA_GRU: {
+    origin: "MIA",
+    destination: "GRU",
+    originRegion: "north-america",
+    destinationRegion: "south-america",
+    distanceMiles: 4078,
+  },
 } satisfies Record<string, Route>;
 
-function mk(programId: string, carrier: string, route: Route, cabin: Cabin = "business", date = OFF, demand?: number): PriceInput {
+function mk(
+  programId: string,
+  carrier: string,
+  route: Route,
+  cabin: Cabin = "business",
+  date = OFF,
+  demand?: number,
+): PriceInput {
   return { programId, carrier, cabin, date, demand, ...route };
 }
 
@@ -102,13 +199,53 @@ describe("published chart values (as published 2025)", () => {
     const qr = priceAward(mk("qatar-privilege-club", "QR", R.DOH_LHR));
     expect(qr!.miles).toBe(70_000);
     expect(priceAward(mk("qatar-privilege-club", "QR", R.DOH_LHR, "premium"))).toBeNull(); // Qatar sells no PE
-    const ibMad = priceAward(mk("iberia-plus", "IB", { origin: "MAD", destination: "JFK", originRegion: "europe", destinationRegion: "north-america", distanceMiles: 3589 }));
+    const ibMad = priceAward(
+      mk("iberia-plus", "IB", {
+        origin: "MAD",
+        destination: "JFK",
+        originRegion: "europe",
+        destinationRegion: "north-america",
+        distanceMiles: 3589,
+      }),
+    );
     expect(ibMad!.miles).toBe(34_000);
     expect(ibMad!.taxesUsd).toBeLessThan(250);
-    const ei = priceAward(mk("aer-lingus-aerclub", "EI", { origin: "DUB", destination: "BOS", originRegion: "europe", destinationRegion: "north-america", distanceMiles: 2993 }));
+    const ei = priceAward(
+      mk("aer-lingus-aerclub", "EI", {
+        origin: "DUB",
+        destination: "BOS",
+        originRegion: "europe",
+        destinationRegion: "north-america",
+        distanceMiles: 2993,
+      }),
+    );
     expect(ei!.miles).toBe(50_000);
-    expect(priceAward(mk("aer-lingus-aerclub", "EI", { origin: "DUB", destination: "BOS", originRegion: "europe", destinationRegion: "north-america", distanceMiles: 2993 }, "business", PEAK))!.miles).toBe(60_000);
-    const ay = priceAward(mk("finnair-plus", "AY", { origin: "HEL", destination: "JFK", originRegion: "europe", destinationRegion: "north-america", distanceMiles: 4120 }));
+    expect(
+      priceAward(
+        mk(
+          "aer-lingus-aerclub",
+          "EI",
+          {
+            origin: "DUB",
+            destination: "BOS",
+            originRegion: "europe",
+            destinationRegion: "north-america",
+            distanceMiles: 2993,
+          },
+          "business",
+          PEAK,
+        ),
+      )!.miles,
+    ).toBe(60_000);
+    const ay = priceAward(
+      mk("finnair-plus", "AY", {
+        origin: "HEL",
+        destination: "JFK",
+        originRegion: "europe",
+        destinationRegion: "north-america",
+        distanceMiles: 4120,
+      }),
+    );
     expect(ay!.miles).toBe(62_500);
   });
 
@@ -131,7 +268,9 @@ describe("published chart values (as published 2025)", () => {
     const j = priceAward(mk("singapore-krisflyer", "SQ", R.SFO_SIN, "business", OFF, 0.3));
     expect(j!.miles).toBe(99_000);
     expect(j!.basis).toBe("chart");
-    const y = priceAward(mk("singapore-krisflyer", "SQ", { ...R.SFO_SIN, origin: "JFK", distanceMiles: 9537 }, "economy", OFF, 0.3));
+    const y = priceAward(
+      mk("singapore-krisflyer", "SQ", { ...R.SFO_SIN, origin: "JFK", distanceMiles: 9537 }, "economy", OFF, 0.3),
+    );
     expect(y!.miles).toBe(44_000);
     const adv = priceAward(mk("singapore-krisflyer", "SQ", R.SFO_SIN, "business", OFF, 0.95));
     expect(adv!.miles).toBeGreaterThan(99_000);
@@ -142,7 +281,22 @@ describe("published chart values (as published 2025)", () => {
     expect(priceAward(mk("turkish-miles-smiles", "UA", R.LAX_HNL, "economy"))!.miles).toBe(7_500);
     expect(priceAward(mk("turkish-miles-smiles", "UA", R.LAX_HNL, "business"))!.miles).toBe(12_500);
     expect(priceAward(mk("turkish-miles-smiles", "LH", R.JFK_FRA))!.miles).toBe(45_000);
-    const tk = priceAward(mk("turkish-miles-smiles", "TK", { origin: "IST", destination: "JFK", originRegion: "europe", destinationRegion: "north-america", distanceMiles: 5009 }, "business", OFF, 0.2));
+    const tk = priceAward(
+      mk(
+        "turkish-miles-smiles",
+        "TK",
+        {
+          origin: "IST",
+          destination: "JFK",
+          originRegion: "europe",
+          destinationRegion: "north-america",
+          distanceMiles: 5009,
+        },
+        "business",
+        OFF,
+        0.2,
+      ),
+    );
     expect(tk!.miles).toBe(45_000);
     expect(tk!.taxesUsd).toBeGreaterThanOrEqual(200);
     expect(tk!.taxesUsd).toBeLessThanOrEqual(400);
@@ -150,7 +304,25 @@ describe("published chart values (as published 2025)", () => {
 
   it("Mileage Plan: NA–Europe J from 55k, NA–Asia J from 60k, Cathay First 70k; only BA surcharges", () => {
     expect(priceAward(mk("alaska-mileage-plan", "AA", R.JFK_LHR, "business", OFF, 0.3))!.miles).toBe(55_000);
-    expect(priceAward(mk("alaska-mileage-plan", "CX", { ...R.HKG_JFK, origin: "SFO", destination: "HKG", originRegion: "north-america", destinationRegion: "north-asia", distanceMiles: 6927 }, "business", OFF, 0.3))!.miles).toBe(60_000);
+    expect(
+      priceAward(
+        mk(
+          "alaska-mileage-plan",
+          "CX",
+          {
+            ...R.HKG_JFK,
+            origin: "SFO",
+            destination: "HKG",
+            originRegion: "north-america",
+            destinationRegion: "north-asia",
+            distanceMiles: 6927,
+          },
+          "business",
+          OFF,
+          0.3,
+        ),
+      )!.miles,
+    ).toBe(60_000);
     expect(priceAward(mk("alaska-mileage-plan", "CX", R.HKG_JFK, "first", OFF, 0.3))!.miles).toBe(85_000);
     expect(priceAward(mk("alaska-mileage-plan", "CX", R.HKG_JFK, "business", OFF, 0.3))!.taxesUsd).toBeLessThan(120);
     expect(priceAward(mk("alaska-mileage-plan", "BA", R.JFK_LHR, "business", OFF, 0.3))!.taxesUsd).toBeGreaterThan(400);
@@ -235,7 +407,32 @@ describe("published chart values (as published 2025)", () => {
 
 describe("chart invariants across every program", () => {
   const routes = Object.values(R);
-  const carriers = ["UA", "AA", "DL", "BA", "LH", "AF", "SQ", "NH", "CX", "JL", "QR", "EK", "KE", "QF", "AC", "TK", "AV", "IB", "VS", "EY", "WN", "B6", "LA", "NZ"];
+  const carriers = [
+    "UA",
+    "AA",
+    "DL",
+    "BA",
+    "LH",
+    "AF",
+    "SQ",
+    "NH",
+    "CX",
+    "JL",
+    "QR",
+    "EK",
+    "KE",
+    "QF",
+    "AC",
+    "TK",
+    "AV",
+    "IB",
+    "VS",
+    "EY",
+    "WN",
+    "B6",
+    "LA",
+    "NZ",
+  ];
 
   it("every quote has positive integer miles, non-negative taxes and a valid basis", () => {
     let quotes = 0;
@@ -246,7 +443,10 @@ describe("chart invariants across every program", () => {
             const q = priceAward(mk(programId, carrier, route, cabin, PEAK));
             if (!q) continue;
             quotes++;
-            expect(Number.isInteger(q.miles), `${programId} ${carrier} ${route.origin}-${route.destination} ${cabin}`).toBe(true);
+            expect(
+              Number.isInteger(q.miles),
+              `${programId} ${carrier} ${route.origin}-${route.destination} ${cabin}`,
+            ).toBe(true);
             expect(q.miles).toBeGreaterThan(0);
             expect(q.miles).toBeLessThan(600_000);
             expect(q.taxesUsd).toBeGreaterThanOrEqual(0);
@@ -264,14 +464,38 @@ describe("chart invariants across every program", () => {
           const y = priceAward(mk(programId, carrier, route, "economy", OFF, 0.5));
           const j = priceAward(mk(programId, carrier, route, "business", OFF, 0.5));
           const f = priceAward(mk(programId, carrier, route, "first", OFF, 0.5));
-          if (y && j) expect(j.miles, `${programId} ${carrier} ${route.origin}-${route.destination} J<Y`).toBeGreaterThanOrEqual(y.miles);
-          if (j && f) expect(f.miles, `${programId} ${carrier} ${route.origin}-${route.destination} F<J`).toBeGreaterThanOrEqual(j.miles);
+          if (y && j)
+            expect(j.miles, `${programId} ${carrier} ${route.origin}-${route.destination} J<Y`).toBeGreaterThanOrEqual(
+              y.miles,
+            );
+          if (j && f)
+            expect(f.miles, `${programId} ${carrier} ${route.origin}-${route.destination} F<J`).toBeGreaterThanOrEqual(
+              j.miles,
+            );
         }
   });
 
   it("dynamic charts are monotonic in demand", () => {
-    const dynamicIds = ["united-mileageplus", "delta-skymiles", "american-aadvantage", "flying-blue", "etihad-guest", "aeroplan", "avianca-lifemiles", "alaska-mileage-plan"];
-    const carrierFor: Record<string, string> = { "united-mileageplus": "UA", "delta-skymiles": "DL", "american-aadvantage": "AA", "flying-blue": "AF", "etihad-guest": "EY", aeroplan: "AC", "avianca-lifemiles": "AV", "alaska-mileage-plan": "AS" };
+    const dynamicIds = [
+      "united-mileageplus",
+      "delta-skymiles",
+      "american-aadvantage",
+      "flying-blue",
+      "etihad-guest",
+      "aeroplan",
+      "avianca-lifemiles",
+      "alaska-mileage-plan",
+    ];
+    const carrierFor: Record<string, string> = {
+      "united-mileageplus": "UA",
+      "delta-skymiles": "DL",
+      "american-aadvantage": "AA",
+      "flying-blue": "AF",
+      "etihad-guest": "EY",
+      aeroplan: "AC",
+      "avianca-lifemiles": "AV",
+      "alaska-mileage-plan": "AS",
+    };
     const route = R.JFK_FRA;
     for (const id of dynamicIds) {
       const r = id === "etihad-guest" ? R.AUH_LHR : route;

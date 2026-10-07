@@ -59,7 +59,12 @@ function zoneOf(r: AwardRegion): Zone {
 
 type Range = [number, number];
 type RangeRow = Record<Cabin, Range | null>;
-const r = (e: Range, p: Range | null, b: Range, f: Range | null = null): RangeRow => ({ economy: e, premium: p, business: b, first: f });
+const r = (e: Range, p: Range | null, b: Range, f: Range | null = null): RangeRow => ({
+  economy: e,
+  premium: p,
+  business: b,
+  first: f,
+});
 
 /** Lowest → typical-high one-way prices by zone pair. */
 const ZONES: Record<string, RangeRow> = {
@@ -121,7 +126,13 @@ export const flyingBlue: ChartFn = (input) => {
     // Partner First (e.g. Korean Air): roughly double the business level.
     if (input.cabin === "first" && ranges.business) {
       const d = demandOf(input);
-      return quote(roundTo(lerp(ranges.business[0], ranges.business[1], d) * 2, 500), govTaxes(input) + (YQ_PARTNER[carrier]?.first ?? 0), "estimate", `Flying Blue: ${za} ↔ ${zb} partner First estimate`, peakFromDemand(d));
+      return quote(
+        roundTo(lerp(ranges.business[0], ranges.business[1], d) * 2, 500),
+        govTaxes(input) + (YQ_PARTNER[carrier]?.first ?? 0),
+        "estimate",
+        `Flying Blue: ${za} ↔ ${zb} partner First estimate`,
+        peakFromDemand(d),
+      );
     }
     return null;
   }

@@ -23,12 +23,40 @@ import {
 import { genericEstimate } from "./generic";
 
 const EY_METAL = new Set(["EY"]);
-const BOOKABLE = allow(["EY", "AA", "AC", "JU", "HM", "AT", "GA", "KE", "MH", "SK", "AF", "KL", "PR", "WY", "VA", "SN", "PG", "GF", "HU", "VN", "AI", "B6"]);
+const BOOKABLE = allow([
+  "EY",
+  "AA",
+  "AC",
+  "JU",
+  "HM",
+  "AT",
+  "GA",
+  "KE",
+  "MH",
+  "SK",
+  "AF",
+  "KL",
+  "PR",
+  "WY",
+  "VA",
+  "SN",
+  "PG",
+  "GF",
+  "HU",
+  "VN",
+  "AI",
+  "B6",
+]);
 const ABU_DHABI = new Set(["AUH"]);
 
 type Range = [number, number];
 type RangeRow = Record<Cabin, Range | null>;
-const r = (e: Range, p: Range | null, b: Range, f: Range | null): RangeRow => ({ economy: e, premium: p, business: b, first: f });
+const r = (e: Range, p: Range | null, b: Range, f: Range | null): RangeRow => ({
+  economy: e,
+  premium: p,
+  business: b,
+  first: f,
+});
 
 const FROM_AUH: Record<string, RangeRow> = {
   eu: r([22_000, 45_000], [35_000, 60_000], [55_000, 100_000], [100_000, 180_000]),
@@ -43,7 +71,11 @@ export const etihadGuest: ChartFn = (input) => {
   const carrier = input.carrier.toUpperCase();
   if (!canBook(carrier, BOOKABLE)) return null;
   if (!EY_METAL.has(carrier)) {
-    return genericEstimate(input, { factor: 1.1, surcharge: { economy: 30, premium: 40, business: 60, first: 80 }, note: `Etihad Guest: ${carrier} partner estimate` });
+    return genericEstimate(input, {
+      factor: 1.1,
+      surcharge: { economy: 30, premium: 40, business: 60, first: 80 },
+      note: `Etihad Guest: ${carrier} partner estimate`,
+    });
   }
   const auhOrigin = ABU_DHABI.has(input.origin);
   const auhDest = ABU_DHABI.has(input.destination);
@@ -57,5 +89,11 @@ export const etihadGuest: ChartFn = (input) => {
   const d = demandOf(input);
   const miles = roundTo(lerp(range[0], range[1], d), 500);
   const taxes = govTaxes(input) + carrierSurcharge("EY", input.cabin, input.distanceMiles);
-  return quote(miles, taxes, "dynamic", `Etihad Guest: Abu Dhabi ↔ ${key} dynamic (typical ${range[0].toLocaleString("en-US")}–${range[1].toLocaleString("en-US")})`, peakFromDemand(d));
+  return quote(
+    miles,
+    taxes,
+    "dynamic",
+    `Etihad Guest: Abu Dhabi ↔ ${key} dynamic (typical ${range[0].toLocaleString("en-US")}–${range[1].toLocaleString("en-US")})`,
+    peakFromDemand(d),
+  );
 };

@@ -51,18 +51,79 @@ export const row = (
 
 /** Star Alliance members (2025) plus Lufthansa-group/Air Canada affiliates that Star programs price as Star. */
 export const STAR: readonly string[] = [
-  "AC", "RV", "UA", "NH", "SQ", "AV", "TK", "BR", "TG", "OZ", "LH", "LX", "OS", "SN", "LO", "TP", "A3", "AI",
-  "NZ", "CM", "ET", "MS", "SA", "CA", "ZH", "OU", "EN", "4Y", "WK", "EW",
+  "AC",
+  "RV",
+  "UA",
+  "NH",
+  "SQ",
+  "AV",
+  "TK",
+  "BR",
+  "TG",
+  "OZ",
+  "LH",
+  "LX",
+  "OS",
+  "SN",
+  "LO",
+  "TP",
+  "A3",
+  "AI",
+  "NZ",
+  "CM",
+  "ET",
+  "MS",
+  "SA",
+  "CA",
+  "ZH",
+  "OU",
+  "EN",
+  "4Y",
+  "WK",
+  "EW",
 ];
 
 /** oneworld members (2025, incl. Oman Air & Fiji Airways) plus Hawaiian (Alaska Air Group, joining 2026). */
 export const ONEWORLD: readonly string[] = [
-  "AA", "BA", "QR", "CX", "JL", "AS", "QF", "IB", "AY", "RJ", "MH", "UL", "AT", "FJ", "WY", "HA",
+  "AA",
+  "BA",
+  "QR",
+  "CX",
+  "JL",
+  "AS",
+  "QF",
+  "IB",
+  "AY",
+  "RJ",
+  "MH",
+  "UL",
+  "AT",
+  "FJ",
+  "WY",
+  "HA",
 ];
 
 /** SkyTeam members (2025; SAS joined Sept 2024, ITA still listed). */
 export const SKYTEAM: readonly string[] = [
-  "DL", "AF", "KL", "KE", "AM", "VS", "SK", "AZ", "VN", "CI", "MU", "GA", "SV", "KQ", "ME", "RO", "OK", "UX", "AR",
+  "DL",
+  "AF",
+  "KL",
+  "KE",
+  "AM",
+  "VS",
+  "SK",
+  "AZ",
+  "VN",
+  "CI",
+  "MU",
+  "GA",
+  "SV",
+  "KQ",
+  "ME",
+  "RO",
+  "OK",
+  "UX",
+  "AR",
 ];
 
 /** Build a de-duplicated allowlist from alliance lists plus named partners. */
@@ -148,14 +209,29 @@ export function bandIndex(distance: number, upperBounds: readonly number[]): num
 export function bandLabel(index: number, upperBounds: readonly number[]): string {
   const lo = index === 0 ? 0 : upperBounds[index - 1] + 1;
   const hi = upperBounds[index];
-  return hi == null ? `${lo.toLocaleString("en-US")}+ mi` : `${lo.toLocaleString("en-US")}–${hi.toLocaleString("en-US")} mi`;
+  return hi == null
+    ? `${lo.toLocaleString("en-US")}+ mi`
+    : `${lo.toLocaleString("en-US")}–${hi.toLocaleString("en-US")} mi`;
 }
 
 // ─── Airports used for finer-grained tax / zone decisions ──────
 
 export const CANADA_AIRPORTS = new Set(["YYZ", "YVR", "YUL", "YYC", "YOW", "YEG", "YHZ", "YWG", "YQB", "YYJ"]);
 export const MEXICO_AIRPORTS = new Set(["MEX", "CUN", "GDL", "MTY", "SJD", "PVR", "TIJ", "NLU", "MID", "OAX"]);
-export const UK_AIRPORTS = new Set(["LHR", "LGW", "LCY", "STN", "LTN", "MAN", "EDI", "GLA", "BHX", "BRS", "NCL", "BFS"]);
+export const UK_AIRPORTS = new Set([
+  "LHR",
+  "LGW",
+  "LCY",
+  "STN",
+  "LTN",
+  "MAN",
+  "EDI",
+  "GLA",
+  "BHX",
+  "BRS",
+  "NCL",
+  "BFS",
+]);
 export const US_WEST_COAST = new Set(["LAX", "SFO", "SJC", "SEA", "PDX", "SAN", "LAS", "OAK", "SMF", "YVR", "HNL"]);
 export const US_CENTRAL = new Set(["ORD", "IAH", "DFW", "DEN", "MSP", "DTW", "AUS", "MEX", "YYC", "MDW", "STL"]);
 
@@ -273,7 +349,9 @@ export function seasonalDemand(date: string, seed = ""): number {
 }
 
 export function demandOf(input: PriceInput): number {
-  return input.demand == null ? seasonalDemand(input.date, `${input.origin}-${input.destination}`) : clamp(input.demand, 0, 1);
+  return input.demand == null
+    ? seasonalDemand(input.date, `${input.origin}-${input.destination}`)
+    : clamp(input.demand, 0, 1);
 }
 
 export function peakFromDemand(d: number): PriceQuote["peak"] {
@@ -355,7 +433,7 @@ export function govTaxes(input: PriceInput): number {
   let departure: number;
   if (UK_AIRPORTS.has(origin)) {
     // UK Air Passenger Duty (2025): long-haul Y ≈ £90, premium ≈ £224 + airport PSC.
-    const longHaul = !(dMacro === "eu" || dMacro === "af" && destinationRegion === "north-africa");
+    const longHaul = !(dMacro === "eu" || (dMacro === "af" && destinationRegion === "north-africa"));
     departure = longHaul ? (premium ? 370 : 165) : premium ? 100 : 55;
   } else {
     switch (oMacro) {

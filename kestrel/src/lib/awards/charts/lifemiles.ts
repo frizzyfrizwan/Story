@@ -108,12 +108,19 @@ export const aviancaLifeMiles: ChartFn = (input) => {
   if (!chartRow) return genericEstimate(input, { note: "LifeMiles: estimate (zone pair not published)" });
   let miles = chartRow[input.cabin];
   if (miles == null) return null;
-  if (za === "NA" && zb === "NA" && input.distanceMiles > 1500) miles = input.cabin === "economy" ? 12_500 : input.cabin === "business" ? 25_000 : 35_000;
+  if (za === "NA" && zb === "NA" && input.distanceMiles > 1500)
+    miles = input.cabin === "economy" ? 12_500 : input.cabin === "business" ? 25_000 : 35_000;
 
   const taxes = govTaxes(input); // no YQ, ever
   if (AV_METAL.has(carrier)) {
     const d = demandOf(input);
-    return quote(roundTo(miles * (0.85 + d * 0.5), 100), taxes, "dynamic", `LifeMiles: ${za} ↔ ${zb}, Avianca-operated dynamic (chart ${miles.toLocaleString("en-US")})`, peakFromDemand(d));
+    return quote(
+      roundTo(miles * (0.85 + d * 0.5), 100),
+      taxes,
+      "dynamic",
+      `LifeMiles: ${za} ↔ ${zb}, Avianca-operated dynamic (chart ${miles.toLocaleString("en-US")})`,
+      peakFromDemand(d),
+    );
   }
   return quote(miles, taxes, "chart", `LifeMiles: ${za} ↔ ${zb} Star Alliance chart (no surcharges)`);
 };

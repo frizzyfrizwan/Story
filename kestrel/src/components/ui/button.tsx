@@ -105,7 +105,10 @@ export function Button(props: ButtonProps) {
   );
 }
 
-export type IconButtonProps = Omit<ButtonProps, "size" | "leading" | "trailing" | "children"> & {
+/** `Omit` that distributes over unions (so `disabled`/`onClick` survive on the button branch). */
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
+export type IconButtonProps = DistributiveOmit<ButtonProps, "size" | "leading" | "trailing" | "children"> & {
   /** Accessible name — required because the button has no visible text. */
   label: string;
   size?: "sm" | "md";

@@ -63,11 +63,21 @@ describe("scoreFare", () => {
 
   it("awards badges from thresholds", () => {
     const sweet = scoreFare({ ...base, taxesUsd: 40, seats: 5, stops: 0 });
-    expect(sweet.badges).toEqual(expect.arrayContaining([BADGE.sweetSpot, BADGE.lowTaxes, BADGE.wideOpen, BADGE.nonstop]));
+    expect(sweet.badges).toEqual(
+      expect.arrayContaining([BADGE.sweetSpot, BADGE.lowTaxes, BADGE.wideOpen, BADGE.nonstop]),
+    );
     expect(sweet.badges).not.toContain(BADGE.surchargeHeavy);
     expect(sweet.badges).not.toContain(BADGE.rare);
 
-    const rare = scoreFare({ ...base, cabin: "first", miles: 90_000, cashUsd: 9_000, taxesUsd: 650, seats: 1, stops: 1 });
+    const rare = scoreFare({
+      ...base,
+      cabin: "first",
+      miles: 90_000,
+      cashUsd: 9_000,
+      taxesUsd: 650,
+      seats: 1,
+      stops: 1,
+    });
     expect(rare.badges).toContain(BADGE.rare);
     expect(rare.badges).toContain(BADGE.surchargeHeavy);
     expect(rare.badges).not.toContain(BADGE.nonstop);

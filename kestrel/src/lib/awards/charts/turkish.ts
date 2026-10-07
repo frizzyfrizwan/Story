@@ -106,7 +106,13 @@ export const turkishMilesSmiles: ChartFn = (input) => {
     // TK metal since 2024: chart level is the floor, busy dates run up to ≈ 1.3×.
     const d = demandOf(input);
     const miles = roundTo(base * (1 + Math.max(0, d - 0.5) * 0.6), 500);
-    return quote(miles, taxes, "dynamic", `Miles&Smiles: ${za} ↔ ${zb}, Turkish-operated (chart ${base.toLocaleString("en-US")}, variable)`, peakFromDemand(d));
+    return quote(
+      miles,
+      taxes,
+      "dynamic",
+      `Miles&Smiles: ${za} ↔ ${zb}, Turkish-operated (chart ${base.toLocaleString("en-US")}, variable)`,
+      peakFromDemand(d),
+    );
   }
   return quote(base, taxes, "chart", `Miles&Smiles: ${za} ↔ ${zb} Star Alliance partner chart`);
 };

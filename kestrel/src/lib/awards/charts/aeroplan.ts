@@ -94,7 +94,11 @@ const CHART: Record<string, ZoneChart> = {
   "NA|SA": {
     label: "North America ↔ South America",
     bands: [2500, 5000],
-    partner: [row(25_000, 30_000, 40_000, 55_000), row(30_000, 40_000, 50_000, 70_000), row(40_000, 50_000, 60_000, 80_000)],
+    partner: [
+      row(25_000, 30_000, 40_000, 55_000),
+      row(30_000, 40_000, 50_000, 70_000),
+      row(40_000, 50_000, 60_000, 80_000),
+    ],
   },
   "ATL|ATL": {
     label: "Within Atlantic",
@@ -131,17 +135,30 @@ const CHART: Record<string, ZoneChart> = {
   "ATL|SA": {
     label: "Atlantic ↔ South America",
     bands: [5000, 7500],
-    partner: [row(35_000, 45_000, 65_000, 90_000), row(45_000, 55_000, 80_000, 110_000), row(55_000, 65_000, 95_000, 125_000)],
+    partner: [
+      row(35_000, 45_000, 65_000, 90_000),
+      row(45_000, 55_000, 80_000, 110_000),
+      row(55_000, 65_000, 95_000, 125_000),
+    ],
   },
   "PAC|SA": {
     label: "Pacific ↔ South America",
     bands: [7500, 11_000],
-    partner: [row(45_000, 55_000, 85_000, 115_000), row(55_000, 65_000, 100_000, 135_000), row(65_000, 75_000, 115_000, 150_000)],
+    partner: [
+      row(45_000, 55_000, 85_000, 115_000),
+      row(55_000, 65_000, 100_000, 135_000),
+      row(65_000, 75_000, 115_000, 150_000),
+    ],
   },
   "SA|SA": {
     label: "Within South America",
     bands: [500, 1500, 3000],
-    partner: [row(7_500, null, 15_000, null), row(10_000, null, 20_000, null), row(15_000, 20_000, 30_000, null), row(25_000, 30_000, 45_000, null)],
+    partner: [
+      row(7_500, null, 15_000, null),
+      row(10_000, null, 20_000, null),
+      row(15_000, 20_000, 30_000, null),
+      row(25_000, 30_000, 45_000, null),
+    ],
   },
 };
 
@@ -165,7 +182,19 @@ export const aeroplan: ChartFn = (input) => {
     // partner level at low demand up to ≈ 2.2× at peak.
     const d = demandOf(input);
     const miles = roundTo(base * (0.9 + d * 1.3), 100);
-    return quote(miles, govTaxes(input), "dynamic", `Aeroplan: ${chart.label}, ${bandText} (Air Canada dynamic)`, genericPeak(input.date));
+    return quote(
+      miles,
+      govTaxes(input),
+      "dynamic",
+      `Aeroplan: ${chart.label}, ${bandText} (Air Canada dynamic)`,
+      genericPeak(input.date),
+    );
   }
-  return quote(base, govTaxes(input) + PARTNER_FEE_USD, "chart", `Aeroplan: ${chart.label}, ${bandText} (partner, no surcharges)`, genericPeak(input.date));
+  return quote(
+    base,
+    govTaxes(input) + PARTNER_FEE_USD,
+    "chart",
+    `Aeroplan: ${chart.label}, ${bandText} (partner, no surcharges)`,
+    genericPeak(input.date),
+  );
 };
