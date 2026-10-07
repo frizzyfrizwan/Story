@@ -30,6 +30,9 @@ const STOP = new Set([
 ]);
 
 /** "World of Hyatt" → "WH", "Aeroplan" → "AE", "British Airways Club" → "BA" */
+/** Fixed-precision geometry so server and client serialise SVG attributes identically (avoids hydration mismatches). */
+const round3 = (n: number) => Math.round(n * 1000) / 1000;
+
 export function monogram(name: string): string {
   const words = name
     .replace(/[^A-Za-z0-9 &-]/g, " ")
@@ -111,8 +114,8 @@ export function ProgramLogo({ id, name, color, size = 40, letters, className }: 
           <circle key={i} cx={32} cy={6} r={1} fill={ring} opacity={0.75} transform={`rotate(${15 * i} 32 32)`} />
         ))}
       <circle
-        cx={32 + Math.cos(accentAngle) * 29.5}
-        cy={32 + Math.sin(accentAngle) * 29.5}
+        cx={round3(32 + Math.cos(accentAngle) * 29.5)}
+        cy={round3(32 + Math.sin(accentAngle) * 29.5)}
         r={2.6}
         fill={ring}
         stroke="var(--bg-elev-2)"

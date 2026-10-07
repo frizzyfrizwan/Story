@@ -212,12 +212,15 @@ function Palm({ x, y, lean, scale, color }: { x: number; y: number; lean: number
       <path d={`M${x} ${y} Q${x + lean * 4 * scale} ${y - 24 * scale} ${top[0]} ${top[1]}`} strokeWidth={2.4 * scale} />
       {[-150, -110, -70, -30, 10, 40].map((a, i) => {
         const r = (a * Math.PI) / 180;
-        const ex = top[0] + Math.cos(r) * 20 * scale;
-        const ey = top[1] + Math.sin(r) * 12 * scale + 8 * scale;
+        // Fixed precision: server and browser V8 builds can differ in the last ULP of sin/cos,
+        // which would otherwise change the path string and trigger a hydration mismatch.
+        const fx = (n: number) => Math.round(n * 1000) / 1000;
+        const ex = fx(top[0] + Math.cos(r) * 20 * scale);
+        const ey = fx(top[1] + Math.sin(r) * 12 * scale + 8 * scale);
         return (
           <path
             key={i}
-            d={`M${top[0]} ${top[1]} Q${(top[0] + ex) / 2 + Math.cos(r) * 4} ${top[1] - 10 * scale} ${ex} ${ey}`}
+            d={`M${fx(top[0])} ${fx(top[1])} Q${fx((top[0] + ex) / 2 + Math.cos(r) * 4)} ${fx(top[1] - 10 * scale)} ${ex} ${ey}`}
             strokeWidth={1.8 * scale}
           />
         );

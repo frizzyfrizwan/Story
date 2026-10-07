@@ -1,7 +1,8 @@
 import type { ComponentProps, ReactNode } from "react";
 import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { NumberTicker, resolveNumberFormat, type NumberFormat } from "./number-ticker";
+import { NumberTicker } from "./number-ticker";
+import { resolveNumberFormat, type NumberFormat } from "./number-format";
 import { Skeleton } from "./skeleton";
 
 export type StatTone = "signal" | "aurora" | "violet" | "gold" | "sky" | "rose";

@@ -41,7 +41,8 @@ export function ProceduralAvatar({ seed, size = 40, square = false, alt, classNa
 
   const feathers = Array.from({ length: count }, (_, i) => {
     const angle = -spread / 2 + (spread * i) / (count - 1);
-    const l = length * (0.78 + 0.22 * Math.cos(((i - (count - 1) / 2) / count) * Math.PI));
+    // Rounded so server and browser serialise identical SVG numbers (hydration-safe).
+    const l = Math.round(length * (0.78 + 0.22 * Math.cos(((i - (count - 1) / 2) / count) * Math.PI)) * 1000) / 1000;
     return { angle, l, fill: i % 2 === 0 ? a : b, op: i % 2 === 0 ? 0.95 : 0.75 };
   });
 

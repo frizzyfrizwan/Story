@@ -6,6 +6,7 @@
  */
 
 import { ListFilter, RotateCcw, SlidersHorizontal } from "lucide-react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { AirlineTail, ProgramLogo } from "@/components/art";
 import { Badge, Button, Checkbox, SegmentedControl, Sheet, SheetClose, SheetContent, SheetTrigger, Slider, Switch } from "@/components/ui";
@@ -48,6 +49,11 @@ const MILES_STEP = 5_000;
 
 export function FilterControls({ filters, facets, wallet, onChange }: Pick<FiltersProps, "filters" | "facets" | "wallet" | "onChange">) {
   const [allPrograms, setAllPrograms] = useState(false);
+  // Build the sign-in return URL from router state so server and client render the same href.
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const qs = searchParams.toString();
+  const signInHref = loginHref(qs ? `${pathname}?${qs}` : pathname);
   const programs = allPrograms ? facets.programs : facets.programs.slice(0, 8);
   const hiddenPrograms = facets.programs.length - programs.length;
 
@@ -198,7 +204,7 @@ export function FilterControls({ filters, facets, wallet, onChange }: Pick<Filte
                 )
               ) : (
                 <>
-                  <a href={loginHref()} className="text-sky underline-offset-2 hover:underline">
+                  <a href={signInHref} className="text-sky underline-offset-2 hover:underline">
                     Sign in
                   </a>{" "}
                   to use your wallet

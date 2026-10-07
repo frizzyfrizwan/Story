@@ -2,28 +2,10 @@
 
 import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { useInView, useReducedMotion } from "motion/react";
-import { cn, clamp, fmtCompact, fmtCpp, fmtInt, fmtUsd } from "@/lib/utils";
+import { cn, clamp } from "@/lib/utils";
+import { resolveNumberFormat, type NumberFormat } from "./number-format";
 
-/**
- * Serialisable format keys — use these from server components (functions cannot
- * cross the server → client boundary). Client components may pass a function.
- */
-export type NumberFormatKey = "int" | "compact" | "usd" | "cpp" | "percent";
-export type NumberFormat = NumberFormatKey | ((n: number) => string);
-
-const FORMATS: Record<NumberFormatKey, (n: number) => string> = {
-  int: fmtInt,
-  compact: fmtCompact,
-  usd: fmtUsd,
-  cpp: fmtCpp,
-  percent: (n) => `${n.toLocaleString("en-US", { maximumFractionDigits: 1 })}%`,
-};
-
-export function resolveNumberFormat(format: NumberFormat | undefined, decimals = 0): (n: number) => string {
-  if (typeof format === "function") return format;
-  if (format && FORMATS[format]) return FORMATS[format];
-  return (n: number) => n.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
-}
+export type { NumberFormat, NumberFormatKey } from "./number-format";
 
 export interface NumberTickerProps extends Omit<ComponentProps<"span">, "children"> {
   value: number;

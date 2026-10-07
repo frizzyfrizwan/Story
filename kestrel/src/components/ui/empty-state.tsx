@@ -100,7 +100,7 @@ export function RadarKestrel({ className }: { className?: string }) {
         {/* Sweeping beam */}
         <g className="motion-safe:animate-[spin_7s_linear_infinite]" style={{ transformOrigin: `${cx}px ${cy}px` }}>
           <path
-            d={`M${cx} ${cy} L${cx + 72} ${cy} A72 72 0 0 0 ${cx + 72 * Math.cos(-Math.PI / 3)} ${cy + 72 * Math.sin(-Math.PI / 3)} Z`}
+            d={`M${cx} ${cy} L${cx + 72} ${cy} A72 72 0 0 0 ${Math.round((cx + 72 * Math.cos(-Math.PI / 3)) * 1000) / 1000} ${Math.round((cy + 72 * Math.sin(-Math.PI / 3)) * 1000) / 1000} Z`}
             fill="url(#kestrel-radar-sweep)"
           />
           <line x1={cx} y1={cy} x2={cx + 72} y2={cy} stroke="var(--aurora)" strokeOpacity="0.7" strokeWidth="1.2" />
