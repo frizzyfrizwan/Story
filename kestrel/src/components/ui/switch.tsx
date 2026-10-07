@@ -14,7 +14,15 @@ export interface SwitchProps extends ComponentProps<typeof SwitchPrimitive.Root>
 }
 
 /** Toggle. Aurora when on. With `label` it renders a full-width labelled row with a 44px hit area. */
-export function Switch({ label, description, size = "md", controlFirst, className, id: idProp, ...props }: SwitchProps) {
+export function Switch({
+  label,
+  description,
+  size = "md",
+  controlFirst,
+  className,
+  id: idProp,
+  ...props
+}: SwitchProps) {
   const autoId = useId();
   const id = idProp ?? autoId;
   const descId = description ? `${id}-desc` : undefined;
@@ -39,7 +47,9 @@ export function Switch({ label, description, size = "md", controlFirst, classNam
         className={cn(
           "pointer-events-none block rounded-full bg-fg shadow-[0_1px_2px_var(--bg)] transition-transform duration-200 ease-out",
           "group-data-[state=checked]:bg-bg-elev-1",
-          size === "sm" ? "size-3.5 translate-x-[3px] data-[state=checked]:translate-x-[19px]" : "size-5 translate-x-[3px] data-[state=checked]:translate-x-[25px]",
+          size === "sm"
+            ? "size-3.5 translate-x-[3px] data-[state=checked]:translate-x-[19px]"
+            : "size-5 translate-x-[3px] data-[state=checked]:translate-x-[25px]",
         )}
       />
     </SwitchPrimitive.Root>

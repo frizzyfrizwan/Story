@@ -4,7 +4,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type { ParsedTravelIntent } from "@/lib/types";
 import { clamp } from "@/lib/utils";
 import { AI_FAST_MODEL, Anthropic, getAnthropic } from "./client";
-import { METRO_CODES, parseIntentHeuristic, type AirportResolver, type HeuristicOptions } from "./intent-heuristics";
+import { parseIntentHeuristic, type AirportResolver, type HeuristicOptions } from "./intent-heuristics";
 import { getAirport as defaultGetAirport, searchAirports as defaultSearchAirports } from "@/data/airports";
 import { CANONICAL_PROGRAM_IDS, resolveProgramId } from "./program-synonyms";
 import { recordAiUsage } from "./usage";
@@ -68,24 +68,24 @@ function validIso(s: unknown): s is string {
   return !Number.isNaN(d.getTime());
 }
 
-function normalizeCodes(codes: string[], resolver: AirportResolver): string[] {
+/**
+ * Keep anything shaped like an IATA/metro code. Codes our curated dataset
+ * doesn't know are still kept — the model may know a small airport we omit.
+ */
+function normalizeCodes(codes: string[]): string[] {
   const out: string[] = [];
   for (const raw of codes) {
     const c = String(raw).trim().toUpperCase();
     if (!/^[A-Z]{3}$/.test(c)) continue;
-    if (!METRO_CODES.has(c) && !resolver.getAirport(c)) {
-      // Unknown to our dataset — keep it only if it looks like a code the user typed.
-      if (!/^[A-Z]{3}$/.test(c)) continue;
-    }
     if (!out.includes(c)) out.push(c);
   }
   return out.slice(0, 4);
 }
 
 /** Merge: the LLM wins on every field it filled; the heuristic fills the gaps. */
-export function mergeIntents(base: ParsedTravelIntent, llm: LlmIntent, resolver: AirportResolver): ParsedTravelIntent {
-  const origin = normalizeCodes(llm.origin ?? [], resolver);
-  const destination = normalizeCodes(llm.destination ?? [], resolver);
+export function mergeIntents(base: ParsedTravelIntent, llm: LlmIntent): ParsedTravelIntent {
+  const origin = normalizeCodes(llm.origin ?? []);
+  const destination = normalizeCodes(llm.destination ?? []);
 
   let date = base.date;
   let window = base.window;
@@ -161,7 +161,7 @@ export async function parseTravelIntent(text: string, opts: ParseIntentOptions =
     });
 
     if (response.stop_reason === "refusal" || !response.parsed_output) return heuristic;
-    return mergeIntents(heuristic, response.parsed_output, resolver);
+    return mergeIntents(heuristic, response.parsed_output);
   } catch (err) {
     if (err instanceof Anthropic.RateLimitError) {
       console.warn("[ai] intent parse rate-limited; using heuristic");

@@ -211,14 +211,6 @@ export function uniq<T>(items: Iterable<T>): T[] {
   return Array.from(new Set(items));
 }
 
-/** Inclusive YYYY-MM-DD list from `from` to `to`, capped. */
-export function dateRange(from: string, to: string, addDays: (iso: string, n: number) => string, daysBetween: (a: string, b: string) => number, cap = 366): string[] {
-  const n = clamp(daysBetween(from, to), 0, cap);
-  const out: string[] = [];
-  for (let i = 0; i <= n; i++) out.push(addDays(from, i));
-  return out;
-}
-
 /** A tiny ISO country-code → name table so simulated aircraft look like OpenSky rows. */
 export const COUNTRY_NAME: Readonly<Record<string, string>> = {
   US: "United States",

@@ -85,7 +85,13 @@ export function NumberStepper({
         className,
       )}
     >
-      <button type="button" onClick={() => set(value - step)} disabled={!canDec} aria-label={`Fewer — ${label}`} className={btn}>
+      <button
+        type="button"
+        onClick={() => set(value - step)}
+        disabled={!canDec}
+        aria-label={`Fewer — ${label}`}
+        className={btn}
+      >
         <Minus aria-hidden="true" />
       </button>
       <output
@@ -99,7 +105,13 @@ export function NumberStepper({
         {format(value)}
         {unit && <span className="font-sans text-xs font-normal text-fg-subtle">{unit}</span>}
       </output>
-      <button type="button" onClick={() => set(value + step)} disabled={!canInc} aria-label={`More — ${label}`} className={btn}>
+      <button
+        type="button"
+        onClick={() => set(value + step)}
+        disabled={!canInc}
+        aria-label={`More — ${label}`}
+        className={btn}
+      >
         <Plus aria-hidden="true" />
       </button>
       {name && <input type="hidden" name={name} value={value} />}

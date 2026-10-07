@@ -19,7 +19,7 @@ import { searchAwards, getRouteAvailability, getDeals, searchHotels } from "@/li
 import { getProgram, PROGRAMS } from "@/data/programs";
 import { transfersTo } from "@/data/transfers";
 import { buildTransferOptions } from "@/lib/awards";
-import { clamp, fmtCpp, fmtDuration, fmtInt, fmtUsd } from "@/lib/utils";
+import { fmtCpp, fmtDuration, fmtInt, fmtUsd } from "@/lib/utils";
 import { queryToSearchHref } from "./intent-heuristics";
 import { resolveProgramId } from "./program-synonyms";
 
@@ -409,6 +409,3 @@ export async function runConciergeTool(name: string, input: unknown, ctx: ToolCo
       throw new Error(`Unknown tool "${name}". Available: ${CONCIERGE_TOOL_NAMES.join(", ")}`);
   }
 }
-
-/** Clamp helper re-exported for callers building queries by hand. */
-export const clampPassengers = (n: number) => clamp(Math.round(n || 1), 1, 9);

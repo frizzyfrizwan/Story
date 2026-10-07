@@ -63,8 +63,8 @@ export function Footer({ className }: { className?: string }) {
           <div className="sm:col-span-2 md:col-span-1">
             <KestrelLockup />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-fg-muted pretty-text">
-              See every award seat. Spend fewer points. Live search across 40+ programs, transfer-partner intelligence and
-              an AI concierge.
+              See every award seat. Spend fewer points. Live search across 40+ programs, transfer-partner intelligence
+              and an AI concierge.
             </p>
             <UtcClock className="mt-5" />
           </div>
@@ -86,7 +86,8 @@ export function Footer({ className }: { className?: string }) {
 
         <div className="mt-12 flex flex-col gap-3 border-t border-panel-border pt-6 text-xs text-fg-subtle sm:flex-row sm:items-center sm:justify-between">
           <p className="pretty-text">
-            © {year} Kestrel. Award data is informational; confirm pricing and availability with the program before booking.
+            © {year} Kestrel. Award data is informational; confirm pricing and availability with the program before
+            booking.
           </p>
           <ul className="flex items-center gap-4">
             {LEGAL.map((l) => (
@@ -113,7 +114,12 @@ function UtcClock({ className }: { className?: string }) {
     return () => clearInterval(id);
   }, []);
   return (
-    <p className={cn("inline-flex items-center gap-2 font-mono text-[11px] tnum tracking-[0.12em] text-fg-subtle", className)}>
+    <p
+      className={cn(
+        "inline-flex items-center gap-2 font-mono text-[11px] tnum tracking-[0.12em] text-fg-subtle",
+        className,
+      )}
+    >
       <span aria-hidden="true" className="size-1.5 rounded-full bg-aurora motion-safe:animate-pulse-soft" />
       <span>
         UTC <span className="text-fg-muted">{now ?? "--:--:--"}</span>

@@ -834,9 +834,7 @@ function grabPhrase(text: string, start: number, max = 3): { phrase: string; end
 function parsePlaces(work: string, resolver: AirportResolver): { work: string; origin: string[]; destination: string[] } {
   let origin: string[] = [];
   let destination: string[] = [];
-  const consumed: [number, number][] = [];
   const take = (s: number, e: number) => {
-    consumed.push([s, e]);
     work = blank(work, s, e - s);
   };
 
@@ -961,7 +959,6 @@ function parsePlaces(work: string, resolver: AirportResolver): { work: string; o
     }
   }
 
-  void consumed;
   return { work, origin: uniq(origin), destination: uniq(destination) };
 }
 

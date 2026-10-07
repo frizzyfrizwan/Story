@@ -123,7 +123,10 @@ export function AppShell({
                     />
                   )}
                   <span className="relative z-10 flex items-center gap-1.5">
-                    <item.icon className={cn("hidden size-3.5 xl:block", active ? "text-signal" : "opacity-60")} aria-hidden="true" />
+                    <item.icon
+                      className={cn("hidden size-3.5 xl:block", active ? "text-signal" : "opacity-60")}
+                      aria-hidden="true"
+                    />
                     {item.label}
                   </span>
                 </Link>
@@ -146,7 +149,12 @@ export function AppShell({
               <span className="pr-3">Search or jump to…</span>
               <Kbd keys={["mod", "K"]} />
             </button>
-            <IconButton label="Open command palette" size="sm" className="md:hidden" onClick={() => setPaletteOpen(true)}>
+            <IconButton
+              label="Open command palette"
+              size="sm"
+              className="md:hidden"
+              onClick={() => setPaletteOpen(true)}
+            >
               <Search />
             </IconButton>
 
@@ -229,7 +237,13 @@ export function AppShell({
               </Button>
             )}
 
-            <IconButton label="Menu" size="sm" className="lg:hidden" onClick={() => setMenuOpen(true)} aria-expanded={menuOpen}>
+            <IconButton
+              label="Menu"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setMenuOpen(true)}
+              aria-expanded={menuOpen}
+            >
               <Menu />
             </IconButton>
           </div>

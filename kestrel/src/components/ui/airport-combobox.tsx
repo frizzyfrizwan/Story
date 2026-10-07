@@ -141,18 +141,21 @@ export function AirportCombobox({
     if (!open) return;
     const myId = ++requestId.current;
     setLoading(true);
-    const timer = setTimeout(async () => {
-      try {
-        const list = await fetcherRef.current(query.trim());
-        if (myId !== requestId.current) return;
-        setResults(list);
-        remember(list);
-      } catch {
-        if (myId === requestId.current) setResults([]);
-      } finally {
-        if (myId === requestId.current) setLoading(false);
-      }
-    }, query ? 120 : 0);
+    const timer = setTimeout(
+      async () => {
+        try {
+          const list = await fetcherRef.current(query.trim());
+          if (myId !== requestId.current) return;
+          setResults(list);
+          remember(list);
+        } catch {
+          if (myId === requestId.current) setResults([]);
+        } finally {
+          if (myId === requestId.current) setLoading(false);
+        }
+      },
+      query ? 120 : 0,
+    );
     return () => clearTimeout(timer);
   }, [query, open, remember]);
 
@@ -269,7 +272,10 @@ export function AirportCombobox({
                     disabled={disabled}
                     onClick={() => remove(code)}
                     aria-label={`Remove ${p?.city ? `${p.city} (${code})` : code}`}
-                    className={cn("grid size-5 place-items-center rounded-full text-fg-subtle transition-colors hover:bg-fg/10 hover:text-fg", focusRing)}
+                    className={cn(
+                      "grid size-5 place-items-center rounded-full text-fg-subtle transition-colors hover:bg-fg/10 hover:text-fg",
+                      focusRing,
+                    )}
                   >
                     <X className="size-3" aria-hidden="true" />
                   </button>
@@ -440,7 +446,10 @@ export function AirportCombobox({
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className={cn("rounded-full px-2.5 py-1 font-medium text-fg-muted transition-colors hover:bg-fg/6 hover:text-fg", focusRing)}
+                  className={cn(
+                    "rounded-full px-2.5 py-1 font-medium text-fg-muted transition-colors hover:bg-fg/6 hover:text-fg",
+                    focusRing,
+                  )}
                 >
                   Done
                 </button>
@@ -484,7 +493,9 @@ function PlaceItem({ value, code, title, subtitle, flag, hub, metro, nested, sel
       </span>
       <span className="flex min-w-0 flex-1 flex-col leading-tight">
         <span className="truncate">{title}</span>
-        {subtitle && <span className={cn("truncate text-xs text-fg-subtle", metro && "font-mono tracking-wide")}>{subtitle}</span>}
+        {subtitle && (
+          <span className={cn("truncate text-xs text-fg-subtle", metro && "font-mono tracking-wide")}>{subtitle}</span>
+        )}
       </span>
       <span className="flex shrink-0 items-center gap-1.5 text-fg-subtle">
         {flag && (

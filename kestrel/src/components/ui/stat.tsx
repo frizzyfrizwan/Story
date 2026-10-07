@@ -55,7 +55,8 @@ export function StatTile({
   format = (n) => n.toLocaleString("en-US"),
   animate,
   delta,
-  deltaFormat = (n) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n).toLocaleString("en-US", { maximumFractionDigits: 1 })}%`,
+  deltaFormat = (n) =>
+    `${n > 0 ? "+" : n < 0 ? "−" : ""}${Math.abs(n).toLocaleString("en-US", { maximumFractionDigits: 1 })}%`,
   deltaLabel,
   upIsGood = true,
   trend,
@@ -162,7 +163,10 @@ export function Sparkline({ data, tone = "signal", className, height = 36 }: Spa
       </svg>
       <span
         aria-hidden="true"
-        className={cn("absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-bg-elev-1", DOT[tone])}
+        className={cn(
+          "absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-bg-elev-1",
+          DOT[tone],
+        )}
         style={{ left: `${last.x}%`, top: `${last.y}%` }}
       />
       <span className="sr-only">

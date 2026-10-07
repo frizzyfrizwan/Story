@@ -233,8 +233,10 @@ export function Textarea({
 
 // ─── SearchInput ──────────────────────────────────────────────
 
-export interface SearchInputProps
-  extends Omit<InputProps, "value" | "defaultValue" | "onChange" | "leading" | "trailing" | "type"> {
+export interface SearchInputProps extends Omit<
+  InputProps,
+  "value" | "defaultValue" | "onChange" | "leading" | "trailing" | "type"
+> {
   value?: string;
   defaultValue?: string;
   /** Called with the plain string — not the event. */

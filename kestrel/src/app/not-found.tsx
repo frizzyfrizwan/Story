@@ -19,7 +19,8 @@ const TONE: Record<Tone, string> = {
 /** A row of split-flap tiles. Each character flips in with a small stagger. */
 function Flaps({ text, tone = "default", offset = 0 }: { text: string; tone?: Tone; offset?: number }) {
   return (
-    <span className="inline-flex gap-[3px]" aria-label={text} role="text">
+    <span className="inline-flex gap-[3px]">
+      <span className="sr-only">{text}</span>
       {text.split("").map((ch, i) => (
         <span
           key={i}

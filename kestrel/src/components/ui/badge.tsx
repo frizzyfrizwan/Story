@@ -70,7 +70,13 @@ export interface CabinBadgeProps extends Omit<BadgeProps, "variant" | "children"
 /** Cabin tag with the cabin's colour accent and its booking-class letter in mono. */
 export function CabinBadge({ cabin, short, className, size, ...props }: CabinBadgeProps) {
   return (
-    <Badge variant="outline" size={size} className={cn(CABIN_STYLES[cabin], className)} title={CABIN_LABEL[cabin]} {...props}>
+    <Badge
+      variant="outline"
+      size={size}
+      className={cn(CABIN_STYLES[cabin], className)}
+      title={CABIN_LABEL[cabin]}
+      {...props}
+    >
       <span className="font-mono font-semibold">{CABIN_SHORT[cabin]}</span>
       {short ? <span className="sr-only">{CABIN_LABEL[cabin]}</span> : <span>{CABIN_LABEL[cabin]}</span>}
     </Badge>
@@ -82,7 +88,11 @@ export function CabinBadge({ cabin, short, className, size, ...props }: CabinBad
 const SOURCE: Record<DataSource, { variant: BadgeProps["variant"]; label: string; title: string; pulse?: boolean }> = {
   live: { variant: "aurora", label: "Live", title: "Live availability from the provider", pulse: true },
   cached: { variant: "sky", label: "Cached", title: "Cached result — may be a few minutes old" },
-  simulated: { variant: "gold", label: "Demo data", title: "Simulated by the built-in demo engine. Add API keys to go live." },
+  simulated: {
+    variant: "gold",
+    label: "Demo data",
+    title: "Simulated by the built-in demo engine. Add API keys to go live.",
+  },
 };
 
 export interface SourceBadgeProps extends Omit<BadgeProps, "variant" | "children"> {
@@ -120,7 +130,17 @@ function initials(name: string) {
 }
 
 /** Loyalty-program chip: brand swatch + name. `compact` collapses to a lettered coin. */
-export function ProgramChip({ id, name, color, compact, size = "md", active, className, style, ...props }: ProgramChipProps) {
+export function ProgramChip({
+  id,
+  name,
+  color,
+  compact,
+  size = "md",
+  active,
+  className,
+  style,
+  ...props
+}: ProgramChipProps) {
   if (compact) {
     return (
       <span

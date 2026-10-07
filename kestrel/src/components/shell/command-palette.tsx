@@ -53,7 +53,11 @@ const NAVIGATE: NavEntry[] = [
 ];
 
 const QUICK: { label: string; href: string; keywords?: string[] }[] = [
-  { label: "Search JFK → LHR in business", href: "/search?from=JFK&to=LHR&cabin=business", keywords: ["london", "new york"] },
+  {
+    label: "Search JFK → LHR in business",
+    href: "/search?from=JFK&to=LHR&cabin=business",
+    keywords: ["london", "new york"],
+  },
   { label: "Search NYC → TYO in first", href: "/search?from=NYC&to=TYO&cabin=first", keywords: ["tokyo"] },
   { label: "Search LAX → SYD in business", href: "/search?from=LAX&to=SYD&cabin=business", keywords: ["sydney"] },
   { label: "Open wallet", href: "/wallet" },
@@ -111,7 +115,13 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         if (!o) setQuery("");
       }}
     >
-      <DialogContent bare grain={false} title="Command palette" size="md" className="sm:max-w-xl sm:self-start sm:mt-[12vh]">
+      <DialogContent
+        bare
+        grain={false}
+        title="Command palette"
+        size="md"
+        className="sm:max-w-xl sm:self-start sm:mt-[12vh]"
+      >
         <Command label="Command palette" loop className="flex max-h-[72dvh] flex-col">
           <div className="flex items-center gap-3 border-b border-panel-border px-4">
             <Search className="size-4 shrink-0 text-fg-subtle" aria-hidden="true" />
@@ -161,7 +171,13 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             <Command.Group>
               <Heading>Quick actions</Heading>
               {QUICK.map((q) => (
-                <Item key={q.href} value={q.label} keywords={q.keywords} icon={<PlaneTakeoff />} onSelect={() => go(q.href)}>
+                <Item
+                  key={q.href}
+                  value={q.label}
+                  keywords={q.keywords}
+                  icon={<PlaneTakeoff />}
+                  onSelect={() => go(q.href)}
+                >
                   {q.label}
                 </Item>
               ))}

@@ -17,7 +17,8 @@ const icon = (Icon: LucideIcon, tone: string) =>
 export const toast = Object.assign((message: Message, options?: ExternalToast) => sonner(message, options), {
   success: (message: Message, options?: ExternalToast) =>
     sonner.success(message, { icon: icon(CircleCheck, "text-aurora"), ...options }),
-  info: (message: Message, options?: ExternalToast) => sonner.info(message, { icon: icon(Info, "text-sky"), ...options }),
+  info: (message: Message, options?: ExternalToast) =>
+    sonner.info(message, { icon: icon(Info, "text-sky"), ...options }),
   error: (message: Message, options?: ExternalToast) =>
     sonner.error(message, { icon: icon(CircleAlert, "text-rose"), duration: 6000, ...options }),
   warning: (message: Message, options?: ExternalToast) =>

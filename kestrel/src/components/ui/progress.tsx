@@ -134,7 +134,14 @@ export function ProgressRing({
       {...props}
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90" aria-hidden="true">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" strokeWidth={strokeWidth} className={TRACK_STROKE[tone]} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          strokeWidth={strokeWidth}
+          className={TRACK_STROKE[tone]}
+        />
         <circle
           cx={size / 2}
           cy={size / 2}

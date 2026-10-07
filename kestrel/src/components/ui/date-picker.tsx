@@ -165,17 +165,31 @@ export function Calendar({
   return (
     <div className={cn("select-none", className)}>
       <div className="flex items-center justify-between gap-2 px-1">
-        <IconButton label="Previous month" size="sm" disabled={prevDisabled} onClick={() => setMonth(addMonths(monthStart, -1))}>
+        <IconButton
+          label="Previous month"
+          size="sm"
+          disabled={prevDisabled}
+          onClick={() => setMonth(addMonths(monthStart, -1))}
+        >
           <ChevronLeft />
         </IconButton>
         <div className="flex flex-1 justify-around" aria-live="polite">
           {months.map((m) => (
-            <span key={monthKey(m)} id={`${id}-label-${monthKey(m)}`} className="font-display text-base tracking-tight text-fg">
+            <span
+              key={monthKey(m)}
+              id={`${id}-label-${monthKey(m)}`}
+              className="font-display text-base tracking-tight text-fg"
+            >
               {format(m, "MMMM yyyy")}
             </span>
           ))}
         </div>
-        <IconButton label="Next month" size="sm" disabled={nextDisabled} onClick={() => setMonth(addMonths(monthStart, 1))}>
+        <IconButton
+          label="Next month"
+          size="sm"
+          disabled={nextDisabled}
+          onClick={() => setMonth(addMonths(monthStart, 1))}
+        >
           <ChevronRight />
         </IconButton>
       </div>
@@ -189,7 +203,12 @@ export function Calendar({
           const weeks: Date[][] = [];
           for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7));
           return (
-            <div key={monthKey(m)} role="grid" aria-labelledby={`${id}-label-${monthKey(m)}`} className="w-[280px] sm:w-[266px]">
+            <div
+              key={monthKey(m)}
+              role="grid"
+              aria-labelledby={`${id}-label-${monthKey(m)}`}
+              className="w-[280px] sm:w-[266px]"
+            >
               <div role="row" className="grid grid-cols-7">
                 {weekdays.map((w, i) => (
                   <div
@@ -253,8 +272,11 @@ export function Calendar({
                               : level != null
                                 ? cn(HEAT[level], "hover:brightness-110")
                                 : "text-fg hover:bg-fg/8",
-                            isSelected && "bg-signal text-signal-fg shadow-glow-signal hover:bg-signal hover:brightness-100 [[data-theme=light]_&]:text-signal-fg",
-                            isToday && !isSelected && "after:absolute after:bottom-1 after:size-1 after:rounded-full after:bg-signal",
+                            isSelected &&
+                              "bg-signal text-signal-fg shadow-glow-signal hover:bg-signal hover:brightness-100 [[data-theme=light]_&]:text-signal-fg",
+                            isToday &&
+                              !isSelected &&
+                              "after:absolute after:bottom-1 after:size-1 after:rounded-full after:bg-signal",
                           )}
                         >
                           {d.getDate()}
@@ -370,12 +392,21 @@ export function DatePicker({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <FieldTrigger id={id} size={size} disabled={disabled} placeholder={placeholder} className={className} hasValue={Boolean(value)}>
+      <FieldTrigger
+        id={id}
+        size={size}
+        disabled={disabled}
+        placeholder={placeholder}
+        className={className}
+        hasValue={Boolean(value)}
+      >
         {value && (
           <>
             <span className="truncate text-fg">{fmtShort(value)}</span>
             {onFlexChange && flex > 0 && (
-              <span className="shrink-0 rounded-full bg-signal-soft px-1.5 py-0.5 font-mono text-[10.5px] tnum text-signal">±{flex}d</span>
+              <span className="shrink-0 rounded-full bg-signal-soft px-1.5 py-0.5 font-mono text-[10.5px] tnum text-signal">
+                ±{flex}d
+              </span>
             )}
           </>
         )}
@@ -413,7 +444,10 @@ export function DatePicker({
               onChange(todayISO());
               if (!onFlexChange) setOpen(false);
             }}
-            className={cn("rounded-full px-2.5 py-1 text-xs font-medium text-fg-muted transition-colors hover:bg-fg/6 hover:text-fg", focusRing)}
+            className={cn(
+              "rounded-full px-2.5 py-1 text-xs font-medium text-fg-muted transition-colors hover:bg-fg/6 hover:text-fg",
+              focusRing,
+            )}
           >
             Today
           </button>
@@ -422,7 +456,10 @@ export function DatePicker({
               <button
                 type="button"
                 onClick={() => onChange(null)}
-                className={cn("rounded-full px-2.5 py-1 text-xs font-medium text-fg-muted transition-colors hover:bg-fg/6 hover:text-fg", focusRing)}
+                className={cn(
+                  "rounded-full px-2.5 py-1 text-xs font-medium text-fg-muted transition-colors hover:bg-fg/6 hover:text-fg",
+                  focusRing,
+                )}
               >
                 Clear
               </button>
@@ -431,7 +468,10 @@ export function DatePicker({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className={cn("rounded-full bg-fg/8 px-3 py-1 text-xs font-medium text-fg transition-colors hover:bg-fg/12", focusRing)}
+                className={cn(
+                  "rounded-full bg-fg/8 px-3 py-1 text-xs font-medium text-fg transition-colors hover:bg-fg/12",
+                  focusRing,
+                )}
               >
                 Done
               </button>
@@ -507,14 +547,23 @@ export function DateRangePicker({
         if (!o) setHover(null);
       }}
     >
-      <FieldTrigger id={id} size={size} disabled={disabled} placeholder={placeholder} className={className} hasValue={Boolean(value.from)}>
+      <FieldTrigger
+        id={id}
+        size={size}
+        disabled={disabled}
+        placeholder={placeholder}
+        className={className}
+        hasValue={Boolean(value.from)}
+      >
         {value.from && (
           <>
             <span className="truncate text-fg">{fmtShort(value.from)}</span>
             <span className="text-fg-subtle" aria-hidden="true">
               →
             </span>
-            <span className={cn("truncate", value.to ? "text-fg" : "text-fg-subtle")}>{value.to ? fmtShort(value.to) : "…"}</span>
+            <span className={cn("truncate", value.to ? "text-fg" : "text-fg-subtle")}>
+              {value.to ? fmtShort(value.to) : "…"}
+            </span>
             {showNights && nights != null && nights > 0 && (
               <span className="hidden shrink-0 font-mono text-[11px] tnum text-fg-subtle sm:inline">
                 · {nights} {nights === 1 ? "night" : "nights"}
@@ -538,13 +587,22 @@ export function DateRangePicker({
         />
         <div className="mt-3 flex items-center justify-between border-t border-panel-border pt-3 text-xs">
           <span className="text-fg-subtle" aria-live="polite">
-            {!value.from ? "Pick a start date" : !value.to ? "Now pick an end date" : nights != null ? `${nights} ${nights === 1 ? "night" : "nights"}` : ""}
+            {!value.from
+              ? "Pick a start date"
+              : !value.to
+                ? "Now pick an end date"
+                : nights != null
+                  ? `${nights} ${nights === 1 ? "night" : "nights"}`
+                  : ""}
           </span>
           {value.from && (
             <button
               type="button"
               onClick={() => onChange({ from: null, to: null })}
-              className={cn("rounded-full px-2.5 py-1 font-medium text-fg-muted transition-colors hover:bg-fg/6 hover:text-fg", focusRing)}
+              className={cn(
+                "rounded-full px-2.5 py-1 font-medium text-fg-muted transition-colors hover:bg-fg/6 hover:text-fg",
+                focusRing,
+              )}
             >
               Clear
             </button>

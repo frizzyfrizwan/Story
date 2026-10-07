@@ -85,7 +85,13 @@ export function Button(props: ButtonProps) {
   if (rest.href !== undefined) {
     const { href, ...linkRest } = rest as ButtonAsLink;
     return (
-      <Link href={href} className={classes} aria-disabled={loading || undefined} aria-busy={loading || undefined} {...linkRest}>
+      <Link
+        href={href}
+        className={classes}
+        aria-disabled={loading || undefined}
+        aria-busy={loading || undefined}
+        {...linkRest}
+      >
         {content}
       </Link>
     );

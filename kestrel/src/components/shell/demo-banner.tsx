@@ -54,7 +54,10 @@ export function DemoBanner({ className }: { className?: string }) {
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
-          className={cn("relative z-30 overflow-hidden border-b border-gold/20 bg-gold-soft text-[12.5px] text-fg", className)}
+          className={cn(
+            "relative z-30 overflow-hidden border-b border-gold/20 bg-gold-soft text-[12.5px] text-fg",
+            className,
+          )}
         >
           <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-1.5 sm:px-6">
             <Badge variant="gold" size="sm" dot caps className="shrink-0">
@@ -62,7 +65,10 @@ export function DemoBanner({ className }: { className?: string }) {
             </Badge>
             <p className="min-w-0 flex-1 truncate">
               Demo data — add API keys in{" "}
-              <Link href="/settings/integrations" className="font-medium underline decoration-gold/50 underline-offset-2 transition-colors hover:text-gold">
+              <Link
+                href="/settings/integrations"
+                className="font-medium underline decoration-gold/50 underline-offset-2 transition-colors hover:text-gold"
+              >
                 Settings → Integrations
               </Link>{" "}
               to go live.

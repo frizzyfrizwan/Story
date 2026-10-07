@@ -34,9 +34,15 @@ export function Divider({ orientation = "horizontal", variant = "line", label, c
   if (variant === "tear") {
     return (
       <div role="separator" className={cn("relative -mx-5 my-1 flex items-center", className)} {...props}>
-        <span aria-hidden="true" className="size-5 shrink-0 -translate-x-1/2 rounded-full border border-panel-border bg-bg" />
+        <span
+          aria-hidden="true"
+          className="size-5 shrink-0 -translate-x-1/2 rounded-full border border-panel-border bg-bg"
+        />
         <span className="h-px flex-1 border-t border-dashed border-panel-border-strong" />
-        <span aria-hidden="true" className="size-5 shrink-0 translate-x-1/2 rounded-full border border-panel-border bg-bg" />
+        <span
+          aria-hidden="true"
+          className="size-5 shrink-0 translate-x-1/2 rounded-full border border-panel-border bg-bg"
+        />
       </div>
     );
   }

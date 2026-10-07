@@ -59,7 +59,8 @@ export function Panel({
         "panel overflow-hidden",
         strong && "panel-strong",
         grain && "grain",
-        interactive && "transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-panel-border-strong",
+        interactive &&
+          "transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-panel-border-strong",
         rise && "animate-rise",
         className,
       )}
@@ -68,16 +69,27 @@ export function Panel({
       {hasHeader && (
         <header className={cn("flex items-start justify-between gap-4", PAD_X[padding], PAD_T[padding])}>
           <div className="min-w-0">
-            {eyebrow && <p className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-signal">{eyebrow}</p>}
+            {eyebrow && (
+              <p className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-signal">{eyebrow}</p>
+            )}
             {title && (
-              <h3 className="font-display text-lg leading-tight tracking-tight text-fg sm:text-xl balance-text">{title}</h3>
+              <h3 className="font-display text-lg leading-tight tracking-tight text-fg sm:text-xl balance-text">
+                {title}
+              </h3>
             )}
             {description && <p className="mt-1 text-sm text-fg-muted pretty-text">{description}</p>}
           </div>
           {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
         </header>
       )}
-      <div className={cn(PAD_X[padding], hasHeader ? (padding === "none" ? "" : "pt-4") : PAD_T[padding], PAD_B[padding], bodyClassName)}>
+      <div
+        className={cn(
+          PAD_X[padding],
+          hasHeader ? (padding === "none" ? "" : "pt-4") : PAD_T[padding],
+          PAD_B[padding],
+          bodyClassName,
+        )}
+      >
         {children}
       </div>
       {footer && (
@@ -109,7 +121,16 @@ export interface CardProps extends Omit<ComponentProps<"div">, "title"> {
 const CARD_PAD: Record<Padding, string> = { none: "", sm: "p-4", md: "p-5", lg: "p-6 sm:p-8" };
 
 /** Solid elevated card — denser than Panel, no blur. Becomes a link when `href` is set. */
-export function Card({ href, padding = "md", interactive, grain, as = "div", className, children, ...props }: CardProps) {
+export function Card({
+  href,
+  padding = "md",
+  interactive,
+  grain,
+  as = "div",
+  className,
+  children,
+  ...props
+}: CardProps) {
   const classes = cn(
     "block rounded-[var(--radius)] border border-panel-border bg-bg-elev-1 text-fg shadow-panel",
     CARD_PAD[padding],
@@ -182,7 +203,9 @@ export function Section({
           <div className={cn("min-w-0 max-w-2xl", align === "center" && "mx-auto")}>
             {eyebrow && <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.2em] text-signal">{eyebrow}</p>}
             {title && (
-              <h2 className={cn("font-display leading-[1.05] tracking-tight text-fg balance-text", TITLE_SIZE[size])}>{title}</h2>
+              <h2 className={cn("font-display leading-[1.05] tracking-tight text-fg balance-text", TITLE_SIZE[size])}>
+                {title}
+              </h2>
             )}
             {description && <p className="mt-3 text-[15px] leading-relaxed text-fg-muted pretty-text">{description}</p>}
           </div>

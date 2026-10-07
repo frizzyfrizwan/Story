@@ -6,8 +6,10 @@ import { cn } from "@/lib/utils";
 import { focusRing } from "./tokens";
 import { useControllableState } from "./use-controllable";
 
-export interface SliderProps
-  extends Omit<ComponentProps<typeof SliderPrimitive.Root>, "value" | "defaultValue" | "onValueChange"> {
+export interface SliderProps extends Omit<
+  ComponentProps<typeof SliderPrimitive.Root>,
+  "value" | "defaultValue" | "onValueChange"
+> {
   /** One number for a single thumb, two for a range. */
   value?: number[];
   defaultValue?: number[];
@@ -41,7 +43,9 @@ export function Slider({
 }: SliderProps) {
   const [value, setValue] = useControllableState<number[]>({ value: valueProp, defaultValue, onChange: onValueChange });
   const isRange = value.length > 1;
-  const readout = isRange ? `${formatValue(value[0])} – ${formatValue(value[value.length - 1])}` : formatValue(value[0]);
+  const readout = isRange
+    ? `${formatValue(value[0])} – ${formatValue(value[value.length - 1])}`
+    : formatValue(value[0]);
 
   return (
     <div className={cn("w-full", disabled && "opacity-50", className)}>

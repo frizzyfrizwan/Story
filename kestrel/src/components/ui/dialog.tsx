@@ -26,7 +26,11 @@ export interface DialogProps {
 
 /** Modal root. Works controlled (`open`/`onOpenChange`) or with a `DialogTrigger`. */
 export function Dialog({ open: openProp, defaultOpen = false, onOpenChange, children }: DialogProps) {
-  const [open, setOpen] = useControllableState<boolean>({ value: openProp, defaultValue: defaultOpen, onChange: onOpenChange });
+  const [open, setOpen] = useControllableState<boolean>({
+    value: openProp,
+    defaultValue: defaultOpen,
+    onChange: onOpenChange,
+  });
   return (
     <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
       <DialogContext.Provider value={{ open, setOpen }}>{children}</DialogContext.Provider>
@@ -86,12 +90,18 @@ function Chrome({
     <>
       <div className={cn("flex items-start gap-4 px-5 pt-5 sm:px-6", !title && !description && "pt-3")}>
         <div className="min-w-0 flex-1">
-          {eyebrow && <p className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-signal">{eyebrow}</p>}
-          <DialogPrimitive.Title className={cn("font-display text-xl leading-tight tracking-tight text-fg sm:text-2xl", !title && "sr-only")}>
+          {eyebrow && (
+            <p className="mb-1.5 font-mono text-[10.5px] uppercase tracking-[0.18em] text-signal">{eyebrow}</p>
+          )}
+          <DialogPrimitive.Title
+            className={cn("font-display text-xl leading-tight tracking-tight text-fg sm:text-2xl", !title && "sr-only")}
+          >
             {title ?? "Dialog"}
           </DialogPrimitive.Title>
           {description && (
-            <DialogPrimitive.Description className="mt-1.5 text-sm text-fg-muted pretty-text">{description}</DialogPrimitive.Description>
+            <DialogPrimitive.Description className="mt-1.5 text-sm text-fg-muted pretty-text">
+              {description}
+            </DialogPrimitive.Description>
           )}
         </div>
         {!hideClose && (
@@ -271,7 +281,9 @@ export function SheetContent({
                     ? "max-h-[88dvh] rounded-t-[var(--radius-lg)] rounded-b-none border-b-0 pb-[env(safe-area-inset-bottom)]"
                     : cn(
                         "h-full max-h-none rounded-none border-y-0",
-                        side === "right" ? "border-r-0 rounded-l-[var(--radius-lg)]" : "border-l-0 rounded-r-[var(--radius-lg)]",
+                        side === "right"
+                          ? "border-r-0 rounded-l-[var(--radius-lg)]"
+                          : "border-l-0 rounded-r-[var(--radius-lg)]",
                         width,
                       ),
                   className,

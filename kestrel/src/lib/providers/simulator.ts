@@ -381,10 +381,20 @@ function createSimulatorInternal(deps: Resolved) {
   const tzOf = (iata: string) => deps.getAirport(iata)?.tz ?? "UTC";
   const pad2 = (n: number) => String(n).padStart(2, "0");
 
+  /** Schedule times are pure in (flight, date); memoise them because `states()` touches every flight each poll. */
+  const timesCache = new Map<string, FlightTimes>();
+  const TIMES_CACHE_MAX = 50_000;
+
   function flightTimes(f: ScheduledFlight, dateISO: string): FlightTimes {
+    const key = `${f.key}:${f.route.origin}:${dateISO}`;
+    const hit = timesCache.get(key);
+    if (hit) return hit;
     const depUtc = localToUtcMs(dateISO, f.depHour, f.depMinute, tzOf(f.route.origin));
     const arrUtc = depUtc + f.route.durationMin * 60_000;
-    return { depLocal: `${dateISO}T${pad2(f.depHour)}:${pad2(f.depMinute)}`, depUtc, arrUtc, arrLocal: utcToLocalIso(arrUtc, tzOf(f.route.destination)) };
+    const times: FlightTimes = { depLocal: `${dateISO}T${pad2(f.depHour)}:${pad2(f.depMinute)}`, depUtc, arrUtc, arrLocal: utcToLocalIso(arrUtc, tzOf(f.route.destination)) };
+    if (timesCache.size >= TIMES_CACHE_MAX) timesCache.clear();
+    timesCache.set(key, times);
+    return times;
   }
 
   /** Day-of-operation irregularities, seeded so `states` and `status` agree. */
@@ -788,11 +798,11 @@ function createSimulatorInternal(deps: Resolved) {
         const date = addDays(today, offset);
         for (const f of flights) {
           if (!operatesOn(f, date)) continue;
-          const built = buildItinerary([f], date, "economy"); // cabin re-evaluated below
-          if (!built) continue;
           for (const cabin of cabins) {
             if (!f.route.cabins.includes(cabin)) continue;
-            const result = priceItinerary({ ...built, itinerary: { ...built.itinerary, segments: built.itinerary.segments.map((s) => ({ ...s, cabin })) } }, cabin, 1, null, nowMs);
+            const built = buildItinerary([f], date, cabin);
+            if (!built) continue;
+            const result = priceItinerary(built, cabin, 1, null, nowMs);
             if (!result) continue;
             for (const fare of result.fares) {
               const key = `${o}-${d}:${fare.programId}:${cabin}`;

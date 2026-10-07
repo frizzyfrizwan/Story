@@ -19,7 +19,11 @@ const ACCENT: Record<SegmentAccent, { pill: string; text: string; dot: string }>
   sky: { pill: "border-sky/30 bg-sky/12", text: "text-sky", dot: "bg-sky" },
   economy: { pill: "border-cabin-economy/30 bg-cabin-economy/12", text: "text-cabin-economy", dot: "bg-cabin-economy" },
   premium: { pill: "border-cabin-premium/30 bg-cabin-premium/12", text: "text-cabin-premium", dot: "bg-cabin-premium" },
-  business: { pill: "border-cabin-business/30 bg-cabin-business/12", text: "text-cabin-business", dot: "bg-cabin-business" },
+  business: {
+    pill: "border-cabin-business/30 bg-cabin-business/12",
+    text: "text-cabin-business",
+    dot: "bg-cabin-business",
+  },
   first: { pill: "border-cabin-first/30 bg-cabin-first/12", text: "text-cabin-first", dot: "bg-cabin-first" },
 };
 
@@ -107,7 +111,9 @@ export function SegmentedControl<T extends string>({
               />
             )}
             <span className="relative z-10 inline-flex items-center gap-2 [&_svg]:size-4">
-              {accent && <span aria-hidden="true" className={cn("size-1.5 rounded-full", accent.dot, !active && "opacity-60")} />}
+              {accent && (
+                <span aria-hidden="true" className={cn("size-1.5 rounded-full", accent.dot, !active && "opacity-60")} />
+              )}
               {o.icon}
               {responsive && o.shortLabel ? (
                 <>

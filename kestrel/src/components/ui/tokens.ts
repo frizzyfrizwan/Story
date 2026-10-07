@@ -4,8 +4,7 @@
  */
 
 /** Visible focus ring in signal orange (matches the global :focus-visible rule). */
-export const focusRing =
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal";
+export const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-signal";
 
 /** Focus treatment for text-entry surfaces: border + soft ring instead of an outline. */
 export const focusField =

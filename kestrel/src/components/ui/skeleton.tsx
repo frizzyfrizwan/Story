@@ -16,7 +16,13 @@ export interface SkeletonTextProps extends ComponentProps<"div"> {
 }
 
 /** A paragraph's worth of lines with natural, varied widths. */
-export function SkeletonText({ lines = 3, lastLineWidth = "58%", lineClassName, className, ...props }: SkeletonTextProps) {
+export function SkeletonText({
+  lines = 3,
+  lastLineWidth = "58%",
+  lineClassName,
+  className,
+  ...props
+}: SkeletonTextProps) {
   return (
     <div aria-hidden="true" className={cn("flex flex-col gap-2.5", className)} {...props}>
       {Array.from({ length: lines }).map((_, i) => (
@@ -55,7 +61,10 @@ export function SkeletonCard({ variant = "boarding-pass", className, ...props }:
     return (
       <div
         aria-hidden="true"
-        className={cn("flex items-center gap-4 rounded-[var(--radius)] border border-panel-border bg-bg-elev-1 px-4 py-3", className)}
+        className={cn(
+          "flex items-center gap-4 rounded-[var(--radius)] border border-panel-border bg-bg-elev-1 px-4 py-3",
+          className,
+        )}
         {...props}
       >
         <Skeleton className="size-9 rounded-full" />
