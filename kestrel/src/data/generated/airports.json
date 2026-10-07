@@ -421,6 +421,7 @@
   {"iata":"USM","icao":"VTSM","name":"Samui Airport","city":"Ko Samui","country":"Thailand","countryCode":"TH","lat":9.5478,"lon":100.062,"tz":"Asia/Bangkok","region":"southeast-asia"},
   {"iata":"UVF","icao":"TLPL","name":"Hewanorra International Airport","city":"Vieux Fort","country":"Saint Lucia","countryCode":"LC","lat":13.7332,"lon":-60.9526,"tz":"America/St_Lucia","region":"caribbean"},
   {"iata":"VCE","icao":"LIPZ","name":"Venice Marco Polo Airport","city":"Venice","country":"Italy","countryCode":"IT","lat":45.5053,"lon":12.3519,"tz":"Europe/Rome","region":"europe"},
+  {"iata":"VCP","icao":"SBKP","name":"Viracopos International Airport","city":"São Paulo (Campinas)","country":"Brazil","countryCode":"BR","lat":-23.0074,"lon":-47.1345,"tz":"America/Sao_Paulo","region":"south-america"},
   {"iata":"VFA","icao":"FVFA","name":"Victoria Falls International Airport","city":"Victoria Falls","country":"Zimbabwe","countryCode":"ZW","lat":-18.0959,"lon":25.839,"tz":"Africa/Harare","region":"sub-saharan-africa"},
   {"iata":"VIE","icao":"LOWW","name":"Vienna International Airport","city":"Vienna","country":"Austria","countryCode":"AT","lat":48.1103,"lon":16.5697,"tz":"Europe/Vienna","region":"europe","hub":true},
   {"iata":"VLC","icao":"LEVC","name":"Valencia Airport","city":"Valencia","country":"Spain","countryCode":"ES","lat":39.4893,"lon":-0.4816,"tz":"Europe/Madrid","region":"europe"},

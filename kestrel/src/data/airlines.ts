@@ -32,7 +32,6 @@ const ROWS: AirlineRow[] = [
   ["OS", "AUA", "Austrian Airlines", "star", "lufthansa-miles-more", "AT", "#D81E05", "VIE"],
   ["SN", "BEL", "Brussels Airlines", "star", "lufthansa-miles-more", "BE", "#0B2A5B", "BRU"],
   ["LO", "LOT", "LOT Polish Airlines", "star", undefined, "PL", "#0A2D63", "WAW"],
-  ["SK", "SAS", "SAS Scandinavian Airlines", "skyteam", "sas-eurobonus", "SE", "#0F0F6E", "CPH ARN OSL"],
   ["TP", "TAP", "TAP Air Portugal", "star", "tap-miles-go", "PT", "#00A550", "LIS OPO"],
   ["A3", "AEE", "Aegean Airlines", "star", undefined, "GR", "#00338D", "ATH"],
   ["ET", "ETH", "Ethiopian Airlines", "star", undefined, "ET", "#2E8B3D", "ADD"],
@@ -76,6 +75,8 @@ const ROWS: AirlineRow[] = [
   ["KQ", "KQA", "Kenya Airways", "skyteam", undefined, "KE", "#C8102E", "NBO"],
   ["UX", "AEA", "Air Europa", "skyteam", undefined, "ES", "#0E3A6A", "MAD"],
   ["ME", "MEA", "Middle East Airlines", "skyteam", undefined, "LB", "#0B3C5D", "BEY"],
+  // SAS left Star Alliance for SkyTeam on 1 Sep 2024.
+  ["SK", "SAS", "SAS Scandinavian Airlines", "skyteam", "sas-eurobonus", "SE", "#0F0F6E", "CPH ARN OSL"],
   // ─── Non-alliance ───────────────────────────────────────────
   ["EK", "UAE", "Emirates", "none", "emirates-skywards", "AE", "#D71920", "DXB"],
   ["EY", "ETD", "Etihad Airways", "none", "etihad-guest", "AE", "#BD8B13", "AUH"],
@@ -90,7 +91,7 @@ const ROWS: AirlineRow[] = [
   ["LY", "ELY", "El Al", "none", undefined, "IL", "#0B2F7E", "TLV"],
   ["6E", "IGO", "IndiGo", "none", undefined, "IN", "#001B94", "DEL BOM BLR HYD"],
   ["CZ", "CSN", "China Southern", "none", undefined, "CN", "#0C4DA2", "CAN PEK"],
-  ["HU", "CHH", "Hainan Airlines", "none", undefined, "CN", "#D2122E", "PEK HAK"],
+  ["HU", "CHH", "Hainan Airlines", "none", undefined, "CN", "#D2122E", "PEK"],
   ["PR", "PAL", "Philippine Airlines", "none", undefined, "PH", "#0B3D91", "MNL CEB"],
   ["GF", "GFA", "Gulf Air", "none", undefined, "BH", "#B8860B", "BAH"],
   ["BI", "RBA", "Royal Brunei Airlines", "none", undefined, "BN", "#F5B800", "BWN"],

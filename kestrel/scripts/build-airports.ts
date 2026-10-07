@@ -36,7 +36,7 @@ const CURATED = `
   # Caribbean
   NAS PLS MBJ KIN PUJ SDQ STI HAV AUA CUR SXM BGI POS GCM PAP ANU UVF SKB GND BDA FDF PTP
   # South America
-  BOG* LIM* UIO GYE GRU* GIG* CGH SDU BSB CNF SSA REC FOR POA CWB FLN MAO BEL EZE* AEP COR MDZ SCL* MVD ASU LPB VVI
+  BOG* LIM* UIO GYE GRU* GIG* CGH VCP SDU BSB CNF SSA REC FOR POA CWB FLN MAO BEL EZE* AEP COR MDZ SCL* MVD ASU LPB VVI
   CCS MDE CLO CTG BAQ GEO PBM CUZ IPC
   # Europe
   LHR* LGW LCY STN LTN MAN EDI GLA BHX BRS NCL BFS DUB* SNN ORK CDG* ORY NCE LYS MRS TLS BOD NTE AMS* BRU* LUX
@@ -215,6 +215,7 @@ const PATCH: Record<string, Partial<Airport>> = {
   SKB: { city: "Basseterre" },
   GND: { city: "St. George's" },
   ANU: { city: "St. John's" },
+  VCP: { city: "São Paulo (Campinas)" },
   GIG: { city: "Rio de Janeiro" },
   SDU: { city: "Rio de Janeiro" },
   MDE: { city: "Medellín" },
