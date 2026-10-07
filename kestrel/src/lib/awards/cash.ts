@@ -21,14 +21,14 @@ interface FareCurve {
 const CURVE: Record<Cabin, FareCurve> = {
   economy: { base: 120, perMile: 0.17 },
   premium: { base: 250, perMile: 0.34 },
-  business: { base: 600, perMile: 0.85 },
-  first: { base: 1400, perMile: 1.75 },
+  business: { base: 700, perMile: 0.82 },
+  first: { base: 1500, perMile: 1.75 },
 };
 
-/** Ultra-long-haul fares grow sub-linearly beyond ~7,000 mi. */
+/** Ultra-long-haul fares grow sub-linearly beyond ~5,500 mi (a 9,000 mi flight is not 2.5× a 3,500 mi one). */
 function effectiveDistance(distanceMiles: number): number {
   const d = Math.max(0, distanceMiles);
-  return d <= 7000 ? d : 7000 + (d - 7000) * 0.6;
+  return d <= 5500 ? d : 5500 + (d - 5500) * 0.3;
 }
 
 /** Seasonal multiplier on cash fares: summer and holidays cost more, deep winter less. */

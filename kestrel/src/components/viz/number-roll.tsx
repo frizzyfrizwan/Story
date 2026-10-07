@@ -80,12 +80,25 @@ export function NumberRoll({ value, format = "int", duration = 700, animateOnMou
   const n = chars.length;
 
   return (
-    <span className={cn("inline-flex items-end font-mono leading-none tnum", className)} aria-label={target} role="text">
-      {prefix != null && <span className="block h-[1em] leading-[1em]">{prefix}</span>}
+    <span className={cn("inline-flex items-end font-mono leading-none tnum", className)}>
+      <span className="sr-only">
+        {prefix}
+        {target}
+        {suffix}
+      </span>
+      {prefix != null && (
+        <span className="block h-[1em] leading-[1em]" aria-hidden>
+          {prefix}
+        </span>
+      )}
       {chars.map((ch, i) => (
         <RollChar key={n - 1 - i} ch={ch} duration={duration} delay={(n - 1 - i) * 35} />
       ))}
-      {suffix != null && <span className="block h-[1em] leading-[1em]">{suffix}</span>}
+      {suffix != null && (
+        <span className="block h-[1em] leading-[1em]" aria-hidden>
+          {suffix}
+        </span>
+      )}
     </span>
   );
 }

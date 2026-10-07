@@ -56,6 +56,15 @@ export function scoreFare(input: ScoreInput): { valueScore: number; badges: stri
   const bench = CPP_BENCHMARK[cabin];
   const ratio = bench > 0 ? c / bench : 0;
 
+  // No redemption value at all (taxes ≥ cash, or no cash reference) → zero, no modifiers.
+  if (c <= 0) {
+    const badges: string[] = [];
+    if (taxesUsd < SCORE_THRESHOLDS.lowTaxesUsd) badges.push(BADGE.lowTaxes);
+    if (stops === 0) badges.push(BADGE.nonstop);
+    if (taxesUsd > SCORE_THRESHOLDS.surchargeHeavyUsd) badges.push(BADGE.surchargeHeavy);
+    return { valueScore: 0, badges, cpp: 0 };
+  }
+
   let score = cppScore(ratio);
 
   // Taxes as a share of the cash fare you'd otherwise pay — heavy surcharges erode the redemption.

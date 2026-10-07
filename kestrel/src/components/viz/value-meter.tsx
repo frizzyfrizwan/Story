@@ -38,7 +38,7 @@ export interface ValueMeterProps {
 }
 
 export function ValueMeter({ score, cpp, benchmark, size = 180, caption, className }: ValueMeterProps) {
-  const id = useId();
+  const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const s = clamp(score ?? scoreFromCpp(cpp, benchmark), 0, 100);
   const verdict = valueVerdict(s);
   const [angle, setAngle] = useState(-90);

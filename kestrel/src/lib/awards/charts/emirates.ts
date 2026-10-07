@@ -46,7 +46,7 @@ export const emiratesSkywards: ChartFn = (input) => {
   if (saver == null) return null;
   const d = demandOf(input);
   const tier = d > 0.85 ? "Flex Plus" : d > 0.7 ? "Flex" : "Saver";
-  const miles = tier === "Saver" ? saver : roundTo(saver * (tier === "Flex" ? 1.5 : 2), 500);
+  const miles = tier === "Saver" ? saver : roundTo(saver * (tier === "Flex" ? 1.5 : 2), 250);
   const taxes = govTaxes(input) + carrierSurcharge("EK", input.cabin, input.distanceMiles);
   return quote(miles, taxes, tier === "Saver" ? "chart" : "dynamic", `Skywards: Emirates-operated ${bandLabel(bi, BANDS)}, Classic ${tier} (high surcharges)`, tier === "Saver" ? "standard" : "peak");
 };
