@@ -280,6 +280,22 @@ export function peakFromDemand(d: number): PriceQuote["peak"] {
   return d >= 0.65 ? "peak" : d <= 0.35 ? "off-peak" : "standard";
 }
 
+/**
+ * UK school-holiday peak calendar (British Airways / Virgin Atlantic style):
+ * summer, Christmas–New Year, Easter fortnight, February/May/October half-terms.
+ */
+export function ukSchoolPeak(date: string): boolean {
+  const x = ymd(date);
+  return (
+    inWindow(x.md, 624, 906) ||
+    inWindow(x.md, 1217, 105) ||
+    nearEaster(x, 9, 8) ||
+    inWindow(x.md, 214, 222) ||
+    inWindow(x.md, 523, 531) ||
+    inWindow(x.md, 1023, 1031)
+  );
+}
+
 /** Generic "northern-hemisphere leisure" peak flag used by fixed charts without their own calendar. */
 export function genericPeak(date: string): PriceQuote["peak"] {
   const x = ymd(date);
