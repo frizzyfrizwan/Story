@@ -131,7 +131,7 @@ function isDetail(d: unknown): d is FindDetail {
 
 /** Apply `patch` to every cached copy of find `id` (feeds, profile lists, detail). */
 export function patchFindEverywhere(qc: QueryClient, id: string, patch: Patch) {
-  qc.setQueriesData<unknown>({ queryKey: findsKeys.all }, (old) => {
+  qc.setQueriesData<unknown>({ queryKey: findsKeys.all }, (old: unknown) => {
     if (isFeedData(old)) {
       let touched = false;
       const pages = old.pages.map((p) => {

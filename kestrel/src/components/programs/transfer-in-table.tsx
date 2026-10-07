@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, Clock, Zap } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { LoyaltyProgram, TransferLink } from "@/lib/types";
 import { cn, fmtInt } from "@/lib/utils";
 import { ProgramLogo } from "@/components/art/program-logo";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { focusRing } from "@/components/ui/tokens";
+import { TransferTimeIcon } from "@/components/transfers/transfer-time-icon";
 import {
   BANK_ORDER,
   TRANSFER_TIME_META,
@@ -15,17 +16,6 @@ import {
   fmtEffectiveRatio,
   fmtRatio,
 } from "@/components/transfers/transfer-utils";
-
-export function TransferTimeIcon({ time, className }: { time: TransferLink["transferTime"]; className?: string }) {
-  const kind = TRANSFER_TIME_META[time].kind;
-  const Icon = kind === "instant" ? Zap : kind === "hours" ? Clock : CalendarDays;
-  return (
-    <Icon
-      className={cn("size-3.5 shrink-0", kind === "instant" ? "text-aurora" : kind === "hours" ? "text-sky" : "text-fg-subtle", className)}
-      aria-hidden="true"
-    />
-  );
-}
 
 /**
  * Server-safe table of every bank that feeds a program. `programs` resolves bank names;

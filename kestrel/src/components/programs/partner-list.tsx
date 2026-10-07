@@ -5,9 +5,9 @@ import { cn, fmtInt } from "@/lib/utils";
 import { ProgramLogo } from "@/components/art/program-logo";
 import { Badge } from "@/components/ui/badge";
 import { focusRing } from "@/components/ui/tokens";
+import { TransferTimeIcon } from "@/components/transfers/transfer-time-icon";
 import { TRANSFER_TIME_META, bonusLabel, bonusState, fmtRatio, linkRatio } from "@/components/transfers/transfer-utils";
 import { AllianceBadge } from "./program-meta";
-import { TransferTimeIcon } from "./transfer-in-table";
 
 /** Every destination a bank currency feeds, airlines then hotels, with ratio / bonus / time. */
 export function PartnerList({

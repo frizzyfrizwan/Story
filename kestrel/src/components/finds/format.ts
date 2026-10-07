@@ -109,3 +109,6 @@ export function slugTag(raw: string): string {
 }
 
 export const MAX_TAGS = 8;
+
+/** Items per feed page — small enough that "Load more" is exercised by the demo content. */
+export const FEED_PAGE_SIZE = 10;
