@@ -410,7 +410,10 @@ describe("determinism and availability", () => {
     expect(seasonFor("2026-11-07", ctxMaui).tier).toBe("peak"); // Saturday in a standard month
     expect(seasonFor("2026-11-10", ctxMaui).tier).toBe("standard"); // Tuesday
     expect(seasonFor("2026-10-13", ctxMaui).tier).toBe("off-peak"); // Tuesday in a low month
-    expect(seasonFor("2026-10-10", seasonContextFor(CAT1)).tier).toBe("standard"); // city Saturday
+    const ctxCity = seasonContextFor(CAT1);
+    expect(ctxCity.resort).toBe(false);
+    expect(seasonFor("2026-04-11", ctxCity).tier).toBe("standard"); // Saturday in a standard month for Hanoi
+    expect(seasonFor("2026-10-10", ctxCity).tier).toBe("peak"); // October is a Hanoi peak month
   });
 });
 
