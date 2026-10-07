@@ -154,8 +154,8 @@ async function runLive(client: Anthropic, sse: SseStream, messages: ConciergeMes
       }
 
       const toolUses = message.content.filter((b): b is Anthropic.Beta.BetaToolUseBlock => b.type === "tool_use");
-      if (message.stop_reason !== "tool_use" || toolUses.length === 0) break;
       if (message.stop_reason === "max_tokens") break;
+      if (message.stop_reason !== "tool_use" || toolUses.length === 0) break;
 
       if (rounds >= MAX_TOOL_ROUNDS) {
         sse.send("text", "\n\nI've hit my tool-call limit for this turn — ask me to continue and I'll pick up from here.");
