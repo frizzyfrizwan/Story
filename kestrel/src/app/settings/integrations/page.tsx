@@ -87,7 +87,7 @@ function buildRows(): Row[] {
       id: "resend",
       group: "Auth & email",
       name: "Resend",
-      powers: "Magic-link sign-in, alert emails and digests",
+      powers: "Magic-link sign-in and alert emails",
       status: status.email ? "live" : "off",
       requires: status.email ? undefined : "AUTH_RESEND_KEY (optional EMAIL_FROM)",
       docs: "https://resend.com/docs",

@@ -19,7 +19,8 @@ import { airportDistanceMiles, airportsInRegion, getAirport } from "@/data/airpo
 import { getAirline } from "@/data/airlines";
 import { BANK_PROGRAMS, PROGRAM_BY_ID, PROGRAMS, getProgram } from "@/data/programs";
 import { TRANSFER_LINKS } from "@/data/transfers";
-import { typicalMilesFor } from "@/lib/awards";
+// Direct import: the awards barrel would pull every chart module into the client bundle.
+import { typicalMilesFor } from "@/lib/awards/cash";
 import { apiGet, loginHref } from "@/lib/client/api";
 import { CABIN_LABEL, type AwardRegion, type Balance, type Cabin, type Deal } from "@/lib/types";
 import { planPayment, reachByProgram } from "@/lib/wallet/affordability";

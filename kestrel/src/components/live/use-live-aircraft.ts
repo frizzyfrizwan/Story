@@ -1,7 +1,7 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { LiveAircraft } from "@/lib/types";
 import type { MapBBox } from "@/components/viz";
 import { apiGet } from "@/lib/client/api";
@@ -61,6 +61,10 @@ export interface LiveAircraftState {
 
 const EMPTY: LiveAircraft[] = [];
 
+function sameBBox(a: MapBBox, b: MapBBox): boolean {
+  return a.lamin === b.lamin && a.lomin === b.lomin && a.lamax === b.lamax && a.lomax === b.lomax;
+}
+
 function subscribeVisibility(onChange: () => void) {
   document.addEventListener("visibilitychange", onChange);
   return () => document.removeEventListener("visibilitychange", onChange);
@@ -88,26 +92,25 @@ export function useLiveAircraft({
 }: UseLiveAircraftOptions): LiveAircraftState {
   const visible = useDocumentVisible();
 
-  // Debounce + round the viewport. The first box is applied immediately so the map fills fast.
+  // Debounce + round the viewport. The first box is applied immediately so the map fills fast;
+  // the applied box lives in a ref so a pending debounce is not restarted when it lands.
   const [queryBBox, setQueryBBox] = useState<MapBBox | null>(null);
+  const applied = useRef<MapBBox | null>(null);
   useEffect(() => {
     if (!bbox) return;
     const next = roundBBox(bbox);
-    const same =
-      queryBBox &&
-      queryBBox.lamin === next.lamin &&
-      queryBBox.lomin === next.lomin &&
-      queryBBox.lamax === next.lamax &&
-      queryBBox.lomax === next.lomax;
-    if (same) return;
-    if (!queryBBox) {
+    const cur = applied.current;
+    if (cur && sameBBox(cur, next)) return;
+    const apply = () => {
+      applied.current = next;
       setQueryBBox(next);
+    };
+    if (!cur) {
+      apply();
       return;
     }
-    const t = window.setTimeout(() => setQueryBBox(next), debounceMs);
+    const t = window.setTimeout(apply, debounceMs);
     return () => window.clearTimeout(t);
-    // queryBBox is intentionally read, not depended on: a pending debounce must not restart when it lands.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bbox, debounceMs]);
 
   const active = enabled && visible && queryBBox != null;

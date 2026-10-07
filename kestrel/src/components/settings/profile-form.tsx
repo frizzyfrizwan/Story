@@ -269,7 +269,7 @@ export function ProfileForm({ profile, emailConfigured }: ProfileFormProps) {
             label="Email digest"
             description={
               emailConfigured
-                ? "A weekly summary of alert hits and transfer bonuses."
+                ? "One email per alert scan that finds seats, grouped by alert. Nothing else is scheduled."
                 : "Saved for later — this deployment has no email provider configured, so nothing will send yet."
             }
             checked={Boolean(form.preferences.emailDigest)}

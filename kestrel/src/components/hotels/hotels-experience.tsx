@@ -36,8 +36,10 @@ export interface HotelsExperienceProps {
 }
 
 /** Landing-page destination tiles. */
+type IllustratedCity = CitySuggestion & { art: NonNullable<CitySuggestion["art"]> };
+
 function PopularDestinations({ cities, onPick }: { cities: CitySuggestion[]; onPick: (city: string) => void }) {
-  const tiles = cities.filter((c) => c.art);
+  const tiles = cities.filter((c): c is IllustratedCity => c.art !== null);
   if (!tiles.length) return null;
   return (
     <Section
@@ -58,7 +60,7 @@ function PopularDestinations({ cities, onPick }: { cities: CitySuggestion[]; onP
                 focusRing,
               )}
             >
-              <HotelArt name={c.name} art={c.art!} className="rounded-[var(--radius-lg)]">
+              <HotelArt name={c.name} art={c.art} className="rounded-[var(--radius-lg)]">
                 <div className="absolute inset-x-0 bottom-0 p-4">
                   <p
                     className={cn("font-display text-2xl italic leading-none tracking-tight sm:text-3xl", ART_INK)}

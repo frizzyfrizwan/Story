@@ -122,6 +122,7 @@ export function CalendarTab({ origin, destination, cabin, onRouteChange }: Calen
   });
 
   const data = useMemo(() => aggregate(availQ.data?.days ?? []), [availQ.data]);
+  const recentDestinations = useMemo(() => POPULAR_ORIGINS.filter((c) => c !== origin), [origin]);
   const bestProgram = data.bestProgram ? getProgram(data.bestProgram.programId) : undefined;
   const loading = ready && availQ.isPending;
 
@@ -147,7 +148,7 @@ export function CalendarTab({ origin, destination, cabin, onRouteChange }: Calen
             onChange={(codes) => onRouteChange(origin, codes[0] ?? "")}
             fetcher={fetchAirports}
             placeholder="Destination"
-            recent={POPULAR_ORIGINS.filter((c) => c !== origin)}
+            recent={recentDestinations}
             label="Destination"
           />
         </Field>

@@ -26,6 +26,7 @@ import {
   activeFilterCount,
   applyFilters,
   fmtNights,
+  hotelSearchHref,
   nightsOf,
   pointsCeiling,
   programShort,
@@ -275,7 +276,7 @@ export function HotelResults({
 
   const walletHint = !wallet.signedIn ? (
     <>
-      <a href={loginHref()} className="font-medium text-fg underline-offset-4 hover:underline">
+      <a href={loginHref(hotelSearchHref(query))} className="font-medium text-fg underline-offset-4 hover:underline">
         Sign in
       </a>{" "}
       to see which of these you can book with the points you hold.

@@ -34,7 +34,6 @@ import {
   primaryPair,
   recordFromSearchParams,
   searchHref,
-  serializeSearchState,
   toAwardQuery,
   type ResultFilters,
   type SearchQueryState,
@@ -45,7 +44,6 @@ import {
 export interface SearchExperienceProps {
   /** Server-normalised query (including any `q` prefill). */
   initialQuery: SearchQueryState;
-  initialText?: string;
   /** Server's YYYY-MM-DD, so client and server agree on defaults. */
   today: string;
 }
@@ -56,7 +54,7 @@ function isEditable(el: EventTarget | null): boolean {
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || el.isContentEditable || el.closest("[role=dialog],[cmdk-root]") != null;
 }
 
-export function SearchExperience({ initialQuery, initialText, today }: SearchExperienceProps) {
+export function SearchExperience({ initialQuery, today }: SearchExperienceProps) {
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -82,8 +80,14 @@ export function SearchExperience({ initialQuery, initialText, today }: SearchExp
     [router],
   );
   const setQuery = useCallback(
-    (nextQuery: SearchQueryState, q?: string) => replaceUrl({ query: nextQuery, filters: { ...filters, maxMiles: null }, q: q ?? "" }, "route"),
-    [filters, replaceUrl],
+    (nextQuery: SearchQueryState, q?: string) => {
+      // A new route or cabin invalidates program/airline/miles filters; a date or passenger tweak keeps them.
+      const sameRoute =
+        nextQuery.origin.join() === query.origin.join() && nextQuery.destination.join() === query.destination.join() && nextQuery.cabin === query.cabin;
+      const nextFilters: ResultFilters = sameRoute ? { ...filters, maxMiles: null } : { ...DEFAULT_FILTERS, sort: filters.sort };
+      replaceUrl({ query: nextQuery, filters: nextFilters, q: q ?? "" }, "route");
+    },
+    [filters, query, replaceUrl],
   );
   const setFilters = useCallback((patch: Partial<ResultFilters>) => replaceUrl({ ...state, filters: { ...state.filters, ...patch } }, "shallow"), [state, replaceUrl]);
   const resetFilters = useCallback(() => replaceUrl({ ...state, filters: { ...DEFAULT_FILTERS, sort: state.filters.sort } }, "shallow"), [state, replaceUrl]);
@@ -227,7 +231,7 @@ export function SearchExperience({ initialQuery, initialText, today }: SearchExp
       </header>
 
       <div ref={formAnchor}>
-        <SearchForm value={query} onSubmit={setQuery} initialText={state.q || initialText} loading={search.isPending && routeSet} />
+        <SearchForm value={query} onSubmit={setQuery} initialText={state.q || undefined} loading={search.isPending && routeSet} />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[16rem_minmax(0,1fr)]">
@@ -310,8 +314,6 @@ export function SearchExperience({ initialQuery, initialText, today }: SearchExp
       </div>
 
       <AlertDialog open={alertOpen} onOpenChange={setAlertOpen} prefill={alertPrefill} />
-      {/* Keep the serialised state referenced so a future shallow write always starts from the latest URL. */}
-      <span hidden data-search-state={serializeSearchState(state)} />
     </div>
   );
 }

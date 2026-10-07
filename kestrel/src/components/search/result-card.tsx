@@ -20,7 +20,7 @@ import { CABIN_LABEL } from "@/lib/types";
 import { bestAffordableFare, planPayment, type PaymentPlan } from "@/lib/wallet/affordability";
 import { cn, fmtCpp, fmtDate, fmtDuration, fmtTime, fmtUsd } from "@/lib/utils";
 import { dayOffset, layoversOf, type VisibleResult } from "./derive";
-import { AiNote, FareRow, SeatsBadge, TransferChips, WalletPlanLine, badgeTone, type ExplainState } from "./fare-row";
+import { AiNote, FareRow, SeatsBadge, WalletPlanLine, badgeTone, type ExplainState } from "./fare-row";
 import type { SearchQueryState } from "./search-params";
 
 export interface ResultCardContext {
@@ -162,7 +162,7 @@ export function ResultCard({ item, context }: ResultCardProps) {
   const carrierSlot = (
     <>
       <AirlineTail code={longest.carrier} color={color} size={22} showCode={false} />
-      <span className="truncate normal-case tracking-normal text-fg">
+      <span className="truncate font-sans text-xs font-medium normal-case tracking-normal text-fg">
         {airline?.name ?? longest.carrier}
         {carriers.length > 1 && <span className="text-fg-subtle"> + {carriers.filter((c) => c !== longest.carrier).join(", ")}</span>}
       </span>
@@ -357,11 +357,6 @@ export function ResultCard({ item, context }: ResultCardProps) {
                   />
                 ))}
               </ul>
-              {fares.length === 1 && best.transferOptions.length > 0 && (
-                <div className="sr-only">
-                  <TransferChips options={best.transferOptions} passengers={passengers} />
-                </div>
-              )}
             </div>
           </motion.div>
         )}

@@ -35,6 +35,7 @@ import {
   TIER_LABEL,
   countryName,
   fmtNights,
+  hotelDetailHref,
   hotelSearchHref,
   parseStayParams,
   programShort,
@@ -61,6 +62,15 @@ function toneFor(score: number): StatTone {
   const v = valueVerdict(score);
   return v.label === "Good deal" ? "aurora" : v.label === "Fair" ? "gold" : "rose";
 }
+
+const TONE_DOT: Record<StatTone, string> = {
+  signal: "bg-signal",
+  aurora: "bg-aurora",
+  violet: "bg-violet",
+  gold: "bg-gold",
+  sky: "bg-sky",
+  rose: "bg-rose",
+};
 
 // ─── Night-by-night ───────────────────────────────────────────
 
@@ -320,12 +330,23 @@ function TransferList({ transfers, programName }: { transfers: ResolvedTransfer[
   );
 }
 
-function WalletPanel({ plan, wallet, currency }: { plan: WalletPlan | null; wallet: WalletContext; currency: string }) {
+function WalletPanel({
+  plan,
+  wallet,
+  currency,
+  returnTo,
+}: {
+  plan: WalletPlan | null;
+  wallet: WalletContext;
+  currency: string;
+  /** Where sign-in should land — passed explicitly so server and client render the same href. */
+  returnTo: string;
+}) {
   if (!wallet.signedIn) {
     return (
       <Panel eyebrow="Your wallet" title="Can you book this?">
         <p className="text-sm text-fg-muted">Sign in and we&apos;ll check this stay against the points you hold.</p>
-        <Button href={loginHref()} variant="secondary" size="sm" className="mt-3">
+        <Button href={loginHref(returnTo)} variant="secondary" size="sm" className="mt-3">
           Sign in
         </Button>
       </Panel>
@@ -487,7 +508,7 @@ export function HotelDetail({ initial }: HotelDetailProps) {
         />
         <div className="relative flex flex-col items-center gap-2 rounded-[var(--radius)] border border-panel-border bg-bg-elev-1 p-5 shadow-panel">
           <div className={cn("flex w-full items-center gap-2", LABEL)}>
-            <span aria-hidden="true" className={cn("size-1.5 rounded-full", `bg-${tone}`)} />
+            <span aria-hidden="true" className={cn("size-1.5 rounded-full", TONE_DOT[tone])} />
             Kestrel score
           </div>
           <ValueMeter
@@ -580,7 +601,7 @@ export function HotelDetail({ initial }: HotelDetailProps) {
             <TransferList transfers={transfers} programName={program.name} />
           </Panel>
 
-          <WalletPanel plan={plan} wallet={wallet} currency={currency} />
+          <WalletPanel plan={plan} wallet={wallet} currency={currency} returnTo={hotelDetailHref(property.id, stay)} />
 
           <div className="flex flex-col gap-2">
             {quote.available ? (

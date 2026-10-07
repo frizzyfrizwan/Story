@@ -159,7 +159,7 @@ export function TransferCell({ link, bank, dest, asOf }: { link: TransferLink | 
           }`}
         >
           <span className="inline-flex items-center gap-1.5">
-            <span className={cn("font-mono tnum text-sm font-medium", rich ? "text-aurora" : state === "active" ? "text-fg" : "text-fg")}>
+            <span className={cn("font-mono tnum text-sm font-medium", rich ? "text-aurora" : "text-fg")}>
               {fmtRatio(link.ratio)}
             </span>
             <TransferTimeIcon time={link.transferTime} />

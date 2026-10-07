@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Bookmark, CalendarSearch, Check, CircleAlert } from "lucide-react";
 import type { CSSProperties } from "react";
-import { Badge } from "@/components/ui/badge";
-import { ProgramChip } from "@/components/ui/badge";
+import { Badge, ProgramChip } from "@/components/ui/badge";
 import { Button, IconButton } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -1,6 +1,7 @@
 "use client";
 
 import { useDeferredValue, useMemo, useState } from "react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { CalendarClock, Landmark, SlidersHorizontal } from "lucide-react";
 import type { ProgramKind, TransferLink } from "@/lib/types";
@@ -217,7 +218,7 @@ export function TransferMatrix({ initialLinks, programs }: TransferMatrixProps) 
                             newGroup && i > 0 && "border-t border-t-panel-border-strong",
                           )}
                         >
-                          <a href={`/programs/${dest.id}`} className={cn("flex items-center gap-2.5 rounded-full", focusRing)}>
+                          <Link href={`/programs/${dest.id}`} prefetch={false} className={cn("flex items-center gap-2.5 rounded-full", focusRing)}>
                             <ProgramLogo id={dest.id} name={dest.shortName} color={dest.color} size={30} />
                             <span className="min-w-0">
                               <span className="block truncate text-[13px] font-medium text-fg">{dest.name}</span>
@@ -230,7 +231,7 @@ export function TransferMatrix({ initialLinks, programs }: TransferMatrixProps) 
                                 )}
                               </span>
                             </span>
-                          </a>
+                          </Link>
                         </th>
                         {columns.map((b) => (
                           <td
@@ -254,7 +255,7 @@ export function TransferMatrix({ initialLinks, programs }: TransferMatrixProps) 
             <ul className="flex flex-col gap-3 md:hidden">
               {rows.map(({ dest, sources }) => (
                 <li key={dest.id} className="rounded-[var(--radius)] border border-panel-border bg-bg-elev-1">
-                  <a href={`/programs/${dest.id}`} className={cn("flex items-center gap-3 border-b border-panel-border px-4 py-3", focusRing)}>
+                  <Link href={`/programs/${dest.id}`} prefetch={false} className={cn("flex items-center gap-3 border-b border-panel-border px-4 py-3", focusRing)}>
                     <ProgramLogo id={dest.id} name={dest.shortName} color={dest.color} size={34} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-fg">{dest.name}</p>
@@ -267,7 +268,7 @@ export function TransferMatrix({ initialLinks, programs }: TransferMatrixProps) 
                         )}
                       </div>
                     </div>
-                  </a>
+                  </Link>
                   <ul className="divide-y divide-panel-border">
                     {columns
                       .filter((b) => sources.get(b))

@@ -111,7 +111,11 @@ export function reachSentence(
   if (!bank) return null;
   const from = links.filter((l) => l.from === bank.programId && programs[l.to]);
   if (!from.length) return null;
-  const bonus = from.filter((l) => isBonusActive(l, asOf)).sort((a, b) => effectiveRatio(b, asOf) - effectiveRatio(a, asOf))[0];
+  // Prefer an airline bonus for the headline; hotels usually have inflated ratios (Hilton 1:2).
+  const airlineFirst = (l: TransferLink) => (programs[l.to].kind === "airline" ? 0 : 1);
+  const bonus = from
+    .filter((l) => isBonusActive(l, asOf))
+    .sort((a, b) => airlineFirst(a) - airlineFirst(b) || effectiveRatio(b, asOf) - effectiveRatio(a, asOf))[0];
   const par =
     from.find((l) => l.to === "aeroplan" && l !== bonus) ??
     from.find((l) => l.ratio[0] === l.ratio[1] && l !== bonus && programs[l.to].kind === "airline") ??

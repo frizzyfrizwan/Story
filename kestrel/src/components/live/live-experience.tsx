@@ -852,7 +852,7 @@ export function LiveExperience({ initialFlight, initialAirport }: LiveExperience
         <div
           className={cn(
             "absolute top-3 z-20 hidden max-w-[34rem] flex-col items-end gap-2 transition-[right] duration-300 ease-out lg:flex",
-            panelOpen && desktop ? "right-[calc(var(--live-panel)+1.5rem)]" : "right-3",
+            panelOpen && desktop ? "right-[calc(var(--live-panel)_+_1.5rem)]" : "right-3",
           )}
           style={{ "--live-panel": `${PANEL_WIDTH}px` } as React.CSSProperties}
         >

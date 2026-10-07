@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { CalendarDays, Compass, Tag, X } from "lucide-react";
 import { AirportCombobox } from "@/components/ui/airport-combobox";
 import { Button } from "@/components/ui/button";
@@ -56,6 +56,10 @@ export function ExploreExperience({ initial, signedIn, homeAirport }: ExploreExp
   const [state, setState] = useState<ExploreState>(() => ({ ...initial, from: initial.from || homeAirport || "" }));
   // Latest state outside React's batching so rapid updates (sort then switch) never clobber each other.
   const latest = useRef(state);
+  const recentOrigins = useMemo(
+    () => Array.from(new Set([homeAirport, ...POPULAR_ORIGINS].filter((c): c is string => Boolean(c)))),
+    [homeAirport],
+  );
 
   const update = useCallback(
     (patch: Partial<ExploreState>) => {
@@ -83,7 +87,7 @@ export function ExploreExperience({ initial, signedIn, homeAirport }: ExploreExp
                 onChange={(codes) => update({ from: codes[0] ?? "" })}
                 fetcher={fetchAirports}
                 placeholder="Any origin"
-                recent={Array.from(new Set([homeAirport, ...POPULAR_ORIGINS].filter((c): c is string => Boolean(c))))}
+                recent={recentOrigins}
                 label="Origin airport"
               />
             </Field>

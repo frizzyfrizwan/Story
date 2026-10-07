@@ -33,10 +33,10 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 }
 
 export default async function SearchPage({ searchParams }: PageProps) {
-  const { query, q, today } = resolve(await searchParams);
+  const { query, today } = resolve(await searchParams);
   return (
     <Suspense fallback={<SearchFallback />}>
-      <SearchExperience initialQuery={query} initialText={q || undefined} today={today} />
+      <SearchExperience initialQuery={query} today={today} />
     </Suspense>
   );
 }
