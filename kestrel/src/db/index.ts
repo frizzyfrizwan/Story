@@ -11,7 +11,6 @@ import { seedDemoContent } from "./seed";
 export type Db = LibSQLDatabase<typeof schema>;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __kestrelDb: { client: Client; db: Db; ready: Promise<void> } | undefined;
 }
 

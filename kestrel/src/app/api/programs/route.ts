@@ -1,7 +1,7 @@
 import { handler, ok } from "@/lib/api";
 import { PROGRAMS } from "@/data/programs";
 import { TRANSFER_LINKS } from "@/data/transfers";
-import { getDb, schema } from "@/db";
+import { getDb } from "@/db";
 
 export const runtime = "nodejs";
 

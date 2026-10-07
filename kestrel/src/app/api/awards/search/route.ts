@@ -11,7 +11,7 @@ const codes = z
   .transform((v) => (Array.isArray(v) ? v : v.split(",")))
   .pipe(z.array(z.string().trim().toUpperCase().min(3).max(3)).min(1).max(6));
 
-export const querySchema = z.object({
+const querySchema = z.object({
   origin: codes,
   destination: codes,
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

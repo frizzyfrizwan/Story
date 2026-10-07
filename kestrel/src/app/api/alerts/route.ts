@@ -15,7 +15,7 @@ export const GET = handler(async () => {
   return ok({ alerts, hits });
 });
 
-export const alertSchema = z.object({
+const alertSchema = z.object({
   name: z.string().max(80).optional(),
   origins: z.array(z.string().trim().toUpperCase().length(3)).min(1).max(6),
   destinations: z.array(z.string().trim().toUpperCase().length(3)).min(1).max(6),

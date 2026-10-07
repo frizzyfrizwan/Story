@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { auth } from "@/auth";
-import { handler, ok, fail, parseBody, parseSearchParams, rateLimit, clientKey } from "@/lib/api";
+import { handler, ok, fail, parseBody, parseSearchParams, rateLimit } from "@/lib/api";
 import { listFinds, createFind, trendingTags } from "@/lib/repo/finds";
 import { CABINS } from "@/lib/types";
 
@@ -26,7 +26,7 @@ export const GET = handler(async (req: Request) => {
   return ok({ ...page, tags });
 });
 
-export const createSchema = z.object({
+const createSchema = z.object({
   title: z.string().trim().min(8).max(140),
   body: z.string().trim().min(20).max(4000),
   origin: z.string().trim().toUpperCase().length(3).optional(),
