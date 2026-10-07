@@ -147,7 +147,7 @@ function FiltersPanel({ filters, onChange, results }: FiltersPanelProps) {
       <fieldset>
         <legend className={LABEL}>Stars</legend>
         <div className="mt-2 flex flex-wrap gap-1.5">
-          {[5, 4, 3].map((s) => (
+          {([5, 4, 3] as const).map((s) => (
             <ToggleChip
               key={s}
               pressed={filters.stars.includes(s)}

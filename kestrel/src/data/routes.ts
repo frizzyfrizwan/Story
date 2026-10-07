@@ -1915,7 +1915,6 @@ const ROWS: Row[] = [
   ["FCO", "DUB", "EI", "A320", 180, 170, 14, "Y"],
   ["FCO", "CPH", "SK", "A320neo", 160, 165, 14, "YJ"],
   ["FCO", "MAD", "UX", "B737-800", 150, 155, 14, "YJ"],
-  // __ROUTES_END__
 ];
 
 export const ROUTES: RouteDef[] = ROWS.flatMap(
