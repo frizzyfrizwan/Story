@@ -186,8 +186,19 @@ struct BatterySample: Equatable {
     /// Minutes to empty (discharging) or to full (charging); nil when unknown.
     var timeRemainingMinutes: Int?
     var cycleCount = 0
+    /// Cycles the battery is rated for (`DesignCycleCount9C`, 1000 on every Mac since 2010); 0 when unknown.
+    var designCycleCount = 0
     var designCapacity = 0
+    /// Live full-charge estimate from the gauge (`AppleRawMaxCapacity`). Sags by a few percent under heavy discharge.
     var maxCapacity = 0
+    /// Smoothed full-charge capacity (`NominalChargeCapacity`, Apple Silicon only); the figure behind System
+    /// Information's "Maximum Capacity". 0 when the firmware does not expose it.
+    var nominalCapacity = 0
+    /// "Maximum Capacity Percent" as macOS itself reports it (`pmset -g ps -xml`): the smoothed figure System
+    /// Information and the Battery settings pane display. nil when pmset did not provide it.
+    var systemMaxCapacityPercent: Int?
+    /// powerd's "Battery Service State" (0 = none); surfaced for diagnostics.
+    var serviceState: Int?
     var currentCapacity = 0
     var temperature: Double = 0
     var voltage: Double = 0
@@ -199,11 +210,22 @@ struct BatterySample: Equatable {
     var serial: String?
     var manufactureDate: Date?
 
-    /// Maximum capacity relative to design capacity, 0...100.
+    /// The full-charge capacity health is judged on: the smoothed nominal figure when present, else the live one.
+    var fullChargeCapacity: Int { nominalCapacity > 0 ? nominalCapacity : maxCapacity }
+
+    /// Maximum capacity relative to design capacity, 0...100. Prefers the figure macOS publishes (what System
+    /// Information shows); the live gauge values swing 2–3% with load, so they are only the fallback.
     var healthPercent: Double {
-        guard designCapacity > 0, maxCapacity > 0 else { return 0 }
-        return (Double(maxCapacity) / Double(designCapacity) * 100).clamped(to: 0...100)
+        if let systemMaxCapacityPercent, systemMaxCapacityPercent > 0 { return Double(systemMaxCapacityPercent).clamped(to: 0...100) }
+        guard designCapacity > 0, fullChargeCapacity > 0 else { return 0 }
+        return (Double(fullChargeCapacity) / Double(designCapacity) * 100).clamped(to: 0...100)
     }
+
+    /// `healthPercent` rounded the way System Information rounds its "Maximum Capacity" (77.6% shows as 78%).
+    var healthPercentRounded: Int { Int(healthPercent.rounded()) }
+
+    /// Rated cycles, falling back to Apple's long-standing 1000 when the firmware does not say.
+    var ratedCycleCount: Int { designCycleCount > 0 ? designCycleCount : 1000 }
 
     /// Instantaneous power in watts; positive while charging, negative while discharging.
     var powerWatts: Double { voltage * amperage / 1_000_000 }

@@ -53,7 +53,7 @@ struct SystemInfoView: View {
             if let root = engine.disk.root { KeyValueRow(key: "Startup disk", value: "\(root.name) · \(Format.bytes(root.total)) \(root.fileSystem)") }
             KeyValueRow(key: "Serial number", value: system.serialNumber, monospaced: true, copyable: true)
             KeyValueRow(key: "Hardware UUID", value: system.hardwareUUID, monospaced: true, copyable: true)
-            KeyValueRow(key: "Battery", value: engine.battery.isPresent ? "\(Int(engine.battery.healthPercent))% health, \(engine.battery.cycleCount) cycles" : "None")
+            KeyValueRow(key: "Battery", value: engine.battery.isPresent ? "\(engine.battery.healthPercentRounded)% health, \(engine.battery.cycleCount) cycles" : "None")
         }
         .card()
     }
@@ -136,7 +136,7 @@ struct SystemInfoView: View {
         lines.append("Serial: \(system.serialNumber)")
         if let root = engine.disk.root { lines.append("Disk: \(Format.bytes(root.available)) free of \(Format.bytes(root.total)); SMART \(system.smartStatus ?? "unknown")") }
         lines.append("Memory: \(Format.memory(engine.memory.used)) used, pressure \(engine.memory.pressure.title), swap \(Format.memory(engine.memory.swapUsed))")
-        if engine.battery.isPresent { lines.append("Battery: \(Int(engine.battery.percent))%, health \(Int(engine.battery.healthPercent))%, \(engine.battery.cycleCount) cycles, \(engine.battery.condition)") }
+        if engine.battery.isPresent { lines.append("Battery: \(Int(engine.battery.percent))%, health \(engine.battery.healthPercentRounded)%, \(engine.battery.cycleCount) cycles, \(engine.battery.condition)") }
         lines.append("Thermal: \(engine.sensors.thermalState.title)" + (engine.sensors.cpuTemperature.map { ", CPU \(Int($0))°C" } ?? ""))
         lines.append("Security: FileVault \(flag(system.fileVaultEnabled)), Firewall \(flag(system.firewallEnabled)), SIP \(flag(system.sipEnabled))")
         lines.append("Time Machine: \(system.lastTimeMachineBackup.map { Format.dateTime($0) } ?? (system.timeMachineConfigured == false ? "not configured" : "unknown"))")

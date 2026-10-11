@@ -165,14 +165,107 @@ final class ProbeSmokeTests: XCTestCase {
         }
     }
 
+    func testBatteryConditionMatchesSystemInformation() {
+        // The power-source API says "Good" for a 78% battery that System Information calls "Service Recommended".
+        XCTAssertEqual(BatteryProbe.condition(powerSourceHealth: "Good", healthCondition: "", permanentFailure: false, healthPercent: 77.6), "Service Recommended")
+        XCTAssertEqual(BatteryProbe.condition(powerSourceHealth: "Good", healthCondition: "", permanentFailure: false, healthPercent: 80), "Normal")
+        XCTAssertEqual(BatteryProbe.condition(powerSourceHealth: "Good", healthCondition: nil, permanentFailure: false, healthPercent: 97.2), "Normal")
+        XCTAssertEqual(BatteryProbe.condition(powerSourceHealth: "Fair", healthCondition: nil, permanentFailure: false, healthPercent: 85), "Service Recommended")
+        XCTAssertEqual(BatteryProbe.condition(powerSourceHealth: "Poor", healthCondition: nil, permanentFailure: false, healthPercent: 85), "Service Recommended")
+        XCTAssertEqual(BatteryProbe.condition(powerSourceHealth: "Good", healthCondition: "Check Battery", permanentFailure: false, healthPercent: 95), "Service Recommended")
+        XCTAssertEqual(BatteryProbe.condition(powerSourceHealth: "Poor", healthCondition: "Permanent Battery Failure", permanentFailure: false, healthPercent: 95), "Replace Now")
+        XCTAssertEqual(BatteryProbe.condition(powerSourceHealth: "Good", healthCondition: nil, permanentFailure: true, healthPercent: 95), "Service Recommended")
+        // No capacity figures at all: fall back to the API's word, translated to Apple's UI vocabulary.
+        XCTAssertEqual(BatteryProbe.condition(powerSourceHealth: "Good", healthCondition: nil, permanentFailure: false, healthPercent: 0), "Normal")
+        XCTAssertEqual(BatteryProbe.condition(powerSourceHealth: nil, healthCondition: nil, permanentFailure: false, healthPercent: 0), "Unknown")
+    }
+
+    func testBatteryHealthRoundsLikeSystemInformation() {
+        var battery = BatterySample()
+        battery.designCapacity = 8694
+        battery.maxCapacity = 6745
+        XCTAssertEqual(battery.healthPercent, 77.58, accuracy: 0.01)
+        XCTAssertEqual(battery.healthPercentRounded, 78, "System Information shows 78%, not the truncated 77%")
+        XCTAssertEqual(battery.ratedCycleCount, 1000, "Falls back to Apple's 1000 when the firmware is silent")
+        battery.designCycleCount = 500
+        XCTAssertEqual(battery.ratedCycleCount, 500)
+    }
+
+    func testBatteryHealthPrefersTheFigureMacOSPublishes() {
+        var battery = BatterySample()
+        battery.designCapacity = 8694
+        battery.maxCapacity = 6572
+        battery.nominalCapacity = 6921      // 79.6% live, while System Information showed 78%
+        battery.systemMaxCapacityPercent = 78
+        XCTAssertEqual(battery.healthPercent, 78)
+        XCTAssertEqual(battery.healthPercentRounded, 78)
+        battery.systemMaxCapacityPercent = nil
+        XCTAssertEqual(battery.healthPercentRounded, 80, "Without pmset's figure, fall back to the gauge")
+    }
+
+    func testParsesPmsetPowerSourceReport() throws {
+        let xml = """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>Battery Service Flags</key><integer>1048579</integer>
+            <key>Battery Service State</key><integer>1</integer>
+            <key>BatteryHealth</key><string>Good</string>
+            <key>BatteryHealthCondition</key><string></string>
+            <key>Current Capacity</key><integer>67</integer>
+            <key>Max Capacity</key><integer>100</integer>
+            <key>Maximum Capacity Percent</key><integer>78</integer>
+            <key>Name</key><string>InternalBattery-0</string>
+            <key>Type</key><string>InternalBattery</string>
+        </dict>
+        </plist>
+        """
+        let health = try XCTUnwrap(BatteryProbe.parsePowerSourceReport(Data(xml.utf8)))
+        XCTAssertEqual(health.maxCapacityPercent, 78)
+        XCTAssertEqual(health.serviceState, 1)
+        XCTAssertEqual(health.serviceFlags, 1_048_579)
+        XCTAssertEqual(health.healthCondition, "")
+        XCTAssertNil(BatteryProbe.parsePowerSourceReport(Data("not a plist".utf8)))
+        let array = "<plist version=\"1.0\"><array><dict><key>Name</key><string>UPS</string></dict><dict><key>Type</key><string>InternalBattery</string><key>Maximum Capacity Percent</key><integer>91</integer></dict></array></plist>"
+        XCTAssertEqual(BatteryProbe.parsePowerSourceReport(Data(array.utf8))?.maxCapacityPercent, 91, "Picks the internal battery out of several sources")
+    }
+
+    func testLivePmsetReportOnThisMac() {
+        // pmset is always present; with a battery it must report the same percentage System Information shows.
+        let health = BatteryProbe.readSystemHealth()
+        if BatteryProbe().sample().isPresent {
+            XCTAssertNotNil(health)
+            if let percent = health?.maxCapacityPercent { XCTAssertTrue((1...100).contains(percent), "percent was \(percent)") }
+        }
+    }
+
+    func testBatteryHealthPrefersTheSmoothedNominalCapacity() {
+        // Under a 3 A discharge the live AppleRawMaxCapacity sagged to 6572 mAh (75.6%) while System Information
+        // kept showing 78%, which is NominalChargeCapacity 6816 / 8694.
+        var battery = BatterySample()
+        battery.designCapacity = 8694
+        battery.maxCapacity = 6572
+        battery.nominalCapacity = 6816
+        XCTAssertEqual(battery.fullChargeCapacity, 6816)
+        XCTAssertEqual(battery.healthPercentRounded, 78)
+        battery.nominalCapacity = 0
+        XCTAssertEqual(battery.fullChargeCapacity, 6572, "Intel firmware has no nominal figure; fall back to the live one")
+        XCTAssertEqual(battery.healthPercentRounded, 76)
+    }
+
     // MARK: - Sensors
 
     func testSMCProbeSampleHasValidReadings() {
         let probe = SMCProbe()
         let sample = probe.sample()
         XCTAssertEqual(sample.smcAvailable, probe.isAvailable)
+        if probe.isAvailable, !Self.isVirtualMachine {
+            // Every physical Mac exposes at least one readable temperature key once the struct layout is right.
+            XCTAssertFalse(sample.temperatures.isEmpty, "SMC opened but no temperature key decoded; check SMCProbe.KeyData")
+        }
         for reading in sample.temperatures {
-            XCTAssertGreaterThan(reading.celsius, 0, "\(reading.key) reported \(reading.celsius)")
+            XCTAssertGreaterThanOrEqual(reading.celsius, SMCProbe.minimumPlausibleCelsius, "\(reading.key) reported \(reading.celsius); power-gated placeholders must be filtered")
             XCTAssertLessThan(reading.celsius, 130, "\(reading.key) reported \(reading.celsius)")
             XCTAssertFalse(reading.name.isEmpty)
         }
@@ -181,6 +274,9 @@ final class ProbeSmokeTests: XCTestCase {
             XCTAssertTrue((0...1).contains(fan.fraction))
         }
     }
+
+    /// CI runners are VMs without a real SMC; `kern.hv_vmm_present` is 1 there.
+    private static var isVirtualMachine: Bool { (Sysctl.int("kern.hv_vmm_present") ?? 0) != 0 }
 
     // MARK: - Menu bar rendering
 

@@ -137,7 +137,7 @@ struct MenuBarView: View {
             if let minutes = battery.timeRemainingMinutes {
                 Text(battery.isCharging ? "\(Format.minutes(minutes)) to full" : "\(Format.minutes(minutes)) left").font(.caption).foregroundStyle(.secondary)
             }
-            Text("\(Int(battery.healthPercent))% health").font(.caption).foregroundStyle(.secondary)
+            Text("\(battery.healthPercentRounded)% health").font(.caption).foregroundStyle(.secondary)
         }
         .padding(.horizontal, 2)
     }

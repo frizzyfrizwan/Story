@@ -70,8 +70,9 @@ enum Diagnostics {
         if battery.isPresent {
             row("percent", battery.percent)
             row("state", battery.stateDescription)
-            row("capacity current/max/design", "\(battery.currentCapacity) / \(battery.maxCapacity) / \(battery.designCapacity) mAh → health \(battery.healthPercent.rounded1)%")
-            row("cycles", battery.cycleCount)
+            row("capacity current/max/nominal/design", "\(battery.currentCapacity) / \(battery.maxCapacity) / \(battery.nominalCapacity) / \(battery.designCapacity) mAh → health \(battery.healthPercent.rounded1)% from \(battery.systemMaxCapacityPercent != nil ? "macOS" : battery.nominalCapacity > 0 ? "nominal" : "raw max") (shown as \(battery.healthPercentRounded)%)")
+            row("macOS maximum capacity", "\(battery.systemMaxCapacityPercent.map { "\($0)%" } ?? "not reported") · service state \(battery.serviceState.map { "\($0)" } ?? "nil") (pmset -g ps -xml)")
+            row("cycles", "\(battery.cycleCount) of \(battery.ratedCycleCount) rated")
             row("condition", battery.condition)
             row("temperature", battery.temperature)
             row("voltage/amperage/power", "\(battery.voltage) mV / \(battery.amperage) mA / \(battery.powerWatts.rounded1) W")

@@ -75,15 +75,15 @@ struct PowerView: View {
 
     private var healthCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Health", subtitle: battery.condition, systemImage: "heart")
+            SectionHeader(title: "Health", subtitle: "Condition: \(battery.condition)", systemImage: "heart")
             HStack(alignment: .lastTextBaseline, spacing: 6) {
-                Text("\(Int(battery.healthPercent))%").font(.system(size: 34, weight: .semibold, design: .rounded))
+                Text("\(battery.healthPercentRounded)%").font(.system(size: 34, weight: .semibold, design: .rounded))
                 Text("of original capacity").font(.callout).foregroundStyle(.secondary)
             }
             ProgressBar(fraction: battery.healthPercent / 100, color: battery.healthPercent >= 80 ? Theme.good : battery.healthPercent >= 70 ? Theme.warning : Theme.critical)
-            KeyValueRow(key: "Cycle count", value: "\(battery.cycleCount) of ~1000 rated")
+            KeyValueRow(key: "Cycle count", value: "\(battery.cycleCount) of \(battery.ratedCycleCount) rated")
             KeyValueRow(key: "Design capacity", value: "\(battery.designCapacity) mAh")
-            KeyValueRow(key: "Full charge capacity", value: "\(battery.maxCapacity) mAh")
+            KeyValueRow(key: "Full charge capacity", value: "\(battery.fullChargeCapacity) mAh")
             KeyValueRow(key: "Temperature", value: Format.temperature(battery.temperature, unit: settings.temperatureUnit, decimals: 1))
             if let date = battery.manufactureDate { KeyValueRow(key: "Manufactured", value: date.formatted(date: .abbreviated, time: .omitted)) }
             if let serial = battery.serial { KeyValueRow(key: "Serial", value: serial, monospaced: true, copyable: true) }
@@ -159,7 +159,7 @@ struct PowerView: View {
             "Partial charges are fine and count as partial cycles; there is no benefit to draining to 0%.",
             "If the Mac stays plugged in for weeks, let it discharge to around 50% once a month.",
         ]
-        if battery.cycleCount > 500 { result.append("At \(battery.cycleCount) cycles, expect roughly \(max(0, 1000 - battery.cycleCount)) more before capacity drops below 80%.") }
+        if battery.cycleCount > 500 { result.append("At \(battery.cycleCount) cycles, expect roughly \(max(0, battery.ratedCycleCount - battery.cycleCount)) more before capacity drops below 80%.") }
         return result
     }
 }

@@ -106,7 +106,7 @@ struct OverviewView: View {
             }
             ProgressBar(fraction: battery.percent / 100, color: battery.percent < 20 ? Theme.critical : Theme.battery)
             HStack {
-                Label("\(Int(battery.healthPercent))% health", systemImage: "heart").font(.caption)
+                Label("\(battery.healthPercentRounded)% health", systemImage: "heart").font(.caption)
                 Spacer()
                 Label("\(battery.cycleCount) cycles", systemImage: "arrow.triangle.2.circlepath").font(.caption)
                 Spacer()
