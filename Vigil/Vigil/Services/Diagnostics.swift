@@ -85,7 +85,7 @@ enum Diagnostics {
 
         section("Sensors (parsed)")
         let sensors = engine.sensors
-        row("smcAvailable", sensors.smcAvailable)
+        row("smcAvailable", "\(sensors.smcAvailable) (parameter struct \(SMCProbe.parameterStructSize) bytes, kernel expects 80)")
         row("thermalState", sensors.thermalState.title)
         row("cpu/gpu max", "\(sensors.cpuTemperature.map { "\($0.rounded1)" } ?? "nil") / \(sensors.gpuTemperature.map { "\($0.rounded1)" } ?? "nil")")
         row("power system/cpu/gpu", "\(sensors.systemPowerWatts.map { "\($0.rounded1)" } ?? "nil") / \(sensors.cpuPowerWatts.map { "\($0.rounded1)" } ?? "nil") / \(sensors.gpuPowerWatts.map { "\($0.rounded1)" } ?? "nil")")

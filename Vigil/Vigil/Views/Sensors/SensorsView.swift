@@ -3,8 +3,11 @@ import SwiftUI
 struct SensorsView: View {
     @Environment(MetricsEngine.self) private var engine
     @Environment(AppSettings.self) private var settings
+    /// Groups the user has expanded past the hottest few readings. Apple Silicon exposes 200+ sensors.
+    @State private var expandedGroups: Set<SensorGroup> = []
 
     private var sensors: SensorSample { engine.sensors }
+    private let collapsedLimit = 6
 
     var body: some View {
         ScrollView {
@@ -12,13 +15,13 @@ struct SensorsView: View {
                 PageHeader(title: "Temperatures & Fans", subtitle: "Thermal state: \(sensors.thermalState.title). \(sensors.thermalState.explanation)")
                 if sensors.smcAvailable {
                 HStack(spacing: Theme.gridSpacing) {
-                    StatTile(title: "CPU", value: sensors.cpuTemperature.map { Format.temperature($0, unit: settings.temperatureUnit) } ?? "—", detail: "hottest CPU sensor", color: Theme.thermal, sparkline: engine.recent.map(\.temperature), systemImage: "cpu")
-                    StatTile(title: "GPU", value: sensors.gpuTemperature.map { Format.temperature($0, unit: settings.temperatureUnit) } ?? "—", detail: "hottest GPU sensor", color: Theme.gpu, systemImage: "cube.transparent")
+                    StatTile(title: "CPU", value: sensors.cpuTemperature.map { Format.temperature($0, unit: settings.temperatureUnit) } ?? "—", detail: tileDetail(for: .cpu), color: Theme.thermal, sparkline: engine.recent.map(\.temperature), systemImage: "cpu")
+                    StatTile(title: "GPU", value: sensors.gpuTemperature.map { Format.temperature($0, unit: settings.temperatureUnit) } ?? "—", detail: tileDetail(for: .gpu), color: Theme.gpu, systemImage: "cube.transparent")
                     if let battery = sensors.maximum(in: .battery) ?? (engine.battery.isPresent ? engine.battery.temperature : nil) {
                         StatTile(title: "Battery", value: Format.temperature(battery, unit: settings.temperatureUnit), detail: battery > 40 ? "hot — avoid charging under load" : "normal", color: Theme.battery, systemImage: "battery.75percent")
                     }
                     ForEach(sensors.fans) { fan in
-                        StatTile(title: fan.name, value: Format.rpm(fan.rpm), detail: "min \(Int(fan.minimum)) · max \(Int(fan.maximum))", color: Theme.cpu, fraction: fan.fraction, systemImage: "fan")
+                        StatTile(title: fan.name, value: Format.rpm(fan.rpm), detail: fanDetail(fan), color: Theme.cpu, fraction: fan.fraction, systemImage: "fan")
                     }
                     if sensors.fans.isEmpty && sensors.smcAvailable {
                         StatTile(title: "Fans", value: "None", detail: "Fanless design: cooling is passive, so sustained load throttles sooner", color: Theme.cpu, systemImage: "fan.slash")
@@ -48,14 +51,30 @@ struct SensorsView: View {
         .accessibilityIdentifier("page.sensors")
     }
 
+    private func tileDetail(for group: SensorGroup) -> String {
+        let count = sensors.temperatures.filter { $0.group == group }.count
+        guard count > 0 else { return "no reading right now" }
+        return count == 1 ? "1 sensor" : "hottest of \(count) sensors"
+    }
+
+    private func fanDetail(_ fan: FanReading) -> String {
+        // Recent MacBook Pros stop their fans completely at idle; 0 rpm is not a fault.
+        if fan.rpm < 1 { return "stopped · spins up from \(Int(fan.minimum)) rpm" }
+        let range = "min \(Int(fan.minimum)) · max \(Int(fan.maximum))"
+        guard fan.target > 0, abs(fan.target - fan.rpm) > 50 else { return range }
+        return "\(range) · target \(Int(fan.target))"
+    }
+
     private var sensorGroups: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 300), spacing: Theme.gridSpacing)], alignment: .leading, spacing: Theme.gridSpacing) {
             ForEach(SensorGroup.allCases) { group in
                 let readings = sensors.temperatures.filter { $0.group == group }.sorted { $0.celsius > $1.celsius }
                 if !readings.isEmpty {
+                    let expanded = expandedGroups.contains(group)
+                    let shown = expanded ? readings : Array(readings.prefix(collapsedLimit))
                     VStack(alignment: .leading, spacing: 6) {
                         SectionHeader(title: group.rawValue, subtitle: "\(readings.count) sensor\(readings.count == 1 ? "" : "s") · average \(Format.temperature(readings.map(\.celsius).average, unit: settings.temperatureUnit))")
-                        ForEach(readings) { reading in
+                        ForEach(shown) { reading in
                             HStack {
                                 Text(reading.name).font(.callout).lineLimit(1)
                                 Text(reading.key).font(.caption2.monospaced()).foregroundStyle(.tertiary)
@@ -63,6 +82,12 @@ struct SensorsView: View {
                                 ProgressBar(fraction: reading.celsius / 110, color: Theme.severity(reading.celsius / 110, warn: 0.75, critical: 0.9), height: 5).frame(width: 100)
                                 Text(Format.temperature(reading.celsius, unit: settings.temperatureUnit)).font(.callout.monospacedDigit()).frame(width: 56, alignment: .trailing)
                             }
+                        }
+                        if readings.count > collapsedLimit {
+                            Button(expanded ? "Show the hottest \(collapsedLimit) only" : "Show all \(readings.count)") {
+                                if expanded { expandedGroups.remove(group) } else { expandedGroups.insert(group) }
+                            }
+                            .buttonStyle(.link).font(.caption)
                         }
                     }
                     .card()
@@ -74,7 +99,7 @@ struct SensorsView: View {
     private var explainer: some View {
         VStack(alignment: .leading, spacing: 8) {
             SectionHeader(title: "What is normal?", systemImage: "questionmark.circle")
-            Text("Idle CPU temperatures of 35–55°C are typical; 80–100°C under sustained load is by design on Apple Silicon and Intel laptops. The number to watch is the **thermal state**: once macOS reports *Serious*, it is actively slowing the chip. Fans spin up well before that. If the Mac throttles while idle, something is wrong: a runaway process, blocked vents, or a hot charger. Fanless MacBook Airs throttle sooner by design and recover when the case cools.")
+            Text("Idle CPU temperatures of 35–55°C are typical; 80–100°C under sustained load is by design on Apple Silicon and Intel laptops. The number to watch is the **thermal state**: once macOS reports *Serious*, it is actively slowing the chip. Fans spin up well before that. If the Mac throttles while idle, something is wrong: a runaway process, blocked vents, or a hot charger. Fanless MacBook Airs throttle sooner by design and recover when the case cools. Apple Silicon exposes hundreds of sensors; the *System* group's SoC, power and regulator readings sit near the die temperature and are normal in the 50–70°C range.")
                 .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
         }
         .card()

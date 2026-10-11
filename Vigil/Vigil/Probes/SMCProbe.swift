@@ -5,10 +5,13 @@ import IOKit
 /// Keys differ between Intel and every Apple Silicon generation, so instead of a fixed table the probe
 /// enumerates every key once and keeps the ones that look like plausible sensors.
 final class SMCProbe {
-    private struct KeyData {
+    /// Mirrors the kernel's `SMCKeyData_t`. The layout must be exactly 80 bytes or `AppleSMC` rejects every call
+    /// with `kIOReturnBadArgument`: `dataSize` is a 32-bit count in the kernel (not today's 64-bit `IOByteCount`) and
+    /// `Info` is padded to 12 bytes by the C compiler, which Swift does not do on its own.
+    struct KeyData {
         struct Version { var major: UInt8 = 0, minor: UInt8 = 0, build: UInt8 = 0, reserved: UInt8 = 0; var release: UInt16 = 0 }
         struct Limit { var version: UInt16 = 0, length: UInt16 = 0; var cpuPLimit: UInt32 = 0, gpuPLimit: UInt32 = 0, memPLimit: UInt32 = 0 }
-        struct Info { var dataSize: IOByteCount = 0; var dataType: UInt32 = 0; var dataAttributes: UInt8 = 0 }
+        struct Info { var dataSize: UInt32 = 0; var dataType: UInt32 = 0; var dataAttributes: UInt8 = 0 }
         typealias Bytes = (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
                            UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
                            UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
@@ -17,13 +20,16 @@ final class SMCProbe {
         var version = Version()
         var limit = Limit()
         var info = Info()
-        var padding: UInt16 = 0
+        var infoPadding: (UInt8, UInt8, UInt8) = (0, 0, 0)
         var result: UInt8 = 0
         var status: UInt8 = 0
         var data8: UInt8 = 0
         var data32: UInt32 = 0
         var bytes: Bytes = (0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     }
+
+    /// Size of the struct handed to the kernel; `AppleSMC` requires 80.
+    static let parameterStructSize = MemoryLayout<KeyData>.stride
 
     private enum Selector: UInt8 {
         case readKey = 5
@@ -39,7 +45,17 @@ final class SMCProbe {
 
     private var connection: io_connect_t = 0
     private var infoCache: [UInt32: KeyData.Info] = [:]
-    private var temperatureKeys: [SensorKey] = []
+    /// Keys read on every sample: CPU, GPU and battery, the groups that move quickly and drive the charts and alerts.
+    private var hotKeys: [SensorKey] = []
+    /// Everything else (memory, storage, SoC/power arrays, unknowns). Apple Silicon exposes 150+ of these and each SMC
+    /// read is a ~0.2 ms round trip to the SMC coprocessor, so they refresh every `coldInterval` samples instead.
+    private var coldKeys: [SensorKey] = []
+    private var coldReadings: [SensorReading] = []
+    private var sampleCount = 0
+    static let coldInterval = 10
+    /// Sensors in a running Mac never sit below room temperature. Power-gated blocks report 0 or a placeholder
+    /// (the idle M1 Max GPU reads exactly 9.2 °C on every Tg key), so anything colder is "not reporting right now".
+    static let minimumPlausibleCelsius = 15.0
     private var fanCount = 0
     private var powerKeys: [String: SensorKey] = [:]
     private(set) var isAvailable = false
@@ -65,10 +81,9 @@ final class SMCProbe {
         guard isAvailable else { return sample }
         if !discovered { discover() }
 
-        sample.temperatures = temperatureKeys.compactMap { key in
-            guard let value = readDouble(key), value > 0, value < 130 else { return nil }
-            return SensorReading(key: key.code, name: Self.sensorName(for: key.code), group: Self.group(for: key.code), celsius: value)
-        }
+        if sampleCount % Self.coldInterval == 0 { coldReadings = readings(for: coldKeys) }
+        sampleCount += 1
+        sample.temperatures = (readings(for: hotKeys) + coldReadings).sorted { $0.key < $1.key }
         if fanCount > 0 {
             sample.fans = (0..<fanCount).compactMap { index in
                 guard let actual = readDouble(code: "F\(index)Ac") else { return nil }
@@ -137,12 +152,24 @@ final class SMCProbe {
                 powerKeys[name] = SensorKey(code: name, type: Self.string(from: info.dataType), size: Int(info.dataSize))
             }
         }
-        // Validate once: drop sensors that return nonsense, keep a stable sorted list.
-        temperatureKeys = temperatures.filter { key in
+        // Validate once: keep every key that decodes to a sane number, including the ones idling at 0 right now
+        // (an idle GPU's keys must come back when it wakes), and drop only unreadable or absurd ones.
+        let valid = temperatures.filter { key in
             guard let value = readDouble(key) else { return false }
-            return value > 0 && value < 130
+            return value >= 0 && value < 130
         }.sorted { $0.code < $1.code }
+        hotKeys = valid.filter { Self.isHot(Self.group(for: $0.code)) }
+        coldKeys = valid.filter { !Self.isHot(Self.group(for: $0.code)) }
         if fanCount > 8 { fanCount = 0 }
+    }
+
+    static func isHot(_ group: SensorGroup) -> Bool { group == .cpu || group == .gpu || group == .battery }
+
+    private func readings(for keys: [SensorKey]) -> [SensorReading] {
+        keys.compactMap { key in
+            guard let value = readDouble(key), value >= Self.minimumPlausibleCelsius, value < 130 else { return nil }
+            return SensorReading(key: key.code, name: Self.sensorName(for: key.code), group: Self.group(for: key.code), celsius: value)
+        }
     }
 
     private func keyCode(at index: Int) -> UInt32? {
@@ -259,45 +286,68 @@ final class SMCProbe {
         return String(bytes: bytes, encoding: .ascii) ?? "????"
     }
 
-    /// Groups a temperature key by its well-known prefix.
+    /// Groups a temperature key by its prefix. Intel and Apple Silicon use different vocabularies and a few
+    /// prefixes mean different things on each, so the suffix is consulted where it disambiguates.
+    ///
+    /// Apple Silicon (validated on an M1 Max MacBook Pro): `Tp*` CPU cores, `TC*` CPU aggregates, `Te*` CPU
+    /// (efficiency cluster on M3+), `Tf0x/Tf4x` CPU and `Tf1x/Tf2x` GPU on M3+, `Tg*` GPU, `Tm*` memory,
+    /// `TH0a/TH0b/TH0x` NAND, `TB*T` battery, `TW0P` wireless, `Ts0P/Ts1P` palm rest, `TaLP/TaRF` airflow,
+    /// `TP*`/`TR*` power delivery, and `Td*/Th*/Ts0x` on-package arrays that run at die temperature.
+    /// Intel: `TC0P/TC0D/TCnC` CPU, `TG0P/TG0D` GPU, `TM*` memory, `TH0P` drive, `TB*` battery, `TA0P` ambient,
+    /// `Th0H` heatpipe, `TW0P` wireless, `Ts0P` palm rest.
     static func group(for key: String) -> SensorGroup {
-        guard key.count == 4 else { return .other }
-        let prefix = key.prefix(2)
-        switch prefix {
-        case "TC", "Tp", "Te", "Tf", "TP": return .cpu
+        guard key.count == 4, let third = key.dropFirst(2).first else { return .other }
+        switch key.prefix(2) {
+        case "TC", "Tp", "Te": return .cpu
+        case "Tf": return third == "1" || third == "2" ? .gpu : .cpu
         case "TG", "Tg": return .gpu
         case "TM", "Tm": return .memory
-        case "TH", "Th", "TS": return .storage
+        case "TH": return .storage
         case "TB", "Tb": return .battery
-        case "TA", "Ta", "Ts", "TW", "Tw", "TL", "TN", "Tt", "TI": return .system
+        case "TA", "TW", "Tw", "TL", "TN", "Tt", "TI", "TP", "TR", "Td", "Th", "Ts": return .system
+        // Apple Silicon `Ta0x` arrays read 0–11 °C (unpopulated); the lettered `TaLP`, `TaRF`… are real airflow sensors.
+        case "Ta": return third.isNumber ? .other : .system
         default: return .other
         }
     }
 
     static func sensorName(for key: String) -> String {
         let group = group(for: key)
-        let suffix = key.dropFirst(2)
+        let prefix = key.prefix(2)
+        let suffix = String(key.dropFirst(2))
         switch group {
         case .cpu:
-            if key.hasPrefix("TC") && key.hasSuffix("P") { return "CPU proximity" }
-            if key.hasPrefix("TC") && key.hasSuffix("D") { return "CPU die" }
-            if key.hasPrefix("TC") && (key.hasSuffix("C") || key.hasSuffix("c")) { return "CPU core \(suffix.prefix(1))" }
+            let indexed = prefix == "TC" && (suffix.first?.isNumber ?? false)
+            if indexed && key.hasSuffix("P") { return "CPU proximity" }
+            if indexed && key.hasSuffix("D") { return "CPU die" }
+            if indexed && (key.hasSuffix("C") || key.hasSuffix("c")) { return "CPU core \(suffix.prefix(1))" }
+            if prefix == "Te" { return "CPU e\(suffix)" }
             return "CPU \(suffix)"
         case .gpu:
-            if key.hasSuffix("P") { return "GPU proximity" }
-            if key.hasSuffix("D") { return "GPU die" }
+            if prefix == "TG" && key.hasSuffix("P") { return "GPU proximity" }
+            if prefix == "TG" && key.hasSuffix("D") { return "GPU die" }
             return "GPU \(suffix)"
         case .memory: return "Memory \(suffix)"
         case .storage: return "Storage \(suffix)"
         case .battery: return "Battery \(suffix)"
         case .system:
-            switch key.prefix(2) {
-            case "TA", "Ta": return "Ambient \(suffix)"
+            switch prefix {
+            case "TA": return "Ambient \(suffix)"
+            case "Ta":
+                switch suffix {
+                case "LP": return "Airflow left"
+                case "RF": return "Airflow right"
+                default: return "Ambient \(suffix)"
+                }
             case "TW", "Tw": return "Wireless \(suffix)"
-            case "Ts": return "Palm rest \(suffix)"
+            case "Ts": return key.hasSuffix("P") ? "Palm rest \(suffix.prefix(1))" : "SoC \(suffix)"
+            case "Th": return key.hasSuffix("H") ? "Heatpipe \(suffix.prefix(1))" : "SoC \(suffix)"
+            case "Td": return "SoC \(suffix)"
             case "TL": return "Display \(suffix)"
             case "TN": return "Northbridge \(suffix)"
             case "TI", "Tt": return "Thunderbolt \(suffix)"
+            case "TP": return "Power \(suffix)"
+            case "TR": return "Regulator \(suffix)"
             default: return "System \(suffix)"
             }
         case .other: return key

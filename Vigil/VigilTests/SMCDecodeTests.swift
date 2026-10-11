@@ -94,6 +94,13 @@ final class SMCDecodeTests: XCTestCase {
         XCTAssertEqual(SMCProbe.code("TC0PXYZ"), SMCProbe.code("TC0P"))
     }
 
+    // MARK: - Kernel struct layout
+
+    func testParameterStructIsExactlyTheKernelsEightyBytes() {
+        // AppleSMC rejects any other size with kIOReturnBadArgument, which silently empties every sensor page.
+        XCTAssertEqual(SMCProbe.parameterStructSize, 80)
+    }
+
     // MARK: - Grouping
 
     func testGroupsByPrefix() {
@@ -106,6 +113,67 @@ final class SMCDecodeTests: XCTestCase {
         XCTAssertEqual(SMCProbe.group(for: "TH0x"), .storage)
         XCTAssertEqual(SMCProbe.group(for: "TA0P"), .system)
         XCTAssertEqual(SMCProbe.group(for: "F0Ac"), .other)
+    }
+
+    func testGroupsAppleSiliconKeysObservedOnM1Max() {
+        // CPU core arrays and aggregates
+        for key in ["Tp00", "Tp0c", "TC10", "TCMz", "TCDX", "Te01"] { XCTAssertEqual(SMCProbe.group(for: key), .cpu, key) }
+        for key in ["Tg04", "Tg0T"] { XCTAssertEqual(SMCProbe.group(for: key), .gpu, key) }
+        for key in ["Tm00", "Tm0E"] { XCTAssertEqual(SMCProbe.group(for: key), .memory, key) }
+        // NAND is TH0a/TH0b/TH0x at ~31 °C; the lowercase Th0x array runs at die temperature and must not read as Storage.
+        for key in ["TH0a", "TH0x"] { XCTAssertEqual(SMCProbe.group(for: key), .storage, key) }
+        for key in ["Th00", "Th0I", "Td00", "Ts00"] { XCTAssertEqual(SMCProbe.group(for: key), .system, key) }
+        XCTAssertNotEqual(SMCProbe.group(for: "TSVR"), .storage, "TSVR is a ~50 °C regulator, not the SSD")
+        for key in ["TB0T", "TB2T"] { XCTAssertEqual(SMCProbe.group(for: key), .battery, key) }
+        // Power delivery and regulators are not CPU cores.
+        for key in ["TPD0", "TPDX", "TPMP", "TRD0", "TRDj"] { XCTAssertEqual(SMCProbe.group(for: key), .system, key) }
+        for key in ["TW0P", "Ts0P", "Ts1P", "TaLP", "TaRF", "TaTP"] { XCTAssertEqual(SMCProbe.group(for: key), .system, key) }
+        // Unpopulated Ta0x slots read 0–11 °C and must not pollute the System group.
+        for key in ["Ta05", "Ta0E"] { XCTAssertEqual(SMCProbe.group(for: key), .other, key) }
+        for key in ["TD00", "TDVx", "TVD0", "Tz11"] { XCTAssertEqual(SMCProbe.group(for: key), .other, key) }
+    }
+
+    func testM3GPUClustersUseTheTfPrefix() {
+        for key in ["Tf04", "Tf09", "Tf44", "Tf4E"] { XCTAssertEqual(SMCProbe.group(for: key), .cpu, key) }
+        for key in ["Tf14", "Tf1A", "Tf24", "Tf2A"] { XCTAssertEqual(SMCProbe.group(for: key), .gpu, key) }
+    }
+
+    func testIntelKeysKeepTheirGroups() {
+        XCTAssertEqual(SMCProbe.group(for: "TC0P"), .cpu)
+        XCTAssertEqual(SMCProbe.group(for: "TC1C"), .cpu)
+        XCTAssertEqual(SMCProbe.group(for: "TG0D"), .gpu)
+        XCTAssertEqual(SMCProbe.group(for: "TH0P"), .storage)
+        XCTAssertEqual(SMCProbe.group(for: "Th0H"), .system)
+        XCTAssertEqual(SMCProbe.group(for: "TA0P"), .system)
+        XCTAssertEqual(SMCProbe.group(for: "Ts0P"), .system)
+        XCTAssertEqual(SMCProbe.group(for: "TB1T"), .battery)
+    }
+
+    func testAppleSiliconSensorNames() {
+        XCTAssertEqual(SMCProbe.sensorName(for: "Tp0A"), "CPU 0A")
+        XCTAssertEqual(SMCProbe.sensorName(for: "Te01"), "CPU e01", "Te and Tp share suffixes; keep the labels distinct")
+        XCTAssertEqual(SMCProbe.sensorName(for: "TCHP"), "CPU HP", "Only the indexed Intel TC0P is a proximity sensor")
+        XCTAssertEqual(SMCProbe.sensorName(for: "TC1P"), "CPU proximity")
+        XCTAssertEqual(SMCProbe.sensorName(for: "Tg0D"), "GPU 0D")
+        XCTAssertEqual(SMCProbe.sensorName(for: "TH0x"), "Storage 0x")
+        XCTAssertEqual(SMCProbe.sensorName(for: "Ts0P"), "Palm rest 0")
+        XCTAssertEqual(SMCProbe.sensorName(for: "Ts00"), "SoC 00")
+        XCTAssertEqual(SMCProbe.sensorName(for: "Th0H"), "Heatpipe 0")
+        XCTAssertEqual(SMCProbe.sensorName(for: "Th00"), "SoC 00")
+        XCTAssertEqual(SMCProbe.sensorName(for: "TaLP"), "Airflow left")
+        XCTAssertEqual(SMCProbe.sensorName(for: "TaRF"), "Airflow right")
+        XCTAssertEqual(SMCProbe.sensorName(for: "TW0P"), "Wireless 0P")
+        XCTAssertEqual(SMCProbe.sensorName(for: "TPD0"), "Power D0")
+        XCTAssertEqual(SMCProbe.sensorName(for: "TRDX"), "Regulator DX")
+        XCTAssertEqual(SMCProbe.sensorName(for: "TDVx"), "TDVx")
+    }
+
+    func testOnlyFastMovingGroupsAreReadEverySample() {
+        XCTAssertTrue(SMCProbe.isHot(.cpu))
+        XCTAssertTrue(SMCProbe.isHot(.gpu))
+        XCTAssertTrue(SMCProbe.isHot(.battery))
+        for group in [SensorGroup.memory, .storage, .system, .other] { XCTAssertFalse(SMCProbe.isHot(group), "\(group)") }
+        XCTAssertEqual(SMCProbe.coldInterval, 10)
     }
 
     func testGroupRejectsKeysThatAreNotFourCharacters() {
