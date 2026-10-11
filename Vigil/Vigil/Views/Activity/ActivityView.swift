@@ -62,12 +62,14 @@ struct ActivityView: View {
                     .width(min: 50, ideal: 60)
                 }
                 .accessibilityIdentifier("activity.table")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 statusBar
             }
-            .frame(minWidth: 520)
+            .frame(minWidth: 520, maxWidth: .infinity, maxHeight: .infinity)
             detailPane
-                .frame(minWidth: 280, idealWidth: 320, maxWidth: 400)
+                .frame(minWidth: 280, idealWidth: 320, maxWidth: 400, maxHeight: .infinity)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .alert("Force quit \(selected?.name ?? "process")?", isPresented: $confirmForceQuit) {
             Button("Force Quit", role: .destructive) { quit(force: true) }
             Button("Cancel", role: .cancel) {}

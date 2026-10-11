@@ -10,7 +10,7 @@ struct CPUView: View {
                 PageHeader(title: "CPU", subtitle: "\(engine.system.chip) · \(coreSummary)")
                 HStack(spacing: Theme.gridSpacing) {
                     StatTile(title: "Total", value: Format.percentValue(engine.cpu.total), detail: String(format: "user %.0f%% · system %.0f%%", engine.cpu.user, engine.cpu.system), color: Theme.cpu, sparkline: engine.recent.map(\.cpu), systemImage: "cpu")
-                    if engine.system.performanceCores > 0 {
+                    if engine.system.performanceCores > 0 && engine.system.efficiencyCores > 0 {
                         StatTile(title: "Performance cores", value: Format.percentValue(engine.cpu.performanceCoreUsage), detail: "\(engine.system.performanceCores) cores for heavy work", color: Theme.cpu, fraction: engine.cpu.performanceCoreUsage / 100, systemImage: "bolt")
                         StatTile(title: "Efficiency cores", value: Format.percentValue(engine.cpu.efficiencyCoreUsage), detail: "\(engine.system.efficiencyCores) cores for background work", color: Theme.network, fraction: engine.cpu.efficiencyCoreUsage / 100, systemImage: "leaf")
                     }
@@ -37,7 +37,7 @@ struct CPUView: View {
     }
 
     private var coreSummary: String {
-        if engine.system.performanceCores > 0 {
+        if engine.system.performanceCores > 0 && engine.system.efficiencyCores > 0 {
             return "\(engine.system.performanceCores) performance + \(engine.system.efficiencyCores) efficiency cores"
         }
         return "\(engine.system.physicalCores) cores, \(engine.system.logicalCores) threads"
@@ -45,7 +45,7 @@ struct CPUView: View {
 
     private var coresCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(title: "Per core", subtitle: engine.system.isAppleSilicon ? "E = efficiency, P = performance" : nil)
+            SectionHeader(title: "Per core", subtitle: engine.system.efficiencyCores > 0 ? "E = efficiency, P = performance" : nil)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: 6)], spacing: 10) {
                 ForEach(engine.cpu.cores) { core in
                     VStack(spacing: 4) {

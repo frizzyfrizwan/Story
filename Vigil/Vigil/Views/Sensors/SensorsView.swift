@@ -10,6 +10,7 @@ struct SensorsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.gridSpacing) {
                 PageHeader(title: "Temperatures & Fans", subtitle: "Thermal state: \(sensors.thermalState.title). \(sensors.thermalState.explanation)")
+                if sensors.smcAvailable {
                 HStack(spacing: Theme.gridSpacing) {
                     StatTile(title: "CPU", value: sensors.cpuTemperature.map { Format.temperature($0, unit: settings.temperatureUnit) } ?? "—", detail: "hottest CPU sensor", color: Theme.thermal, sparkline: engine.recent.map(\.temperature), systemImage: "cpu")
                     StatTile(title: "GPU", value: sensors.gpuTemperature.map { Format.temperature($0, unit: settings.temperatureUnit) } ?? "—", detail: "hottest GPU sensor", color: Theme.gpu, systemImage: "cube.transparent")
@@ -22,6 +23,7 @@ struct SensorsView: View {
                     if sensors.fans.isEmpty && sensors.smcAvailable {
                         StatTile(title: "Fans", value: "None", detail: "Fanless design: cooling is passive, so sustained load throttles sooner", color: Theme.cpu, systemImage: "fan.slash")
                     }
+                }
                 }
                 if !sensors.smcAvailable {
                     EmptyState(systemImage: "thermometer.medium.slash", title: "Sensor data unavailable", message: "Vigil could not open the System Management Controller. This happens inside virtual machines and on some managed Macs.")

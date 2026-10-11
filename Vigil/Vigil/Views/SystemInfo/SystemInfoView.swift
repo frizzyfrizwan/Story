@@ -37,7 +37,7 @@ struct SystemInfoView: View {
             KeyValueRow(key: "Model", value: system.modelName)
             KeyValueRow(key: "Identifier", value: system.modelIdentifier, monospaced: true)
             KeyValueRow(key: "Chip", value: system.chip)
-            KeyValueRow(key: "Cores", value: system.performanceCores > 0 ? "\(system.physicalCores) (\(system.performanceCores) performance, \(system.efficiencyCores) efficiency)" : "\(system.physicalCores) physical, \(system.logicalCores) logical")
+            KeyValueRow(key: "Cores", value: system.performanceCores > 0 && system.efficiencyCores > 0 ? "\(system.physicalCores) (\(system.performanceCores) performance, \(system.efficiencyCores) efficiency)" : "\(system.physicalCores) physical, \(system.logicalCores) logical")
             KeyValueRow(key: "Memory", value: Format.memory(system.memoryBytes))
             KeyValueRow(key: "GPU", value: system.gpuName + (system.gpuCores.map { " · \($0) cores" } ?? ""))
             if let root = engine.disk.root { KeyValueRow(key: "Startup disk", value: "\(root.name) · \(Format.bytes(root.total)) \(root.fileSystem)") }

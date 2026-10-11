@@ -329,7 +329,9 @@ struct MetricChart: View {
 
     private func axisLabel(_ date: Date) -> String {
         guard let first = points.first?.time, let last = points.last?.time else { return Format.time(date) }
-        if last.timeIntervalSince(first) > 36 * 3600 { return date.formatted(.dateTime.weekday(.abbreviated).hour()) }
+        let span = last.timeIntervalSince(first)
+        if span > 36 * 3600 { return date.formatted(.dateTime.weekday(.abbreviated).hour()) }
+        if span < 15 * 60 { return date.formatted(.dateTime.hour().minute().second()) }
         return Format.time(date)
     }
 }
