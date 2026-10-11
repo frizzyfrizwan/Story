@@ -7,25 +7,8 @@ struct VigilApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
     @State private var state = AppState()
 
+    // The dashboard window comes first so SwiftUI opens it at launch; the menu bar item is always present.
     var body: some Scene {
-        MenuBarExtra {
-            MenuBarView()
-                .environment(state)
-                .environment(state.settings)
-                .environment(state.engine)
-                .environment(state.license)
-                .environment(state.keepAwake)
-        } label: {
-            MenuBarLabel()
-                .environment(state.engine)
-                .environment(state.settings)
-                .onAppear {
-                    delegate.state = state
-                    state.start()
-                }
-        }
-        .menuBarExtraStyle(.window)
-
         Window("Vigil", id: "dashboard") {
             DashboardView()
                 .environment(state)
@@ -49,6 +32,24 @@ struct VigilApp: App {
                     .keyboardShortcut("r", modifiers: [.command])
             }
         }
+
+        MenuBarExtra {
+            MenuBarView()
+                .environment(state)
+                .environment(state.settings)
+                .environment(state.engine)
+                .environment(state.license)
+                .environment(state.keepAwake)
+        } label: {
+            MenuBarLabel()
+                .environment(state.engine)
+                .environment(state.settings)
+                .onAppear {
+                    delegate.state = state
+                    state.start()
+                }
+        }
+        .menuBarExtraStyle(.window)
 
         Settings {
             SettingsView()

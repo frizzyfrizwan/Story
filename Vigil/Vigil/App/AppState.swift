@@ -34,6 +34,11 @@ final class AppState {
         self.keepAwake = KeepAwake()
         self.events = EventRecorder(history: history)
         showOnboarding = !settings.hasCompletedOnboarding
+        if CommandLine.arguments.contains("-uitesting") {
+            // Screenshot runs: no onboarding sheet, no permission prompts, deterministic section.
+            showOnboarding = false
+            settings.alertsEnabled = false
+        }
     }
 
     func start() {
