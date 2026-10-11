@@ -57,7 +57,7 @@ enum Diagnostics {
             row(interface.name, "\(interface.displayName) up=\(interface.isUp) ipv4=\(interface.ipv4 ?? "-") ipv6=\(interface.ipv6 ?? "-") mac=\(interface.macAddress ?? "-")")
         }
         if let wifi = engine.network.wifi {
-            row("wifi", "ssid=\(wifi.ssid ?? "nil") rssi=\(wifi.rssi) noise=\(wifi.noise) rate=\(wifi.transmitRate) channel=\(wifi.channel) band=\(wifi.band) security=\(wifi.security) country=\(wifi.countryCode ?? "-")")
+            row("wifi", "ssid=\(wifi.ssid ?? "nil") rssi=\(wifi.rssi) noise=\(wifi.noise) rate=\(wifi.transmitRate) channel=\(wifi.channel) band=\(wifi.band) width=\(wifi.channelWidth)MHz phy=\(wifi.phyMode) security=\(wifi.security) country=\(wifi.countryCode ?? "-")")
         } else {
             row("wifi", "none")
         }

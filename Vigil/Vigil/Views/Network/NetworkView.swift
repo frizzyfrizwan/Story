@@ -46,7 +46,8 @@ struct NetworkView: View {
                     KeyValueRow(key: "Signal", value: wifi.signalLabel)
                     KeyValueRow(key: "Noise", value: "\(wifi.noise) dBm")
                     KeyValueRow(key: "Link speed", value: String(format: "%.0f Mbps", wifi.transmitRate))
-                    KeyValueRow(key: "Channel", value: "\(wifi.channel) · \(wifi.band)")
+                    KeyValueRow(key: "Channel", value: "\(wifi.channel) · \(wifi.band)" + (wifi.channelWidth > 0 ? " · \(wifi.channelWidth) MHz" : ""))
+                    if !wifi.phyMode.isEmpty { KeyValueRow(key: "PHY mode", value: wifi.phyMode) }
                     KeyValueRow(key: "Security", value: wifi.security)
                 }
             }

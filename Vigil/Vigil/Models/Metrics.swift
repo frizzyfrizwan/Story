@@ -139,6 +139,10 @@ struct WiFiInfo: Equatable {
     var transmitRate: Double
     var channel: Int
     var band: String
+    /// Channel width in MHz (20/40/80/160); 0 when unknown.
+    var channelWidth: Int = 0
+    /// Active PHY mode, e.g. "802.11ax (Wi-Fi 6)"; empty when unknown.
+    var phyMode: String = ""
     var security: String
     var countryCode: String?
 

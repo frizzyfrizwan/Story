@@ -159,6 +159,25 @@ final class NetworkProbe {
         case .band6GHz: band = "6 GHz"
         default: band = "—"
         }
+        let width: Int
+        switch channel?.channelWidth {
+        case .width20MHz: width = 20
+        case .width40MHz: width = 40
+        case .width80MHz: width = 80
+        case .width160MHz: width = 160
+        default: width = 0
+        }
+        let phyMode: String
+        switch interface.activePHYMode() {
+        case .mode11a: phyMode = "802.11a"
+        case .mode11b: phyMode = "802.11b"
+        case .mode11g: phyMode = "802.11g"
+        case .mode11n: phyMode = "802.11n (Wi-Fi 4)"
+        case .mode11ac: phyMode = "802.11ac (Wi-Fi 5)"
+        case .mode11ax: phyMode = "802.11ax (Wi-Fi 6)"
+        case .modeNone: phyMode = ""
+        default: phyMode = interface.activePHYMode().rawValue == 7 ? "802.11be (Wi-Fi 7)" : ""
+        }
         let security: String
         switch interface.security() {
         case .none: security = "Open"
@@ -178,6 +197,8 @@ final class NetworkProbe {
                             transmitRate: interface.transmitRate(),
                             channel: channel?.channelNumber ?? 0,
                             band: band,
+                            channelWidth: width,
+                            phyMode: phyMode,
                             security: security,
                             countryCode: interface.countryCode())
         wifiCache = interface.serviceActive() ? info : nil
