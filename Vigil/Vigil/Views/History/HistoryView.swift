@@ -79,8 +79,9 @@ struct HistoryView: View {
         guard let date else { return }
         selectedTime = date
         let history = engine.history
+        let tolerance = max(90, range.bucketSeconds)
         Task {
-            let result = await Task.detached { history.processes(near: date, tolerance: max(90, range.bucketSeconds)) }.value
+            let result = await Task.detached { history.processes(near: date, tolerance: tolerance) }.value
             if selectedTime == date { snapshot = result }
         }
     }
