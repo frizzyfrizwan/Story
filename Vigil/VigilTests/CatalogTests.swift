@@ -71,7 +71,7 @@ final class CatalogTests: XCTestCase {
         XCTAssertEqual(TweakValue(any: NSNumber(value: 2.0)), .double(2.0))
         XCTAssertEqual(TweakValue(any: "x"), .string("x"))
         XCTAssertNil(TweakValue(any: nil))
-        XCTAssertNil(TweakValue(any: [1, 2, 3]))
+        XCTAssertNil(TweakValue(any: [1, 2, 3] as [Int]))
     }
 
     func testTweakValueMatchesLoosely() {
