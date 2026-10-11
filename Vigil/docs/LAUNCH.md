@@ -75,6 +75,26 @@ Run on each machine, then Settings → General → *Save report to Desktop* (or 
 
 Paste the report into an issue (or to Claude) when a value looks wrong; the sensor name → group mapping lives in `SMCProbe.group(for:)`.
 
+What to compare the report against:
+
+- **Battery**: System Information → Power (cycle count, condition, maximum capacity) and `pmset -g batt` (percent, time remaining).
+  Vigil derives *Condition* itself: the power-source API says "Good" for any battery that is not failing, while System
+  Information says "Service Recommended" below 80% maximum capacity, so Vigil applies the same 80% rule. The percentage itself is
+  macOS's own "Maximum Capacity Percent", which powerd only hands to `pmset -g ps -xml` (the public IOPS snapshot omits it for
+  unentitled apps); Vigil runs that once a minute. The live gauge values (`AppleRawMaxCapacity`, `NominalChargeCapacity`) swing
+  2–3% with load and are the fallback only; they feed the mAh figures.
+- **Cores**: `sysctl -a | grep perflevel` (`perflevel0` is Performance on Apple Silicon).
+- **Wi-Fi**: System Information → Network → Wi-Fi (channel, width, PHY mode, security, signal/noise, transmit rate).
+- **SMC**: the `SMC raw keys` section lists every `T*`/`F*`/`P*` key with its type and decoded value. The parameter struct
+  must be exactly 80 bytes (the report prints it); any other size makes `AppleSMC` return `kIOReturnBadArgument` and the
+  Temperatures page shows "No temperature sensors found" even though the SMC opened.
+
+### Validated machines
+
+| Machine | macOS | Result |
+|---|---|---|
+| MacBook Pro 16" 2021, M1 Max (MacBookPro18,2), 10 cores (8P+2E), 64 GB | 26.6.2 (25G83) | 2124 SMC keys, ~215 readable temperatures. CPU `Tp00–Tp0c` (30 sensors, hottest 78 °C under a build), `TC1x–TC5x`/`TCMz`; GPU `Tg04–Tg0T` (8); memory `Tm0x` (12); NAND `TH0a/TH0b/TH0x` 31 °C; battery `TB0T–TB2T` 32.6 °C (registry 30.6 °C); wireless `TW0P`; palm rest `Ts0P/Ts1P` 28–31 °C; airflow `TaLP/TaRF`. Two fans (`FNum`=2, `F0Ac`/`F1Ac` ~1500 rpm, max 5348/5776). `PSTR` 30–38 W on battery; no `PCPC`/`PGPC`, so CPU/GPU watts stay hidden. Battery 759 cycles of 1000, macOS maximum capacity 78% → Service Recommended, matching System Information (live raw max swung 6526–6760 mAh = 75–78% and nominal 6770–6953 mAh = 78–80% during the session, so neither is usable as the headline figure). Wi-Fi channel 48, 5 GHz, 80 MHz, 802.11ax, WPA2, −43/−90 dBm, 1200 Mbps. |
+
 ## 7. Website and store page copy (starter)
 
 - Headline: **Your Mac, explained.**
