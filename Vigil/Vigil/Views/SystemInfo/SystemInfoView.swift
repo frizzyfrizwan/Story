@@ -4,6 +4,7 @@ import AppKit
 struct SystemInfoView: View {
     @Environment(MetricsEngine.self) private var engine
     @Environment(AppState.self) private var state
+    @Environment(AppSettings.self) private var settings
 
     private var system: SystemInfo { engine.system }
 
@@ -17,6 +18,15 @@ struct SystemInfoView: View {
                         NSPasteboard.general.setString(report, forType: .string)
                         state.toast("System report copied")
                     } label: { Label("Copy report", systemImage: "doc.on.doc") }
+                    Button {
+                        if let url = Diagnostics.export(engine: engine, settings: settings) {
+                            state.toast("Diagnostics saved to \(url.lastPathComponent) and copied")
+                            NSWorkspace.shared.activateFileViewerSelecting([url])
+                        } else {
+                            state.toast("Diagnostics copied to the clipboard")
+                        }
+                    } label: { Label("Diagnostics", systemImage: "stethoscope") }
+                    .help("Save every raw reading to the Desktop for hardware validation")
                     Button("Refresh") { engine.refreshSystemInfo() }
                 }
                 LazyVGrid(columns: [GridItem(.flexible(), alignment: .top), GridItem(.flexible(), alignment: .top)], alignment: .leading, spacing: Theme.gridSpacing) {

@@ -2,6 +2,22 @@ import Foundation
 import IOKit
 
 final class GPUProbe {
+    /// Raw IOAccelerator statistics for the diagnostics report.
+    static func rawStatistics() -> [[String: String]] {
+        var result: [[String: String]] = []
+        IORegistry.forEachService(matching: "IOAccelerator") { service in
+            guard let properties = IORegistry.properties(of: service) else { return }
+            var entry: [String: String] = [:]
+            entry["model"] = properties.string("model") ?? properties.string("IOGLBundleName") ?? ""
+            entry["gpu-core-count"] = properties.int("gpu-core-count").map { "\($0)" } ?? ""
+            if let statistics = properties.dictionary("PerformanceStatistics") {
+                for (key, value) in statistics { entry["stat." + key] = String(describing: value) }
+            }
+            result.append(entry)
+        }
+        return result
+    }
+
     private(set) var name: String = ""
 
     func sample() -> GPUSample? {

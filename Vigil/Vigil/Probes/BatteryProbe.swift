@@ -3,6 +3,21 @@ import IOKit
 import IOKit.ps
 
 final class BatteryProbe {
+    /// Selected raw AppleSmartBattery properties for the diagnostics report.
+    static func rawProperties() -> [String: String] {
+        guard let properties = IORegistry.firstProperties(matching: "AppleSmartBattery") else { return [:] }
+        let keys = ["BatteryInstalled", "CurrentCapacity", "MaxCapacity", "DesignCapacity", "AppleRawCurrentCapacity", "AppleRawMaxCapacity",
+                    "NominalChargeCapacity", "CycleCount", "DesignCycleCount9C", "Temperature", "Voltage", "Amperage", "InstantAmperage",
+                    "IsCharging", "ExternalConnected", "FullyCharged", "TimeRemaining", "AvgTimeToEmpty", "AvgTimeToFull", "AdapterDetails",
+                    "AppleRawAdapterDetails", "Serial", "BatterySerialNumber", "ManufactureDate", "DeviceName", "PermanentFailureStatus",
+                    "OptimizedBatteryChargingEngaged", "BatteryHealth", "AtCriticalLevel", "PostChargeWaitSeconds"]
+        var result: [String: String] = [:]
+        for key in keys {
+            if let value = properties[key] { result[key] = String(describing: value).replacingOccurrences(of: "\n", with: " ") }
+        }
+        return result
+    }
+
     func sample() -> BatterySample {
         var sample = BatterySample()
         guard let properties = IORegistry.firstProperties(matching: "AppleSmartBattery"),

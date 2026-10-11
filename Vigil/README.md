@@ -78,6 +78,10 @@ Vigil/
 
 CI (`.github/workflows/macos.yml`) builds and tests on a macOS runner on every pull request that touches `Vigil/`, and commits the screenshots it captures to `Vigil/Screenshots/`.
 
+## Launching
+
+`docs/LAUNCH.md` walks through Developer ID signing, notarization, licence keys, selling direct, updates and the hardware validation checklist. Settings → General → *Save report to Desktop* (or `open -a Vigil --args -diagnostics`) writes every raw reading to `~/Desktop/Vigil-diagnostics.txt` for that validation.
+
 ## Issuing licences
 
 ```

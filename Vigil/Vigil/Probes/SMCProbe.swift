@@ -85,6 +85,35 @@ final class SMCProbe {
         return sample
     }
 
+    // MARK: Diagnostics
+
+    struct RawKey {
+        let code: String
+        let type: String
+        let size: Int
+        let value: Double?
+        let bytes: String
+    }
+
+    /// Every SMC key whose name starts with one of `prefixes`, with its raw bytes and decoded value.
+    /// Used by the diagnostics report so per-machine sensor names can be mapped without guessing.
+    func dumpKeys(prefixes: Set<Character> = ["T", "F", "P", "V", "I"]) -> [RawKey] {
+        guard isAvailable, let countInfo = keyInfo(for: Self.code("#KEY")), let countData = readRaw(Self.code("#KEY"), info: countInfo) else { return [] }
+        let count = Int(UInt32(countData[0]) << 24 | UInt32(countData[1]) << 16 | UInt32(countData[2]) << 8 | UInt32(countData[3]))
+        guard count > 0, count < 10_000 else { return [] }
+        var result: [RawKey] = []
+        for index in 0..<count {
+            guard let code = keyCode(at: index) else { continue }
+            let name = Self.string(from: code)
+            guard let first = name.first, prefixes.contains(first), let info = keyInfo(for: code) else { continue }
+            let type = Self.string(from: info.dataType)
+            let data = readRaw(code, info: info) ?? []
+            let hex = data.map { String(format: "%02x", $0) }.joined()
+            result.append(RawKey(code: name, type: type, size: Int(info.dataSize), value: Self.decode(data, type: type), bytes: hex))
+        }
+        return result.sorted { $0.code < $1.code }
+    }
+
     // MARK: Discovery
 
     private func discover() {

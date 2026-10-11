@@ -45,6 +45,14 @@ final class AppState {
         engine.start()
         events.start()
         Task { await notifications.refreshAuthorization() }
+        if CommandLine.arguments.contains("-diagnostics") {
+            // `open -a Vigil --args -diagnostics`: sample for a few seconds, write the report, quit.
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 8_000_000_000)
+                Diagnostics.export(engine: engine, settings: settings)
+                NSApp.terminate(nil)
+            }
+        }
     }
 
     func stop() {

@@ -20,6 +20,7 @@ struct GeneralSettings: View {
     @Environment(AppSettings.self) private var settings
     @Environment(MetricsEngine.self) private var engine
     @State private var launchAtLogin = false
+    @State private var diagnosticsMessage: String?
 
     var body: some View {
         @Bindable var settings = settings
@@ -44,6 +45,19 @@ struct GeneralSettings: View {
             Picker("Temperature unit", selection: $settings.temperatureUnit) {
                 ForEach(TemperatureUnit.allCases) { unit in Text(unit.title).tag(unit) }
             }
+            Divider()
+            LabeledContent("Diagnostics") {
+                Button("Save report to Desktop") {
+                    if let url = Diagnostics.export(engine: engine, settings: settings) {
+                        diagnosticsMessage = "Saved \(url.lastPathComponent) to the Desktop and copied it to the clipboard."
+                        NSWorkspace.shared.activateFileViewerSelecting([url])
+                    } else {
+                        diagnosticsMessage = "Could not write the report; it is on the clipboard."
+                    }
+                }
+            }
+            Text(diagnosticsMessage ?? "Every raw sensor, battery, GPU and network reading, for validating Vigil on your hardware. Contains your Mac's serial number; nothing else personal.")
+                .font(.caption).foregroundStyle(.secondary)
         }
         .formStyle(.grouped)
         .onAppear { launchAtLogin = settings.launchAtLogin }
