@@ -1,0 +1,112 @@
+name: Vigil release (Developer ID + notarization)
+
+# Builds a Release archive of Vigil, signs it with a Developer ID certificate, notarizes it and
+# attaches a DMG to a GitHub release. Runs on tags like vigil-v1.0.0, or on demand.
+#
+# Required repository secrets (skipped with a warning until they exist):
+#   DEVELOPER_ID_CERT_P12_BASE64  base64 of the exported "Developer ID Application" .p12
+#   DEVELOPER_ID_CERT_PASSWORD    password used when exporting the .p12
+#   APPLE_TEAM_ID                 developer.apple.com → Membership details → Team ID
+#   NOTARY_APPLE_ID               Apple ID used for notarization
+#   NOTARY_APP_PASSWORD           app-specific password for that Apple ID (appleid.apple.com)
+
+on:
+  push:
+    tags: ["vigil-v*"]
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: macos-15
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          [ -z "$XCODE" ] && XCODE=$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+
+      - name: Check secrets
+        id: secrets
+        env:
+          CERT: ${{ secrets.DEVELOPER_ID_CERT_P12_BASE64 }}
+          TEAM: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -z "$CERT" ] || [ -z "$TEAM" ]; then
+            echo "::warning::Signing secrets are missing; producing an unsigned build only."
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Import Developer ID certificate
+        if: steps.secrets.outputs.signed == 'true'
+        env:
+          CERT: ${{ secrets.DEVELOPER_ID_CERT_P12_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
+        run: |
+          echo "$CERT" | base64 --decode > cert.p12
+          security create-keychain -p ci build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p ci build.keychain
+          security import cert.p12 -k build.keychain -P "$CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -s -k ci build.keychain
+          rm cert.p12
+
+      - name: Archive
+        env:
+          TEAM: ${{ secrets.APPLE_TEAM_ID }}
+          SIGNED: ${{ steps.secrets.outputs.signed }}
+        run: |
+          set -o pipefail
+          if [ "$SIGNED" = "true" ]; then
+            xcodebuild archive -project Vigil/Vigil.xcodeproj -scheme Vigil -configuration Release \
+              -archivePath build/Vigil.xcarchive -destination "generic/platform=macOS" \
+              DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="Developer ID Application" \
+              OTHER_CODE_SIGN_FLAGS="--timestamp --options=runtime" 2>&1 | tee archive.log
+          else
+            xcodebuild archive -project Vigil/Vigil.xcodeproj -scheme Vigil -configuration Release \
+              -archivePath build/Vigil.xcarchive -destination "generic/platform=macOS" \
+              CODE_SIGNING_ALLOWED=NO 2>&1 | tee archive.log
+          fi
+          ls build/Vigil.xcarchive/Products/Applications
+
+      - name: Package DMG
+        run: |
+          APP=build/Vigil.xcarchive/Products/Applications/Vigil.app
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$APP/Contents/Info.plist")
+          mkdir -p build/dmg
+          cp -R "$APP" build/dmg/
+          ln -s /Applications build/dmg/Applications
+          hdiutil create -volname "Vigil" -srcfolder build/dmg -ov -format UDZO "build/Vigil-$VERSION.dmg"
+          echo "DMG=build/Vigil-$VERSION.dmg" >> "$GITHUB_ENV"
+
+      - name: Notarize and staple
+        if: steps.secrets.outputs.signed == 'true'
+        env:
+          APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          APP_PASSWORD: ${{ secrets.NOTARY_APP_PASSWORD }}
+          TEAM: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          codesign --force --sign "Developer ID Application" --timestamp "$DMG"
+          xcrun notarytool submit "$DMG" --apple-id "$APPLE_ID" --password "$APP_PASSWORD" --team-id "$TEAM" --wait
+          xcrun stapler staple "$DMG"
+          spctl -a -t open --context context:primary-signature -v "$DMG" || true
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Vigil-dmg
+          path: ${{ env.DMG }}
+
+      - name: Attach to GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.DMG }}
+          generate_release_notes: true
