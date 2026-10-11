@@ -208,7 +208,8 @@ enum TweakCatalog {
 /// Reads and writes `defaults` through CFPreferences, which is what the `defaults` tool uses underneath.
 enum TweaksService {
     private static func application(_ domain: String) -> CFString {
-        (domain == TweakCatalog.global ? kCFPreferencesAnyApplication : domain) as CFString
+        if domain == TweakCatalog.global { return kCFPreferencesAnyApplication }
+        return domain as CFString
     }
 
     static func read(domain: String, key: String, currentHost: Bool = false) -> TweakValue? {

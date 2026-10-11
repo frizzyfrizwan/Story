@@ -19,7 +19,7 @@ struct SystemInfoView: View {
                     } label: { Label("Copy report", systemImage: "doc.on.doc") }
                     Button("Refresh") { engine.refreshSystemInfo() }
                 }
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .top, spacing: Theme.gridSpacing) {
+                LazyVGrid(columns: [GridItem(.flexible(), alignment: .top), GridItem(.flexible(), alignment: .top)], alignment: .leading, spacing: Theme.gridSpacing) {
                     hardwareCard
                     softwareCard
                     displaysCard
