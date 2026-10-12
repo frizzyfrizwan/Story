@@ -1,0 +1,102 @@
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/fraunces';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  /* surfaces (rgb triplets so Tailwind can apply alpha) */
+  --surface: 253 250 247; /* warm off-white page */
+  --surface-raised: 255 255 255; /* cards */
+  --surface-sunken: 247 242 238; /* inset wells */
+  --ink: 38 24 30;
+  --ink-secondary: 104 88 95;
+  --ink-muted: 150 136 142;
+  --line: 236 226 230;
+  /* chart tokens */
+  --viz-primary: #df4a78;
+  --viz-primary-soft: #f9d0dc;
+  --viz-secondary: #4f8956;
+  --viz-grid: #ece2e6;
+  --viz-text: #68585f;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --surface: 24 19 22;
+  --surface-raised: 34 27 31;
+  --surface-sunken: 18 14 16;
+  --ink: 245 238 240;
+  --ink-secondary: 196 182 188;
+  --ink-muted: 142 128 134;
+  --line: 58 48 53;
+  --viz-primary: #ec7598;
+  --viz-primary-soft: #5a2a3a;
+  --viz-secondary: #71a677;
+  --viz-grid: #3a3035;
+  --viz-text: #c4b6bc;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-surface text-ink font-sans antialiased;
+    min-height: 100dvh;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+    font-variation-settings:
+      'opsz' 72,
+      'SOFT' 50,
+      'WONK' 0;
+  }
+  ::selection {
+    @apply bg-rose-200 text-rose-900;
+  }
+  *:focus-visible {
+    @apply outline-none ring-2 ring-rose-400 ring-offset-2 ring-offset-surface rounded-md;
+  }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface-raised rounded-2xl border border-line shadow-soft;
+  }
+  .well {
+    @apply bg-surface-sunken rounded-xl;
+  }
+  .label {
+    @apply text-xs font-medium uppercase tracking-wider text-ink-muted;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

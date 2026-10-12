@@ -1,0 +1,32 @@
+name: Bloom
+
+on:
+  push:
+    paths: ['Bloom/**', '.github/workflows/bloom.yml']
+  pull_request:
+    paths: ['Bloom/**', '.github/workflows/bloom.yml']
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Bloom
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Bloom/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bloom-dist
+          path: Bloom/dist
+          retention-days: 7
