@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vigil for Mac</title>
+<meta name="description" content="Your Mac, explained. Live monitoring, a health score that tells you what to do, and a history that remembers what slowed you down.">
+<style>
+  :root { --bg:#0b1020; --card:#131a30; --text:#eef2ff; --muted:#9aa4c7; --accent:#38c6d9; --good:#43c76f; }
+  * { box-sizing:border-box }
+  body { margin:0; font:17px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, sans-serif; background:var(--bg); color:var(--text) }
+  .wrap { max-width:1040px; margin:0 auto; padding:0 24px }
+  header { padding:72px 0 32px; text-align:center }
+  .logo { width:96px; height:96px; border-radius:22px; margin:0 auto 20px; display:block }
+  h1 { font-size:52px; line-height:1.05; margin:0 0 14px; letter-spacing:-.02em }
+  .sub { font-size:21px; color:var(--muted); max-width:640px; margin:0 auto 28px }
+  .cta { display:inline-block; background:var(--accent); color:#06121a; font-weight:600; padding:14px 26px; border-radius:12px; text-decoration:none; margin:6px }
+  .cta.secondary { background:transparent; color:var(--text); border:1px solid #2a3558 }
+  .note { color:var(--muted); font-size:14px; margin-top:10px }
+  .shot { width:100%; border-radius:14px; box-shadow:0 30px 80px rgba(0,0,0,.5); margin:28px 0 56px; border:1px solid #223 }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; margin:0 0 56px }
+  .card { background:var(--card); border:1px solid #1f2a48; border-radius:16px; padding:22px }
+  .card h3 { margin:0 0 8px; font-size:19px }
+  .card p { margin:0; color:var(--muted); font-size:15.5px }
+  .pricing { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px; margin-bottom:56px }
+  .price { font-size:40px; font-weight:700; margin:6px 0 }
+  ul { padding-left:18px; color:var(--muted); font-size:15px }
+  footer { color:var(--muted); font-size:14px; text-align:center; padding:40px 0 60px; border-top:1px solid #1f2a48 }
+  h2 { font-size:30px; letter-spacing:-.01em; margin:0 0 18px }
+  @media (max-width:600px){ h1{font-size:38px} .sub{font-size:18px} header{padding-top:48px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img class="logo" src="icon.png" alt="">
+    <h1>Your Mac, explained.</h1>
+    <p class="sub">Live monitoring, a health score that tells you what to do, and a history that remembers what slowed you down. In your menu bar.</p>
+    <a class="cta" href="https://github.com/frizzyfrizwan/Story/releases/latest">Download for macOS</a>
+    <a class="cta secondary" href="#pricing">See pricing</a>
+    <p class="note">macOS 14 Sonoma or later · Apple Silicon and Intel · 14-day Pro trial, no account</p>
+  </header>
+
+  <img class="shot" src="overview.png" alt="Vigil dashboard overview">
+
+  <div class="grid">
+    <div class="card"><h3>Why is my Mac slow?</h3><p>Every process explained in plain English with a safe-to-quit verdict. No more guessing what <code>mds_stores</code> is doing.</p></div>
+    <div class="card"><h3>What happened at 3 pm?</h3><p>Vigil remembers. Drag across any chart and see exactly which apps were running and how hard, days later.</p></div>
+    <div class="card"><h3>A health score you can act on</h3><p>Storage headroom, memory pressure, thermals, battery wear, FileVault, firewall, backups. Each finding comes with the fix.</p></div>
+    <div class="card"><h3>Clean up without fear</h3><p>Caches, logs, Xcode, Docker, old downloads, iOS backups. See exactly what goes; your own files go to the Trash.</p></div>
+    <div class="card"><h3>Temperatures, fans, power</h3><p>Every sensor your Mac exposes, grouped by CPU, GPU, battery and storage, with the thermal state macOS itself uses.</p></div>
+    <div class="card"><h3>Hidden settings and a toolbox</h3><p>70+ macOS tweaks with one-click reset. Keep awake, keyboard cleaning, flush DNS, free memory, relaunch Finder, and more.</p></div>
+  </div>
+
+  <h2 id="pricing">Pricing</h2>
+  <div class="pricing">
+    <div class="card"><h3>Free</h3><div class="price">$0</div><ul><li>Live monitoring of everything</li><li>Process explainer</li><li>Health score</li><li>24 hours of history</li><li>Cleaning modes and toolbox</li></ul></div>
+    <div class="card"><h3>Pro · Lifetime</h3><div class="price">$29</div><ul><li>Everything in Free</li><li>Clean-up and tweaks</li><li>Startup item control</li><li>90 days of history</li><li>Administrator tools</li><li>All future 1.x updates</li></ul><a class="cta" href="https://vigil.lemonsqueezy.com">Buy lifetime</a></div>
+    <div class="card"><h3>Pro · Yearly</h3><div class="price">$12<span style="font-size:16px;color:var(--muted)">/year</span></div><ul><li>Same as Lifetime</li><li>Cancel any time</li></ul><a class="cta secondary" href="https://vigil.lemonsqueezy.com">Buy yearly</a></div>
+  </div>
+
+  <h2>Private by design</h2>
+  <p style="color:var(--muted)">No account. No analytics. No server. History lives in a SQLite file on your Mac that you can delete at any time. The only network request, a public IP lookup, is off until you turn it on. Licences are verified offline.</p>
+
+  <footer>Vigil is not sandboxed and ships outside the Mac App Store so it can read sensors and clean caches. Signed with Developer ID and notarized by Apple.<br>© 2026 Faisal Rizwan</footer>
+</div>
+</body>
+</html>

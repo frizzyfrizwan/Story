@@ -288,7 +288,7 @@ struct LicenseSettings: View {
                     .font(.body.monospaced())
                 HStack {
                     Button("Activate") { activate() }.buttonStyle(.borderedProminent).disabled(key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    Button("Buy Vigil Pro…") { NSWorkspace.shared.open(URL(string: "https://vigil.app/buy")!) }
+                    Button("Buy Vigil Pro…") { NSWorkspace.shared.open(URL(string: "https://vigil.lemonsqueezy.com")!) }
                     Spacer()
                 }
                 if let message {
