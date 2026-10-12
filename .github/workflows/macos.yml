@@ -1,0 +1,160 @@
+name: macOS (Vigil)
+
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "Vigil/**"
+      - ".github/workflows/macos.yml"
+  pull_request:
+    paths:
+      - "Vigil/**"
+      - ".github/workflows/macos.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: macos-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build & test (macOS)
+    runs-on: macos-15
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode (prefer 26, else 16)
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE" ]; then
+            XCODE=$(ls -d /Applications/Xcode_16*.app | sort -V | tail -1)
+          fi
+          echo "Using $XCODE"
+          sudo xcode-select -s "$XCODE"
+          xcodebuild -version
+          sw_vers
+
+      - name: Build
+        run: |
+          set -o pipefail
+          xcodebuild build-for-testing \
+            -project Vigil/Vigil.xcodeproj \
+            -scheme Vigil \
+            -destination "platform=macOS" \
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGN_IDENTITY="" DEVELOPMENT_TEAM="" \
+            2>&1 | tee build.log
+
+      - name: Unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building \
+            -project Vigil/Vigil.xcodeproj \
+            -scheme Vigil \
+            -destination "platform=macOS" \
+            -derivedDataPath DerivedData \
+            -only-testing:VigilTests \
+            -resultBundlePath TestResults.xcresult \
+            2>&1 | tee test.log
+
+      - name: UI tests & screenshots
+        continue-on-error: true
+        timeout-minutes: 12
+        run: |
+          set -o pipefail
+          xcodebuild test-without-building \
+            -project Vigil/Vigil.xcodeproj \
+            -scheme Vigil \
+            -destination "platform=macOS" \
+            -derivedDataPath DerivedData \
+            -only-testing:VigilUITests \
+            -resultBundlePath UITestResults.xcresult \
+            2>&1 | tee uitest.log
+
+      - name: Export screenshots
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 5
+        run: |
+          set -x
+          rm -rf attachments screenshots
+          mkdir -p attachments screenshots
+          [ -d UITestResults.xcresult ] || exit 0
+          xcrun xcresulttool export attachments --path UITestResults.xcresult --output-path attachments || exit 0
+          python3 - <<'PY'
+          import json, os, re, shutil
+          src_dir = "attachments"
+          manifest_path = os.path.join(src_dir, "manifest.json")
+          copied = 0
+          if os.path.exists(manifest_path):
+              manifest = json.load(open(manifest_path))
+              entries = manifest if isinstance(manifest, list) else manifest.get("attachments", [])
+              for entry in entries:
+                  attachments = entry.get("attachments", [entry]) if isinstance(entry, dict) else []
+                  for a in attachments:
+                      exported = a.get("exportedFileName")
+                      if not exported:
+                          continue
+                      name = a.get("suggestedHumanReadableName") or exported
+                      name = re.sub(r"_\d+_[0-9A-Fa-f-]{36}", "", name)
+                      if not name.lower().endswith((".png", ".jpg", ".jpeg")):
+                          name += ".png"
+                      src = os.path.join(src_dir, exported)
+                      if os.path.exists(src):
+                          shutil.copy(src, os.path.join("screenshots", name))
+                          copied += 1
+          print("copied", copied, "screenshots")
+          PY
+          ls -la screenshots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vigil-screenshots
+          path: screenshots
+          if-no-files-found: ignore
+
+      - name: Commit screenshots to the PR branch
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -x
+          ls screenshots/*.png >/dev/null 2>&1 || exit 0
+          git fetch origin "$HEAD_REF"
+          git checkout -B "$HEAD_REF" "origin/$HEAD_REF"
+          mkdir -p Vigil/Screenshots
+          cp screenshots/*.png Vigil/Screenshots/
+          git add Vigil/Screenshots
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "ci: update Vigil screenshots [skip ci]"
+          git push origin "$HEAD_REF"
+
+      - name: Summarize compiler errors
+        if: failure()
+        run: |
+          echo "## Compiler / test errors" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          grep -hE "error:|failed|Failing tests" build.log test.log 2>/dev/null | sort -u | head -200 >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vigil-xcodebuild-logs
+          path: |
+            build.log
+            test.log
+            uitest.log
+          if-no-files-found: ignore
