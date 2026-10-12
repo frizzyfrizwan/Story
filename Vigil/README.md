@@ -91,7 +91,7 @@ swift Tools/make-license.swift issue <private-hex> customer@example.com lifetime
 swift Tools/make-license.swift verify <public-hex> VIGIL-…
 ```
 
-The repository ships a development key pair's public half; **generate your own before selling** and wire `issue` into your payment provider's fulfilment hook (Lemon Squeezy, Paddle, Gumroad all support a webhook that can run it).
+The production public key is embedded; the private key lives only with the owner and in the fulfilment worker's secrets. `Tools/fulfilment/` is a Cloudflare Worker that turns Lemon Squeezy orders into keys automatically.
 
 ## Known limitations
 

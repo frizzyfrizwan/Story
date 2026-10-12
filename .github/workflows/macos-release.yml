@@ -110,3 +110,6 @@ jobs:
         with:
           files: ${{ env.DMG }}
           generate_release_notes: true
+          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'rc') || steps.secrets.outputs.signed != 'true' }}
+          body: |
+            ${{ steps.secrets.outputs.signed == 'true' && 'Signed with Developer ID and notarized by Apple.' || '**Unsigned beta build.** macOS will refuse to open it until you run `xattr -dr com.apple.quarantine /Applications/Vigil.app` once in Terminal. Signed builds follow once the Developer ID secrets are configured.' }}

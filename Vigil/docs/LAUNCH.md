@@ -23,14 +23,12 @@ Add these as GitHub repository secrets (Settings → Secrets and variables → A
 | `NOTARY_APPLE_ID` | your Apple ID email |
 | `NOTARY_APP_PASSWORD` | the app-specific password |
 
-## 2. Licence keys (once)
+## 2. Licence keys (done)
 
-```
-swift Tools/make-license.swift keygen
-```
-
-Paste the **public** hex into `LicenseVerifier.productionPublicKeyHex` (`Vigil/Services/LicenseManager.swift`) and commit.
-Store the **private** hex only in your payment provider's secrets. Never commit it.
+The production key pair was generated on 2026-10-12. The **public** half is embedded in `LicenseVerifier.productionPublicKeyHex`
+(`Vigil/Services/LicenseManager.swift`). The **private** half was handed to the owner once, out of band; store it in a password manager and
+in the fulfilment worker's secrets (`Tools/fulfilment/README.md`). Never commit it. If it is ever lost or leaked, run
+`swift Tools/make-license.swift keygen`, replace the public key, ship an update, and re-issue keys to existing customers.
 
 ## 3. Cut a release
 
@@ -47,11 +45,14 @@ means notarization worked (`spctl -a -vv /Applications/Vigil.app` prints `source
 
 Recommended: **Lemon Squeezy** (handles VAT/sales tax as merchant of record, ~5% + 50¢) or **Paddle**.
 
-1. Create a product "Vigil Pro" with two variants: Lifetime (US$29) and Yearly (US$12/year). Optional: Family (3 Macs) US$49.
-2. Fulfilment: on the `order_created` webhook, run `swift Tools/make-license.swift issue <private-hex> <email> lifetime|yearly`
-   (a tiny serverless function or a script on a Mac mini) and email the key. Yearly keys embed an expiry a year out; renewals issue a new key.
-3. Put the checkout URL in `LicenseSettings` (`Buy Vigil Pro…` currently opens `https://vigil.app/buy`).
+1. Create a Lemon Squeezy store and a product "Vigil Pro" with variants named **Lifetime** (US$29), **Yearly** (US$12/year) and
+   **Family Lifetime** (US$49, 3 Macs). The variant name is what the fulfilment code keys off.
+2. Deploy `Tools/fulfilment/` (a Cloudflare Worker, free tier) following its README; it signs a licence for every order and attaches it to the receipt.
+3. Put the checkout URL in `LicenseSettings` (`Buy Vigil Pro…` currently opens `https://vigil.lemonsqueezy.com`) and in `site/index.html`.
 4. Refund policy: 14 days, no questions. The trial already lets people try everything, so refunds stay rare.
+
+The landing page lives in `site/` and deploys to GitHub Pages from `.github/workflows/pages.yml` once repo Settings → Pages → Source is set to
+"GitHub Actions". Point a custom domain at it later from the same settings page.
 
 Later channel: **Setapp** (revenue share, large audience of Mac-utility buyers) once there are a few reviews.
 
@@ -60,6 +61,11 @@ Later channel: **Setapp** (revenue share, large audience of Mac-utility buyers) 
 - Add **Sparkle 2** (Swift Package `https://github.com/sparkle-project/Sparkle`) for in-app updates; host `appcast.xml` on GitHub Pages;
   the release workflow can append each DMG to it with `generate_appcast`.
 - Crash reports: Sentry's macOS SDK, or simply ask users to attach `~/Library/Logs/DiagnosticReports/Vigil-*.ips` from the Diagnostics button.
+
+## 5a. Beta testers
+
+`docs/BETA.md` has who to recruit, the email to send, and what to check in each diagnostics report. Beta tags (`vigil-v1.0.0-beta.N`)
+produce a pre-release with an unsigned DMG until the signing secrets exist.
 
 ## 6. Hardware validation checklist
 

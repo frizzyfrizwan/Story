@@ -33,7 +33,7 @@ struct LicenseVerifier {
     let publicKey: Curve25519.Signing.PublicKey
 
     /// Public key matching the private key used to issue production licences.
-    static let productionPublicKeyHex = "e70ca83339835482a09f5b3204ce59d9ba1e2ed473416681cbf80f94de36bd77"
+    static let productionPublicKeyHex = "66fb5b83a43d3d1d28d0c965690d233aa617ab0b6d6290be99642b7f31f2fb8d"
 
     static let production: LicenseVerifier = {
         let bytes = Data(hex: productionPublicKeyHex) ?? Data()
