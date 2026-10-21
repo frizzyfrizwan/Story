@@ -1,0 +1,253 @@
+{
+  "meta": {
+    "id": "3204-colony-club-rd-6",
+    "title": "3204 Colony Club Rd Apt 6, Pompano Beach, FL 33062",
+    "researchedOn": "2026-10-21",
+    "mode": "researched",
+    "note": "Facts gathered from public listings, city and county documents, and state law summaries on 2026-10-21. Fields marked unknown were not available in public sources and are the first questions to ask."
+  },
+  "property": {
+    "address": "3204 Colony Club Rd",
+    "unit": "Apt 6",
+    "city": "Pompano Beach",
+    "state": "FL",
+    "zip": "33062",
+    "county": "Broward",
+    "type": "condo",
+    "beds": 2,
+    "baths": 2,
+    "sqft": 900,
+    "yearBuilt": 1963,
+    "lotAcres": 0.82,
+    "listPrice": 299900,
+    "pricePerSqft": 333,
+    "hoaMonthly": 175,
+    "listingAgent": "Brian Buckley",
+    "listingSource": "Zillow, viewed 2026-10-21",
+    "zestimateMissing": true,
+    "daysOnMarket": 256,
+    "priceHistory": [
+      { "date": "2026-02", "price": 399900, "event": "Listed (MLS F10524066, shown as 878 sq ft, 1.5 baths)" },
+      { "date": "2026-04", "price": 389000, "event": "Price cut" },
+      { "date": "2026-07", "price": 350000, "event": "Price cut (shown as for sale by owner on Zillow)" },
+      { "date": "2026-10", "price": 299900, "event": "Price cut; current asking" }
+    ],
+    "listingDiscrepancies": [
+      "Zillow shows 2 full baths and 900 sq ft; the MLS record (F10524066), Homes.com and Trulia's structured data show 1.5 baths and 878 sq ft.",
+      "The 0.82-acre lot is the whole complex parcel, not land that comes with the unit."
+    ],
+    "impactWindows": "unknown",
+    "floor": "unknown",
+    "parking": "1 carport space (per rental listing for Unit 1 in the same building)",
+    "salesHistory": [],
+    "salesHistoryNote": "No recorded prior sale for Apt 6 appeared in public listing sites. Pull the Broward County Property Appraiser record (web.bcpa.net) for deed history and the recorded condo book/page."
+  },
+  "building": {
+    "name": "Silver Thatch Apartment Buildings (Colony Club Rd low-rises, 3204 to 3213)",
+    "habitableStories": "unknown",
+    "habitableStoriesNote": "Neighboring 3205 Colony Club Rd is described as a 2-story building with 6 units; 3204 has at least units 1 to 6. Two stories is likely, which would exempt the building from the state milestone inspection and SIRS but not from Broward's 40/50-year recertification.",
+    "unitsInBuilding": "unknown (at least 6)",
+    "construction": "CBS (concrete block) typical for 1963 coastal low-rise; verify",
+    "roofYear": "unknown",
+    "roofType": "unknown",
+    "drainsReplaced": "unknown",
+    "panelBrand": "unknown",
+    "recertYear": "unknown",
+    "recertNote": "A 1963 building was due for Broward recertification in 2003, 2013 and 2023; next in 2033.",
+    "elevator": false,
+    "renovatedYear": "1988 shown on a neighboring unit's public record (3212 #6); unknown for this unit"
+  },
+  "association": {
+    "name": "unknown (city association list shows an association registered at 3204 Colony Club Rd Apt 3)",
+    "feeIncludes": "unknown",
+    "reservesUsd": "unknown",
+    "specialAssessments": "unknown",
+    "masterDeductible": "unknown",
+    "masterCarrier": "unknown",
+    "litigation": "unknown",
+    "rentalMinDays": "unknown (a furnished unit in this building rented on a yearly lease and seasonally with a 45-day minimum)",
+    "pets": "unknown (neighboring 3209 and 3213 Colony Club Rd list no pets)",
+    "ageRestricted": "unknown",
+    "delinquencyPct": "unknown",
+    "ownerOccupancyPct": "unknown"
+  },
+  "financing": {
+    "warrantable": "unknown",
+    "rate": 0.0732,
+    "rateNote": "30-year fixed average 7.32% on 2026-10-16 (Zillow); Freddie Mac weekly 7.28% on 2026-10-01."
+  },
+  "location": {
+    "county": "Broward",
+    "neighborhood": "Beach (Pompano Beach barrier island)",
+    "barrierIsland": true,
+    "summary": "On the barrier island between the Intracoastal Waterway and the Atlantic, about one block from the sand and roughly 1,500 ft from the Pompano Beach pier and Fishing Village (Beach House, Oceanic, Lucky Fish, the Briny). Hillsboro Inlet, the lighthouse and the charter fleet are about a mile north. Car-dependent for groceries; Publix and Pompano Citi Centre are across the Intracoastal on Federal Highway.",
+    "distanceToBeachFt": 500,
+    "distanceToPierFt": 1500,
+    "evacuationZone": "A",
+    "floodZone": "unknown",
+    "floodZoneNote": "Not confirmed. New FEMA coastal maps effective 2024-07-31. Nearby 33062 parcels show AE; the A1A ridge has X pockets. Confirm with FEMA MSC and the city Building Division (954-786-4669).",
+    "elevationFt": "unknown",
+    "walkScore": 45,
+    "transitScore": 28,
+    "bikeScore": 52,
+    "walkScoreNote": "Walk Score reports 42 to 56 for addresses on Colony Club Rd; the Beach neighborhood averages 43 (car-dependent).",
+    "firstStreet": {
+      "note": "First Street scores for the unit were not published; a 33062 comparison parcel (801 S Federal Hwy) shows Flood: Major, Fire: Minimal, Heat: Extreme, Wind: Extreme with a 99% chance of a strong wind event in 30 years. Citywide Pompano Beach: flood moderate, wind extreme, heat extreme."
+    },
+    "airport": "Pompano Beach Airpark about 2.5 miles west; historic helicopter-training noise complaints, mostly over neighborhoods near the field.",
+    "schools": {
+      "note": "Broward County Public Schools. Assignment for this address must be confirmed with the district locator; the nearest zoned schools are in the 33060/33064 area across the Intracoastal. Pompano Beach High (600 NE 13th Ave) is an A-rated all-magnet school by application, not by address. Cresthaven Elementary (33064) earned a B in 2024-25 after a run of Cs.",
+      "verifyUrl": "https://www.browardschools.com/Page/44765"
+    },
+    "transit": "No rail on the island. Tri-Rail Pompano Beach station is at NW 8th Ave and 35th St; Brightline's nearest stops are Boca Raton and Fort Lauderdale. Broward County Transit route 11 runs A1A.",
+    "commute": "I-95 via Atlantic Blvd about 12 minutes; Fort Lauderdale downtown about 30 minutes; FLL airport about 35 minutes; Boca Raton about 25 minutes."
+  },
+  "demographics": {
+    "zip": "33062",
+    "population2024": 24920,
+    "medianAge": 60,
+    "medianHouseholdIncome": 83582,
+    "ownerOccupiedPct": 72,
+    "vacantPct": 37,
+    "vacantNote": "High vacancy is seasonal and second-home stock, not distress.",
+    "source": "US Census ACS 2024 5-year estimates via zip-codes.com"
+  },
+  "crime": {
+    "cityPropertyCrimePer1000": 21,
+    "cityViolentPer100k": 267,
+    "note": "Citywide figures (2024 FBI data via NeighborhoodScout; violent figure per Proximitii). Sources disagree on whether Pompano's violent rate is above or below national. Incidents concentrate inland and in the northwest; the beach is among the quieter areas, with car break-ins at beach parking the common complaint.",
+    "verifyUrl": "https://www.pompanobeachfl.gov/government/departments/bso"
+  },
+  "market": {
+    "asOf": "2026-09",
+    "cityCondoMedianPrice": 256500,
+    "cityCondoMedianPriceYoYPct": 2.6,
+    "monthsOfSupply": 8.9,
+    "activeCondoListings": 869,
+    "activeListingsYoYPct": -18.8,
+    "medianPricePerSqft": 397,
+    "medianPricePerSqftNote": "Average asking price per sq ft for Pompano Beach condo listings, 2026-05 (skewed up by oceanfront towers). Broward county-wide condo median sold price per sq ft was about $206, down 8% year over year, in the 2026 winter season.",
+    "browardCondoMedian": 255000,
+    "browardCondoMedianYoYPct": -4,
+    "zip33062MedianAllTypes": 457500,
+    "zipDaysToSell": 102,
+    "note": "Pompano Beach Realty monthly report, September 2026: condo median $256,500 (+2.6%), 8.9 months of supply (down from 11.1 a year earlier). Broward condo median $255,000 (-4% YoY) in July 2026.",
+    "vintageHeadwind": "About 85% of South Florida condos listed for sale are 30 or more years old, and the price index for 'vintage' Broward buildings has lagged the market since the 2022 reforms. Buyers are paying a premium for post-2000 buildings with completed inspections and funded reserves."
+  },
+  "rents": {
+    "estimateMonthly": 2100,
+    "evidence": [
+      "3204 Colony Club Rd Unit 1 (same building): furnished 2/2, $2,000/mo on a yearly lease (2024-25); seasonal $2,500/mo with 45-day minimum",
+      "3208 Colony Club Rd: 2/2, 944 sq ft, $2,100/mo (active 2026, built 1966)",
+      "3213 Colony Club Rd: 2/2 units asked $2,790 to $3,300/mo (2025)",
+      "Pompano Beach average asking rent $2,371 (Zillow ZORI, June 2026, +2.9% YoY)"
+    ],
+    "managementPct": 8
+  },
+  "comps": [
+    { "address": "3213 Colony Club Rd", "beds": 2, "baths": 2, "sqft": 948, "price": 333000, "status": "Active, 28 days", "hoa": 200, "yearBuilt": 1965, "note": "Lions Gate Silver Thatch; closest active comp" },
+    { "address": "3209 Colony Club Rd #1-W", "beds": 2, "baths": 2, "sqft": 920, "price": 255000, "status": "Sold (listed $279,900; earlier asking $324,500)", "yearBuilt": 1978, "note": "Prior sale $175,000 on 2021-07-02" },
+    { "address": "3209 Colony Club Rd #4-W", "beds": 2, "baths": 2, "sqft": 948, "price": 225000, "status": "Sold 2021-05-12" },
+    { "address": "3213 Colony Club Rd #3-E", "beds": 2, "baths": 2, "sqft": 948, "price": 220000, "status": "Sold 2021-05-10" },
+    { "address": "3208 Colony Club Rd #4", "beds": 2, "baths": 2, "sqft": 1000, "price": 185000, "status": "Sold 2020-11-19", "yearBuilt": 1966 },
+    { "address": "3212 Colony Club Rd #6", "beds": 2, "baths": 2, "sqft": 848, "price": null, "status": "Redfin estimate $270,000 to $330,000", "yearBuilt": 1963, "note": "Public record: Silver Thatch Apartment Building 4, renovated 1988" }
+  ],
+  "development": [
+    {
+      "id": "w-pompano",
+      "title": "W Pompano hotel-condo tower at 20 N Ocean Dr (ground-breaking expected 2026, opening 2029)",
+      "why": "A 24-story Related Group and Marriott project at the pier end of the beach. Three years of construction traffic and noise within a few blocks, then a higher-end anchor that lifts nearby values.",
+      "action": "Check the construction staging plan and haul route at the city.",
+      "horizon": "1-3y",
+      "severity": "watch",
+      "confidence": "medium"
+    },
+    {
+      "id": "downtown",
+      "title": "75-acre downtown redevelopment (Atlantic Blvd and Dixie Hwy, RocaPoint; new city hall starting 2026)",
+      "why": "About 4 million sq ft of mixed use three miles west. Adds restaurants, jobs and traffic on Atlantic Blvd, the island's main link to I-95.",
+      "horizon": "3-10y",
+      "severity": "info",
+      "confidence": "medium"
+    },
+    {
+      "id": "oceanfront-towers",
+      "title": "Oceanfront tower wave: Casamar and Solemar open; Ritz-Carlton Residences (2026) and Waldorf Astoria (2027) finishing to the south; Armani/Casa in review",
+      "why": "Pompano's beach is repricing upward at the top end. That supports land value under older low-rises and raises the odds of a developer offer for a 0.82-acre parcel, but also raises insurance and tax reference points citywide.",
+      "horizon": "3-10y",
+      "severity": "info",
+      "confidence": "high"
+    },
+    {
+      "id": "beach-sand",
+      "title": "Beach renourishment cycle",
+      "why": "Hurricane Nicole (2022) washed out trucked-in sand from NE 16th St north to Hillsboro Inlet. Broward's shore protection program and the Army Corps re-nourish on a multi-year cycle; the stretch nearest the inlet erodes fastest.",
+      "horizon": "3-10y",
+      "severity": "info",
+      "confidence": "medium"
+    }
+  ],
+  "insurance": {
+    "ho6Annual": null,
+    "floodAnnual": null,
+    "note": "No quotes obtained. Planning range for an older coastal Broward unit: HO-6 $1,500 to $2,800/yr; NFIP contents $450 to $1,500/yr. Citizens rates fell an average 8.7% at spring 2026 renewals."
+  },
+  "history": {
+    "timeline": [
+      { "year": 1963, "event": "Building completed; Pompano Beach's barrier island was mostly two-story rental apartments and motels." },
+      { "year": 1988, "event": "Renovation year recorded on a neighboring Silver Thatch unit; probable conversion or refurbishment era for the complex." },
+      { "year": 2003, "event": "First Broward 40-year recertification due." },
+      { "year": 2005, "event": "Hurricane Wilma: widespread roof damage and a boil-water order in Pompano Beach." },
+      { "year": 2013, "event": "50-year recertification due." },
+      { "year": 2017, "event": "Hurricane Irma: east-coast surge and wind; downed trees across Pompano." },
+      { "year": 2021, "event": "Neighboring 2-bed units sold for $175,000 to $225,000. Surfside collapse (June) triggers Florida's condo safety reforms." },
+      { "year": 2022, "event": "Hurricane Nicole strips sand from the north beach. SB 4-D creates milestone inspections and SIRS." },
+      { "year": 2023, "event": "60-year recertification due. Pompano Beach Fishing Village and pier reopen." },
+      { "year": 2024, "event": "New FEMA coastal flood maps effective July 31." },
+      { "year": 2025, "event": "HB 913 narrows milestone/SIRS scope to 3+ habitable stories; city publishes its Vulnerability Assessment (March)." },
+      { "year": 2026, "event": "Unit listed at $399,900 (Feb) and cut to $299,900 by October. Fannie/Freddie end Limited Review for condos (Aug 3)." }
+    ]
+  },
+  "sources": [
+    { "title": "Zillow listing, 3204 Colony Club Rd Apt 6 (screenshot 2026-10-21)", "url": "https://www.zillow.com/" },
+    { "title": "Trulia FSBO listing for 3204 Colony Club Rd #6 ($299,900; 253 to 256 days; 1.5 baths in structured data)", "url": "https://www.trulia.com/for_sale/Pompano_Beach,FL/fsbo_lt/1_als/" },
+    { "title": "Homes.com 33062 listings ($399,900; 878 sq ft; 1.5 baths)", "url": "https://www.homes.com/pompano-beach-fl/33062/" },
+    { "title": "Apartments.com rental listing, 3204 Colony Club Rd Unit 1 (built 1963; 872 sq ft; carport)", "url": "https://www.apartments.com/3204-colony-club-rd-pompano-beach-fl-unit-1/dzvfn5k/" },
+    { "title": "Redfin, 3212 Colony Club Rd #6 (Silver Thatch Apartment Building 4; built 1963; renovated 1988)", "url": "https://www.redfin.com/FL/Pompano-Beach/3212-Colony-Club-Rd-33062/unit-6/home/41529260" },
+    { "title": "Redfin, 3209 Colony Club Rd #1-W (sold $175,000 2021-07-02; one block from the beach)", "url": "https://www.redfin.com/FL/Pompano-Beach/3209-Colony-Club-Rd-33062/unit-1-W/home/41528910" },
+    { "title": "Estately, Lion's Gate Silver Thatch sold listings (2021 sales)", "url": "https://www.estately.com/FL/Lion's_Gate_Silver_Thatch_Condominiums,_Pompano_Beach/sold" },
+    { "title": "17th Realty, 3213 Colony Club Rd active at $333,000, $200/mo maintenance", "url": "https://www.17threalty.com/homes-mls/property/43eecdc2c28b49a2f87a7173237bcadd/3213-colony-club-rd-pompano-beach-fl-33062-pompano-beach/" },
+    { "title": "RE/MAX, 3208 Colony Club Rd rental $2,100/mo (MLS F10529765)", "url": "https://www.remax.com/fl/pompano-beach/home-details/3208-colony-club-rd-pompano-beach-fl-33062/9412755674798136416/M00000170/F10529765" },
+    { "title": "By The Sea Realty, 3205 Colony Club Rd #2 (2-story, 6-unit building between the Intracoastal and the ocean)", "url": "https://www.bythesearealty.com/property-search/listing/SEF/A11679208/Pompano-Beach/3205-Colony-Club-Rd-2" },
+    { "title": "Walk Score, Pompano Beach neighborhoods (Beach: 43 / 30 / 52)", "url": "https://www.walkscore.com/FL/Pompano_Beach" },
+    { "title": "City of Pompano Beach HOA and condo association list (2026-01)", "url": "https://cdn.pompanobeachfl.gov/city/pages/residents/HOA_Condo_Associations_Updated_2026-01-060-new.pdf" },
+    { "title": "City of Pompano Beach evacuation zones", "url": "https://pompanobeachfl.gov/residents/emergency-management/evacuation-zones-and-shelters" },
+    { "title": "City of Pompano Beach 2026 flood mailer (new coastal maps effective 2024-07-31; Building Division contact)", "url": "https://cdn.pompanobeachfl.gov/city/pages/flood/2026_COPB_FloodMailer_4x9-flipbook.pdf" },
+    { "title": "City of Pompano Beach Vulnerability Assessment, final, March 2025 (RS&H)", "url": "https://cdn.pompanobeachfl.gov/city/pages/sustainability/250603-Final-Pompano-Beach-VA.pdf" },
+    { "title": "Broward County sea level rise planning (Unified SE Florida projection; 5 ft NAVD seawall standard by 2050)", "url": "https://broward.org/Climate/Toolbox/Pages/SeaLevelRise.aspx" },
+    { "title": "Pompano Beach Resolution 2025-215, final millage 5.2181", "url": "https://cdn.pompanobeachfl.gov/city/pages/budget/Resolution-No.2025-215-Final-Millage-Rates-Certified.pdf" },
+    { "title": "Broward County FY26 adopted countywide millage 5.6658", "url": "https://www.broward.org/Budget/Documents/FY26/01%20Millage%20Countywide(1183780.2).pdf" },
+    { "title": "FDOE Broward district summary budget FY2025-26 (school millage 6.4845)", "url": "https://www.fldoe.org/file/7507/BrowardTotalBUD2526.pdf" },
+    { "title": "Florida HB 913 (2025) summary: milestone/SIRS scope, deadlines, reserve pooling", "url": "https://www.ksnlaw.com/blog/florida-hb-913-requirements-florida-condominium-cooperative-associations/" },
+    { "title": "Florida Senate bill analysis, HB 913", "url": "https://www.flsenate.gov/Session/Bill/2025/913/Analyses/h0913c.COM.PDF" },
+    { "title": "Conventional condo financing 2026: Fannie/Freddie end Limited Review, reserves 10% to 15%, deductible cap", "url": "https://www.landmarksignaturerealty.com/blog/conventional-condo-financing-2026" },
+    { "title": "Pompano Beach Realty market update, September 2026", "url": "https://www.pompanobeachrealty.com/pompano-beach-real-estate-market-september-2026/" },
+    { "title": "Echo Fine Properties, Broward condos and townhomes update, July 2026", "url": "https://www.echofineproperties.com/?p=161287" },
+    { "title": "WLRN, South Florida condo market, March 2026", "url": "https://www.wlrn.org/business/2026-03-17/south-florida-condo-market-prices" },
+    { "title": "Peter Zalewski, Broward condo prices fall / vintage index", "url": "https://peterzalewski.substack.com/p/broward-county-condo-prices-fall" },
+    { "title": "Zillow rental market trends, Pompano Beach (June 2026)", "url": "https://www.zillow.com/home-values/72390/pompano-beach-fl-33061/" },
+    { "title": "Trading Economics / Zillow, 30-year mortgage rate, October 2026", "url": "https://tradingeconomics.com/united-states/30-year-mortgage-rate/news/588887" },
+    { "title": "WGCU, Citizens 8.7% average rate cut for 2026", "url": "https://www.wgcu.org/government-politics/2026-01-12/bigger-citizens-rate-cut-backed-desantis-denigrates-original-plan" },
+    { "title": "Stone Building Solutions, HO-6 cost in Florida (OIR figures)", "url": "https://stonebldg.com/how-much-does-ho-6-condo-insurance-cost-in-florida/" },
+    { "title": "City of Pompano Beach short-term rental submittal requirements (fees)", "url": "https://cdn.pompanobeachfl.gov/city/pages/btr/Short-term_rental_app_submittal_requirements.pdf" },
+    { "title": "Redfin, 801 S Federal Hwy #1117 climate factors (First Street)", "url": "https://www.redfin.com/FL/Pompano-Beach/801-S-Federal-Hwy-33062/unit-1117/home/41697667" },
+    { "title": "NeighborhoodScout, Pompano Beach crime", "url": "https://www.neighborhoodscout.com/fl/pompano-beach/crime" },
+    { "title": "zip-codes.com, ZIP 33062 demographics (ACS 2024)", "url": "https://www.zip-codes.com/zip-code/33062/zip-code-33062.asp" },
+    { "title": "Hotel Dive / Multifamily Dive, Related Group W Pompano and Waldorf Astoria", "url": "https://www.hoteldive.com/news/related-group-hilton-waldorf-astoria-branded-condos/697883/" },
+    { "title": "ConstructConnect, Pompano Beach downtown redevelopment (RocaPoint)", "url": "https://projects.constructconnect.com/details/7593401-100-west-atlantic-boulevard-new-downtown&find_loc=florida-33060" },
+    { "title": "CBS Miami, Broward beach erosion after Nicole", "url": "https://www.cbsnews.com/amp/miami/news/broward-reports-widespread-beach-erosion-after-nicole-lashes-coast" },
+    { "title": "HurricaneCity, 2005 damage reports (Wilma in Pompano Beach)", "url": "https://www.hurricanecity.com/dam/dam2005.htm" },
+    { "title": "Broward County Public Schools, Pompano Beach High", "url": "https://www.browardschools.com/pompanobeachhigh" },
+    { "title": "Cresthaven Elementary executive summary 2025-26", "url": "https://web01.browardschools.com/ospa/ospa-central2/_sip_all_plans/2026/0901_09052025_Cresthaven-Elementary-Cognia-Executive-Summary-2025-2026.pdf" }
+  ]
+}

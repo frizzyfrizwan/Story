@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dossier</title>
+<meta name="description" content="Pull a full dossier on any home: price, cost to own, building and association health, hazards, history, and what will go wrong in 1, 5, 10 and 30 years.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app" class="app">
+  <header class="masthead">
+    <div class="inner">
+      <div class="brand">Dossier</div>
+      <div class="tagline">Everything about a home before you sign for it.</div>
+      <button id="new-report" class="btn ghost" type="button">New report</button>
+    </div>
+  </header>
+  <section id="form-panel" class="panel inner" hidden>
+    <h2>Start a report</h2>
+    <p class="muted">Type what the listing shows. Dossier adds public-record layers (flood zone, elevation, census, nearby places) when a server is running, then grades the home and lists what will cost you money and when.</p>
+    <form id="listing-form" class="grid-form">
+      <label>Street address <input id="f-address" name="address" required placeholder="3204 Colony Club Rd"></label>
+      <label>Unit <input id="f-unit" name="unit" placeholder="Apt 6"></label>
+      <label>City <input id="f-city" name="city" required value="Pompano Beach"></label>
+      <label>State <input id="f-state" name="state" value="FL" maxlength="2"></label>
+      <label>ZIP <input id="f-zip" name="zip" required placeholder="33062"></label>
+      <label>County <input id="f-county" name="county" value="Broward"></label>
+      <label>Type <select id="f-type" name="type"><option value="condo">Condo</option><option value="townhouse">Townhouse</option><option value="house">Single-family</option></select></label>
+      <label>Asking price <input id="f-price" name="listPrice" type="number" required placeholder="299900"></label>
+      <label>Beds <input id="f-beds" name="beds" type="number" step="1"></label>
+      <label>Baths <input id="f-baths" name="baths" type="number" step="0.5"></label>
+      <label>Sq ft <input id="f-sqft" name="sqft" type="number"></label>
+      <label>Year built <input id="f-year" name="yearBuilt" type="number"></label>
+      <label>HOA / month <input id="f-hoa" name="hoaMonthly" type="number"></label>
+      <label>Days on market <input id="f-dom" name="daysOnMarket" type="number"></label>
+      <label>Habitable stories <input id="f-stories" name="stories" type="number"></label>
+      <label>Units in building <input id="f-units" name="units" type="number"></label>
+      <label>Roof year (if known) <input id="f-roof" name="roofYear" type="number"></label>
+      <label>Rent estimate / month <input id="f-rent" name="rentEstimate" type="number"></label>
+      <label>Evacuation zone <select id="f-evac" name="evacuationZone"><option value="">Unknown</option><option>A</option><option>B</option><option>C</option></select></label>
+      <label class="check"><input id="f-island" name="barrierIsland" type="checkbox"> On a barrier island</label>
+      <div class="actions">
+        <button class="btn" type="submit">Build report</button>
+        <button id="load-sample" class="btn ghost" type="button">Load the researched sample</button>
+        <span id="enrich-status" class="muted"></span>
+      </div>
+    </form>
+  </section>
+  <main id="report" class="inner"></main>
+  <footer class="inner foot">
+    <p>Dossier computes from public records and stated listing facts. Figures marked estimate are planning numbers, not quotes. Verify anything that changes your decision with the document named next to it.</p>
+  </footer>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
