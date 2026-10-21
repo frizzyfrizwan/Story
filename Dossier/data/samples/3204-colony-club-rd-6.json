@@ -78,6 +78,9 @@
   },
   "location": {
     "county": "Broward",
+    "lat": 26.2345,
+    "lon": -80.0905,
+    "latLonNote": "Approximate (barrier island near NE 3rd St); the live geocoder replaces it.",
     "neighborhood": "Beach (Pompano Beach barrier island)",
     "barrierIsland": true,
     "summary": "On the barrier island between the Intracoastal Waterway and the Atlantic, about one block from the sand and roughly 1,500 ft from the Pompano Beach pier and Fishing Village (Beach House, Oceanic, Lucky Fish, the Briny). Hillsboro Inlet, the lighthouse and the charter fleet are about a mile north. Car-dependent for groceries; Publix and Pompano Citi Centre are across the Intracoastal on Federal Highway.",

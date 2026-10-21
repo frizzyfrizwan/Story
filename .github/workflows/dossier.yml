@@ -24,6 +24,8 @@ jobs:
         run: node --test
       - name: CLI brief on the sample
         run: node bin/dossier.js data/samples/3204-colony-club-rd-6.json
+      - name: CLI deal ranking on the example profile
+        run: node bin/deals.js data/profiles/example.json
       - name: Build the single-file site
         run: node bin/build-site.js
       - name: Smoke-test the server

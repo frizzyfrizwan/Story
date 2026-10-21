@@ -47,6 +47,14 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && pathname === "/api/sample") {
       return send(res, 200, fs.readFileSync(path.join(here, "data/samples/3204-colony-club-rd-6.json"), "utf8"));
     }
+    if (req.method === "GET" && pathname === "/api/geocode") {
+      const q = new URL(req.url, "http://x").searchParams.get("address") || "";
+      const { geocode } = await import("./src/adapters/public.js");
+      return send(res, 200, await geocode(q));
+    }
+    if (req.method === "GET" && pathname === "/api/candidates") {
+      return send(res, 200, fs.readFileSync(path.join(here, "data/candidates/south-florida-2026-10.json"), "utf8"));
+    }
     if (req.method === "POST" && pathname === "/api/enrich") {
       const facts = await readBody(req);
       const { facts: out } = await enrich(facts);

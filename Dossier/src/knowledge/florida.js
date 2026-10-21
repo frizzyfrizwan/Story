@@ -71,6 +71,19 @@ export const FLORIDA = {
     // Broward County Property Appraiser practice: just value on resale lands near 85% of the sale price.
     justValueRatioOfSale: 0.85,
     millage: {
+      // Used when a city has no entry. Broward municipalities ran about 17.5 to 21 mills on the 2025 roll.
+      "_default": {
+        asOf: "2025 tax roll, Broward county-typical estimate",
+        county: 5.6658,
+        school: 6.4845,
+        city: 6.1,
+        cityDebt: 0,
+        ems: 0,
+        otherDistrictsEstimate: 1.5,
+        total: 19.8,
+        estimated: true,
+        sources: ["Broward County FY26 adopted millage; FDOE Broward school millage; municipal rates vary"],
+      },
       "Pompano Beach": {
         asOf: "2025 tax roll (FY2025-26)",
         county: 5.6658,
@@ -92,6 +105,10 @@ export const FLORIDA = {
   // Insurance planning ranges for a unit owner (HO-6) and NFIP contents, Broward coastal, older building.
   insurance: {
     ho6AnnualRange: [1500, 2800],
+    // Single-family HO-3 with windstorm, coastal Broward, older roof: planning range.
+    ho3AnnualRange: [4500, 8500],
+    pmiAnnualPctOfLoan: 0.006, // conventional PMI when down payment is under 20%
+    fhaMipAnnualPct: 0.0055,
     floodContentsAnnualRange: [450, 1500],
     lossAssessmentRiderAnnualUsd: 30,
     citizens2026AvgChangePct: -8.7,
@@ -100,6 +117,18 @@ export const FLORIDA = {
       "Florida OIR Jan 2026: Citizens average -8.7% at renewal from spring 2026",
     ],
   },
+
+  // Debt-to-income guidelines. Front = housing cost / gross income; back = housing + other debts / gross income.
+  dti: {
+    comfortable: { front: 0.28, back: 0.36, label: "Comfortable (28/36)" },
+    stretch: { front: 0.31, back: 0.43, label: "Stretch (31/43, needs automated underwriting approval)" },
+    minDownPct: { conventional: 0.03, fha: 0.035 },
+    closingCostPct: 0.03,
+    reserveMonths: 2, // lenders like to see two months of housing cost left after closing
+  },
+
+  // Typical monthly HOA when the listing does not say, $ per sq ft per month, by type and age.
+  hoaEstimatePerSqft: { condoOld: 0.55, condoNew: 0.75, townhouse: 0.25, house: 0 },
 
   mortgage: {
     rate30yr: 0.0732,

@@ -20,6 +20,26 @@ It was built around a real question: a 1963 two-bedroom condo on Pompano Beach's
 | Checklist | The questions to ask before you waive contingencies, with who answers each. Ticks persist in the browser. |
 | Sources | Every source used, plus which live layers answered. |
 
+## Find deals
+
+The **Find deals** screen turns the grader into a recommender. You enter gross income, other debts, cash for down payment and closing, household size, loan type, preferred down payment, rate, home types, a grade floor ("every grade at least B"), a commute limit, and where you work (a South Florida employment hub from the list, or a street address when the server is running to look it up).
+
+Dossier then:
+
+1. Computes your housing budget with the 28/36 (comfortable) and 31/43 (stretch) debt-to-income rules, and the maximum price for a typical condo and a typical house given your cash (minimum down 3% conventional, 3.5% FHA, about 3% closing costs, PMI under 20% down).
+2. Runs the full dossier on every home in the pool at your down payment and rate, so every candidate has the same seven grades, cost model and watch list as the sample.
+3. Excludes what does not fit (type, bedrooms, housing cost over the stretch limit, cash short, commute over your limit) and says why.
+4. Scores the rest 0 to 100: grades (40%), affordability headroom (20%), price per square foot against the pool median for that type (20%), commute (12%), and seller motivation such as long market time and price cuts (8%). Labels: Strong buy, Good, Fair, Weak.
+5. Applies your grade floor. When nothing clears it (common, because reserves, roof age and master insurance are unknown until you ask), it says so and ranks everything that fits instead of showing an empty page.
+
+The pool ships with about 20 listings seen on public sites on 2026-10-21 across Pompano Beach, Deerfield Beach, Lighthouse Point, Fort Lauderdale, Wilton Manors, Oakland Park, Tamarac, Coral Springs and Davie (`data/candidates/south-florida-2026-10.json`), plus the researched sample. Open any report and press **Add to my deals pool** to score a listing you found; your pool and profile stay in your browser.
+
+Commute uses a straight-line to road-distance factor of 1.35 and 26 mph peak door to door, which is about right for Broward surface streets; the live geocoder refines the home's position. Every listing in the pool must be re-verified on the MLS before an offer.
+
+```bash
+node bin/deals.js data/profiles/example.json   # ranked deals for a sample profile in the terminal
+```
+
 ## Run it
 
 ```bash

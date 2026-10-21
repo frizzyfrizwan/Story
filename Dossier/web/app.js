@@ -1,4 +1,7 @@
 import { buildReport, factsFromListing } from "../src/report.js";
+import { findDeals, defaultMinBeds } from "../src/engine/deals.js";
+import { maxPrice } from "../src/engine/afford.js";
+import { HUBS } from "../src/knowledge/places.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -30,6 +33,7 @@ function render(report) {
     </div>
     <p class="verdict" style="grid-column:1/-1">${esc(r.verdict.summary)}</p>
     ${r.narrative ? `<div class="narrative" style="grid-column:1/-1">${esc(r.narrative)}</div>` : ""}
+    <div style="grid-column:1/-1"><button type="button" id="add-pool" class="btn ghost">Add to my deals pool</button> <span id="add-pool-status" class="muted"></span></div>
   </section>
   <section class="band"><h2>Grades</h2><div class="grades">${r.grades.map((g) => `<div class="grade" data-g="${g.grade}"><div class="letter">${g.grade}</div><div class="label">${esc(g.label)}</div><div class="why">${esc(g.why)}</div></div>`).join("")}</div></section>
   <section class="band" id="watch">
@@ -48,6 +52,7 @@ function render(report) {
   $("#report").querySelectorAll(".chip").forEach((b) => b.addEventListener("click", () => { state.filter = b.dataset.f; $("#report").querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", c === b)); $("#watch-list").innerHTML = renderWatch(state.report); }));
   wireCosts();
   wireChecklist();
+  $("#add-pool")?.addEventListener("click", () => { addToPool(state.report.facts); $("#add-pool-status").textContent = "Added. Open Find deals to see it ranked."; });
 }
 
 function renderWatch(r) {
@@ -178,8 +183,141 @@ function renderSources(f, r) {
   return `${prov}<ol class="sources">${(f.sources || []).map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("")}</ol><p class="muted" style="margin-top:.8rem">Reference tables (millage, condo statutes, lending rules, sea level) as of ${esc(r.reference.florida.asOf)}.</p>`;
 }
 
+// ---- deals ----
+const CANDIDATES_URL = "../data/candidates/south-florida-2026-10.json";
+let pool = null;
+
+async function loadPool() {
+  if (pool) return pool;
+  const data = window.DOSSIER_CANDIDATES || (await (await fetch(CANDIDATES_URL)).json());
+  const sample = window.DOSSIER_SAMPLE || (await (await fetch(SAMPLE_URL)).json());
+  let mine = [];
+  try { mine = JSON.parse(localStorage.getItem("dossier-pool") || "[]"); } catch {}
+  pool = [structuredClone(sample), ...data.candidates, ...mine];
+  return pool;
+}
+
+function readProfile() {
+  const f = $("#profile-form");
+  const data = Object.fromEntries(new FormData(f).entries());
+  const types = [...$("#p-types").selectedOptions].map((o) => o.value);
+  const hub = HUBS.find((h) => h.id === data.hub);
+  const p = {
+    grossAnnualIncome: Number(data.grossAnnualIncome), monthlyDebts: Number(data.monthlyDebts) || 0, cashAvailable: Number(data.cashAvailable),
+    household: Number(data.household) || 1, minBeds: data.minBeds ? Number(data.minBeds) : undefined, loanType: data.loanType, preferredDownPct: Number(data.preferredDownPct),
+    rate: Number(data.ratePct) / 100, types, minGrade: data.minGrade || undefined, maxCommuteMin: Number(data.maxCommuteMin) || undefined,
+    homestead: $("#p-homestead").checked, workAddress: data.workAddress, hub: data.hub,
+    work: hub ? { lat: hub.lat, lon: hub.lon, name: hub.name } : undefined,
+  };
+  return p;
+}
+
+function fillProfile(p) {
+  if (!p) return;
+  const set = (id, v) => { const el = $(id); if (el && v !== undefined && v !== null) el.value = v; };
+  set("#p-income", p.grossAnnualIncome); set("#p-debts", p.monthlyDebts); set("#p-cash", p.cashAvailable); set("#p-household", p.household); set("#p-beds", p.minBeds ?? "");
+  set("#p-loan", p.loanType); set("#p-down", String(p.preferredDownPct ?? 0.2)); set("#p-rate", p.rate ? (p.rate * 100).toFixed(2) : "7.32"); set("#p-grade", p.minGrade || ""); set("#p-commute", p.maxCommuteMin ?? 45);
+  set("#p-hub", p.hub || ""); set("#p-work", p.workAddress || ""); $("#p-homestead").checked = p.homestead !== false;
+  if (p.types) [...$("#p-types").options].forEach((o) => (o.selected = p.types.includes(o.value)));
+}
+
+async function geocodeWork(address) {
+  if (!address) return null;
+  try {
+    const res = await fetch(`/api/geocode?address=${encodeURIComponent(address)}`);
+    if (!res.ok) return null;
+    const g = await res.json();
+    return g.status === "live" ? { lat: g.data.lat, lon: g.data.lon, name: g.data.matched } : null;
+  } catch { return null; }
+}
+
+async function runDeals() {
+  const profile = readProfile();
+  const status = $("#deals-status");
+  status.textContent = "Working…";
+  if (profile.workAddress) {
+    const g = await geocodeWork(profile.workAddress);
+    if (g) profile.work = g;
+    else if (!profile.work) status.textContent = "Could not look up the work address (no server). Pick a hub from the list for commute times.";
+  }
+  try { localStorage.setItem("dossier-profile", JSON.stringify(profile)); } catch {}
+  const cands = await loadPool();
+  const result = findDeals(profile, cands);
+  if (status.textContent === "Working…") status.textContent = "";
+  renderDeals(profile, result);
+  $("#deals").hidden = false;
+  $("#report").hidden = true;
+  $("#deals").scrollIntoView({ behavior: "smooth" });
+}
+
+function renderDeals(profile, r) {
+  const b = r.budget;
+  const condoMax = maxPrice(profile, { type: "condo", sqft: 1000, hoaMonthly: 450, city: "Pompano Beach" });
+  const houseMax = maxPrice(profile, { type: "house", sqft: 1400, hoaMonthly: 0, city: "Pompano Beach" });
+  const stretch = maxPrice(profile, { type: "condo", sqft: 1000, hoaMonthly: 450, city: "Pompano Beach" }, "stretch");
+  const workName = profile.work?.name ? ` · work: ${profile.work.name}` : "";
+  const gradeNote = r.relaxedGradeFloor ? `<p class="muted">Nothing in the pool has every grade at ${esc(profile.minGrade)} or better, mostly because reserves, roof age and master insurance are unknown until you ask. Showing everything that fits your budget instead, ranked.</p>` : "";
+  const dealCard = (d, i) => `
+    <article class="deal" id="deal-${esc(d.id)}">
+      <div><h3>${i !== undefined ? `${i + 1}. ` : ""}${esc(d.title)}</h3>
+        <div class="meta num">${usd(d.price)} · ${d.beds ?? "?"} bd / ${d.baths ?? "?"} ba · ${d.sqft ? d.sqft.toLocaleString() + " sq ft" : "size unknown"} · ${d.yearBuilt && d.yearBuilt !== "unknown" ? "built " + d.yearBuilt : "year built unknown"} · ${esc(d.type)}</div>
+        <div class="meta num">Housing ${usd(d.afford.housing)}/mo (${d.afford.frontPct}% of income, ${d.afford.backPct}% with debts) · ${d.afford.downPct}% down · ${usd(d.afford.cashToClose)} to close${d.commute ? ` · ${d.commute.peakMin} min to work` : ""}</div></div>
+      <div class="score"><div class="n num">${d.score}</div><div class="l ${esc(d.label.split(" ")[0])}">${esc(d.label)}</div></div>
+      <div class="fitbar" title="Housing cost against your comfortable limit"><span class="${d.afford.tier}" style="width:${Math.min(100, (d.afford.housing / Math.max(1, b.comfortableHousing)) * 100)}%"></span></div>
+      <div class="gradechips">${Object.entries(d.grades).map(([k, g]) => `<span class="gchip" data-g="${g}"><b>${g}</b> ${esc(GRADE_LABEL[k] || k)}</span>`).join("")}</div>
+      <ul>${d.reasons.map((x) => `<li>${esc(x)}</li>`).join("")}${d.exclusions.map((x) => `<li><b>Why it is out:</b> ${esc(x)}</li>`).join("")}</ul>
+      <div class="actions2"><button type="button" class="btn ghost open-dossier" data-id="${esc(d.id)}">Open full dossier</button><span class="muted">${esc(d.source || "")}${d.seenOn ? `, seen ${esc(d.seenOn)}` : ""}. Verify status on the MLS before acting.</span></div>
+    </article>`;
+  $("#deals").innerHTML = `
+    <section class="band">
+      <h2>Your budget</h2>
+      <p class="muted num">Income ${usd(b.monthlyIncome)}/mo gross${workName}. Comfortable housing cost (28% front / 36% back): <b>${usd(b.comfortableHousing)}/mo</b>. Stretch (31/43): ${usd(b.stretchHousing)}/mo. Cash on hand ${usd(b.cashAvailable)}; minimum down ${Math.round(b.minDownPct * 1000) / 10}%.</p>
+      <div class="budget">
+        <div class="tile"><div class="k">Comfortable max, condo (HOA $450)</div><div class="v num">${usd(condoMax.price)}</div><div class="k">${condoMax.price ? Math.round(condoMax.downPct * 100) + "% down, " + usd(condoMax.cashNeeded) + " to close" : esc(condoMax.reason || "")}</div></div>
+        <div class="tile"><div class="k">Comfortable max, house (no HOA)</div><div class="v num">${usd(houseMax.price)}</div><div class="k">${houseMax.price ? Math.round(houseMax.downPct * 100) + "% down" : esc(houseMax.reason || "")}</div></div>
+        <div class="tile"><div class="k">Stretch max, condo</div><div class="v num">${usd(stretch.price)}</div><div class="k">Needs underwriting approval; leaves little slack for assessments</div></div>
+        <div class="tile"><div class="k">Bedrooms you need</div><div class="v num">${r.minBeds}+</div><div class="k">for ${profile.household} ${profile.household === 1 ? "person" : "people"}</div></div>
+      </div>
+      <p class="muted">The maximums assume a typical home shape; each listing below is priced on its own taxes, HOA and insurance. House insurance uses a coastal HO-3 planning range ($4,500 to $8,500/yr), which is why houses cost more to carry than their price suggests.</p>
+    </section>
+    <section class="band">
+      <h2>${r.ranked.length} ${r.ranked.length === 1 ? "home fits" : "homes fit"}${profile.minGrade && !r.relaxedGradeFloor ? ` with every grade ${esc(profile.minGrade)} or better` : ""}</h2>
+      ${gradeNote}
+      <div class="deals">${r.ranked.map((d, i) => dealCard(d, i)).join("") || `<p class="muted">Nothing in the pool fits. Loosen the bedroom count, commute, or home types, or add listings from a report page.</p>`}</div>
+    </section>
+    <section class="band">
+      <details class="excluded"><summary>${r.excluded.length} homes that do not fit, and why</summary><div class="deals" style="margin-top:.75rem">${r.excluded.map((d) => dealCard(d)).join("")}</div></details>
+      <p class="muted" style="margin-top:.8rem">Pool: ${pool.length} homes seen on public listing sites on 2026-10-21 plus any you add. Open any report and use "Add to my pool" to score a listing you found.</p>
+    </section>`;
+  $("#deals").querySelectorAll(".open-dossier").forEach((btn) => btn.addEventListener("click", () => {
+    const d = [...r.ranked, ...r.excluded].find((x) => x.id === btn.dataset.id);
+    if (!d) return;
+    $("#deals").hidden = true; $("#report").hidden = false;
+    render(buildReport(d.facts, { carry: { downPct: d.afford.downPct / 100, rate: b.rate, homestead: profile.homestead !== false, loanType: profile.loanType } }));
+    window.scrollTo({ top: 0 });
+  }));
+}
+
+const GRADE_LABEL = { price: "Price", carry: "Cost", building: "Building", association: "Association", hazard: "Hazards", location: "Location", resale: "Resale" };
+
+function addToPool(facts) {
+  let mine = [];
+  try { mine = JSON.parse(localStorage.getItem("dossier-pool") || "[]"); } catch {}
+  if (!mine.find((m) => m.meta?.id === facts.meta?.id)) mine.push(facts);
+  try { localStorage.setItem("dossier-pool", JSON.stringify(mine)); } catch {}
+  pool = null;
+}
+
+$("#show-deals").addEventListener("click", () => {
+  const p = $("#deals-panel"); p.hidden = !p.hidden; $("#form-panel").hidden = true;
+  if (!p.hidden) { try { fillProfile(JSON.parse(localStorage.getItem("dossier-profile") || "null")); } catch {} p.scrollIntoView({ behavior: "smooth" }); }
+});
+$("#profile-form").addEventListener("submit", (e) => { e.preventDefault(); runDeals(); });
+$("#p-household").addEventListener("change", () => { $("#p-beds").placeholder = `auto: ${defaultMinBeds($("#p-household").value)}`; });
+for (const h of HUBS) { const o = document.createElement("option"); o.value = h.id; o.textContent = h.name; $("#p-hub").appendChild(o); }
+
 // ---- form ----
-$("#new-report").addEventListener("click", () => { const p = $("#form-panel"); p.hidden = !p.hidden; if (!p.hidden) p.scrollIntoView({ behavior: "smooth" }); });
+$("#new-report").addEventListener("click", () => { const p = $("#form-panel"); p.hidden = !p.hidden; $("#deals-panel").hidden = true; if (!p.hidden) p.scrollIntoView({ behavior: "smooth" }); });
 $("#load-sample").addEventListener("click", () => { $("#form-panel").hidden = true; loadSample(); });
 $("#listing-form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -193,6 +331,7 @@ $("#listing-form").addEventListener("submit", async (e) => {
     if (res.ok) { facts = await res.json(); status.textContent = "Public layers added."; } else status.textContent = "No server: report built from the listing facts only.";
   } catch { status.textContent = "No server: report built from the listing facts only."; }
   $("#form-panel").hidden = true;
+  $("#deals").hidden = true; $("#report").hidden = false;
   render(buildReport(facts));
   window.scrollTo({ top: 0 });
 });

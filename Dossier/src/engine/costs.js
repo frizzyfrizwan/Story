@@ -9,6 +9,10 @@ export function monthlyPayment(principal, annualRate, years = 30) {
   return (principal * r) / (1 - Math.pow(1 + r, -n));
 }
 
+export function millageFor(city) {
+  return FLORIDA.tax.millage[city] || FLORIDA.tax.millage._default;
+}
+
 // Florida property tax estimate on a fresh purchase.
 export function estimateTaxes({ price, millageTable, homestead = false }) {
   const m = millageTable;
@@ -26,13 +30,24 @@ export function estimateTaxes({ price, millageTable, homestead = false }) {
     justValue: Math.round(justValue),
     taxableValue: Math.round(taxable),
     millage: m.total,
+    millageEstimated: Boolean(m.estimated),
     annual: Math.round(annual),
     monthly: Math.round(annual / 12),
     homestead,
-    note: homestead
+    note: (homestead
       ? "Homestead: $50,000 exemption ($25,000 against school levy); future assessment growth capped at 3%/yr."
-      : "Non-homestead: assessment growth capped at 10%/yr; no exemption.",
+      : "Non-homestead: assessment growth capped at 10%/yr; no exemption.") + (m.estimated ? " Millage is a county-typical estimate for this city." : ""),
   };
+}
+
+// HOA when the listing does not state one.
+export function estimateHoa(p) {
+  if (p.hoaMonthly !== undefined && p.hoaMonthly !== null && p.hoaMonthly !== "unknown") return { hoa: Number(p.hoaMonthly), estimated: false };
+  const sqft = p.sqft || 1000;
+  const age = p.yearBuilt ? new Date().getFullYear() - p.yearBuilt : 40;
+  const k = FLORIDA.hoaEstimatePerSqft;
+  const rate = p.type === "house" ? k.house : p.type === "townhouse" ? k.townhouse : age < 20 ? k.condoNew : k.condoOld;
+  return { hoa: Math.round(sqft * rate), estimated: rate > 0 };
 }
 
 export function carryingCosts(facts, opts = {}) {
@@ -41,42 +56,47 @@ export function carryingCosts(facts, opts = {}) {
   const downPct = opts.downPct ?? 0.2;
   const rate = opts.rate ?? facts.financing?.rate ?? FLORIDA.mortgage.rate30yr;
   const homestead = opts.homestead ?? true;
-  const city = p.city;
-  const millage = FLORIDA.tax.millage[city];
+  const loanType = opts.loanType ?? "conventional";
+  const millage = millageFor(p.city);
 
   const loan = price * (1 - downPct);
   const pi = monthlyPayment(loan, rate);
   const taxes = estimateTaxes({ price, millageTable: millage, homestead });
   const ins = facts.insurance || {};
-  const ho6 = ins.ho6Annual ?? avg(FLORIDA.insurance.ho6AnnualRange);
-  const flood = ins.floodAnnual ?? (facts.location?.floodZone?.startsWith("A") || facts.location?.floodZone?.startsWith("V") || facts.location?.barrierIsland ? avg(FLORIDA.insurance.floodContentsAnnualRange) : 0);
-  const hoa = p.hoaMonthly ?? 0;
-  const utilities = opts.utilitiesMonthly ?? estimateUtilities(p.sqft);
+  const isHouse = p.type === "house";
+  const ho6 = ins.ho6Annual ?? avg(isHouse ? FLORIDA.insurance.ho3AnnualRange : FLORIDA.insurance.ho6AnnualRange);
+  const floodExposed = /^(A|V)/.test(facts.location?.floodZone || "") || facts.location?.barrierIsland;
+  const flood = ins.floodAnnual ?? (floodExposed ? avg(FLORIDA.insurance.floodContentsAnnualRange) * (isHouse ? 2.5 : 1) : 0);
+  const hoaInfo = estimateHoa(p);
+  const utilities = opts.utilitiesMonthly ?? estimateUtilities(p.sqft, isHouse);
+  const pmi = downPct < 0.2 ? (loan * (loanType === "fha" ? FLORIDA.insurance.fhaMipAnnualPct : FLORIDA.insurance.pmiAnnualPctOfLoan)) / 12 : 0;
 
   const monthly = {
     principalAndInterest: Math.round(pi),
+    pmi: Math.round(pmi),
     taxes: taxes ? taxes.monthly : null,
-    hoa,
+    hoa: hoaInfo.hoa,
     ho6: Math.round(ho6 / 12),
     flood: Math.round(flood / 12),
     utilities,
   };
   const total = Object.values(monthly).reduce((a, b) => a + (b || 0), 0);
-  const cashToClose = Math.round(price * downPct + price * 0.03); // closing costs about 3% for a buyer in Broward
+  const cashToClose = Math.round(price * downPct + price * FLORIDA.dti.closingCostPct);
 
   return {
-    assumptions: { price, downPct, rate, homestead, termYears: 30, loan: Math.round(loan), ho6Annual: Math.round(ho6), floodAnnual: Math.round(flood) },
+    assumptions: { price, downPct, rate, homestead, loanType, termYears: 30, loan: Math.round(loan), ho6Annual: Math.round(ho6), floodAnnual: Math.round(flood), hoaEstimated: hoaInfo.estimated, insuranceKind: isHouse ? "HO-3 (house, with windstorm)" : "HO-6 (unit owner)" },
     monthly,
     totalMonthly: total,
-    totalMonthlyExcludingMortgage: total - monthly.principalAndInterest,
+    housingCostForDti: total - monthly.utilities,
+    totalMonthlyExcludingMortgage: total - monthly.principalAndInterest - monthly.pmi,
     cashToClose,
     taxes,
   };
 }
 
-function estimateUtilities(sqft = 900) {
+function estimateUtilities(sqft = 900, isHouse = false) {
   // Electric (South Florida, cooling-heavy) plus water/sewer where not in the HOA fee.
-  return Math.round(110 + (sqft / 1000) * 60);
+  return Math.round((isHouse ? 160 : 110) + (sqft / 1000) * 60);
 }
 
 export function avg([a, b]) {
@@ -90,7 +110,7 @@ export function projection(carry, { years = 10, hoaGrowthPct = 7, insuranceGrowt
   let ho6 = carry.monthly.ho6;
   let flood = carry.monthly.flood;
   let taxes = carry.monthly.taxes || 0;
-  const pi = carry.monthly.principalAndInterest;
+  const pi = carry.monthly.principalAndInterest + (carry.monthly.pmi || 0);
   const util = carry.monthly.utilities;
   const start = new Date().getFullYear();
   for (let y = 0; y <= years; y++) {
@@ -123,14 +143,13 @@ export function rentalMath(facts, carry) {
   const gross = rent * 12;
   const effective = gross * (1 - vacancyPct / 100);
   const opex = (carry.monthly.hoa + carry.monthly.ho6 + carry.monthly.flood + (carry.monthly.taxes || 0)) * 12 + effective * (mgmtPct / 100) + 600; // repairs
-  // Non-homestead taxes for a rental
   const noi = effective - opex;
   return {
     rentMonthly: rent,
     grossYieldPct: round1((gross / price) * 100),
     capRatePct: round1((noi / price) * 100),
     noiAnnual: Math.round(noi),
-    cashFlowMonthly: Math.round(noi / 12 - carry.monthly.principalAndInterest),
+    cashFlowMonthly: Math.round(noi / 12 - carry.monthly.principalAndInterest - (carry.monthly.pmi || 0)),
     assumptions: { vacancyPct, managementPct: mgmtPct, repairsAnnual: 600, note: "Taxes shown use the homestead figure if the carry model did; a rental pays non-homestead taxes, about 20% more." },
   };
 }

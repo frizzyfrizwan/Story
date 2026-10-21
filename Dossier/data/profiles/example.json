@@ -1,0 +1,13 @@
+{
+  "grossAnnualIncome": 110000,
+  "monthlyDebts": 600,
+  "cashAvailable": 80000,
+  "household": 3,
+  "loanType": "conventional",
+  "preferredDownPct": 0.2,
+  "homestead": true,
+  "maxCommuteMin": 45,
+  "minGrade": "B",
+  "hub": "ftl-downtown",
+  "note": "Example only. Replace with your own numbers; hub ids are in src/knowledge/places.js."
+}
