@@ -1,0 +1,209 @@
+{
+  "meta": {
+    "title": "South Florida candidate pool",
+    "seenOn": "2026-10-21",
+    "note": "Active or recently active listings seen on public listing sites on the date shown. Prices and status change daily; every entry must be re-verified on the MLS before an offer. Coordinates are approximate (about half a mile). Fields marked unknown were not in the public snippet and become questions in each dossier."
+  },
+  "candidates": [
+    {
+      "meta": { "id": "605-oaks-dr-305", "title": "605 Oaks Dr #305, Pompano Beach, FL 33069", "source": "movewithmomentum.com listing", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "605 Oaks Dr", "unit": "#305", "city": "Pompano Beach", "state": "FL", "zip": "33069", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1064, "yearBuilt": 1975, "listPrice": 240000, "pricePerSqft": 226, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "name": "Oaks of Pompano area, west Pompano near Palm Aire", "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.236, "lon": -80.157, "neighborhood": "West Pompano Beach / Palm Aire, inland", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 45, "summary": "Inland west Pompano Beach near Palm Aire golf courses and Festival Marketplace; 5 minutes to the Turnpike and I-95 via Atlantic Blvd; 15 minutes to the beach by car." },
+      "market": { "monthsOfSupply": 8.9, "cityCondoMedianPrice": 256500, "medianPricePerSqft": 397, "medianPricePerSqftNote": "City condo listing average, skewed by oceanfront towers." },
+      "sources": [{ "title": "Move With Momentum listing, 605 Oaks Drive #305", "url": "https://movewithmomentum.com/listings/idx-beaches/605-oaks-drive-305-pompano-beach" }]
+    },
+    {
+      "meta": { "id": "401-briny-ave-708", "title": "401 Briny Ave #708 (Sea Point), Pompano Beach, FL 33062", "source": "Homes.com 2-bedroom condos, Pompano Beach", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "401 Briny Ave", "unit": "#708", "city": "Pompano Beach", "state": "FL", "zip": "33062", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1250, "yearBuilt": "unknown", "listPrice": 445000, "pricePerSqft": 356, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "name": "Sea Point, 31-unit oceanfront building", "habitableStories": 8, "unitsInBuilding": 31, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.229, "lon": -80.089, "neighborhood": "Pompano Beach oceanfront, south of the pier", "barrierIsland": true, "evacuationZone": "A", "floodZone": "unknown", "distanceToBeachFt": 100, "walkScore": 55, "summary": "Oceanfront on Briny Ave a short walk south of the pier and Fishing Village. Direct beach access; A1A traffic and seasonal crowds." },
+      "market": { "monthsOfSupply": 8.9, "cityCondoMedianPrice": 256500, "medianPricePerSqft": 397 },
+      "sources": [{ "title": "Homes.com 2-bedroom condos for sale, Pompano Beach", "url": "https://www.homes.com/pompano-beach-fl/condos-for-sale/2-bedroom/" }]
+    },
+    {
+      "meta": { "id": "1230-ne-26th-ter", "title": "1230 NE 26th Terrace, Pompano Beach, FL 33062", "source": "Redfin / Homes.com Pompano Beach houses", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "1230 NE 26th Terrace", "unit": "", "city": "Pompano Beach", "state": "FL", "zip": "33062", "county": "Broward", "type": "house", "beds": 3, "baths": 2, "sqft": 1015, "yearBuilt": "unknown", "listPrice": 415000, "pricePerSqft": 409, "impactWindows": "unknown" },
+      "building": { "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": {},
+      "financing": { "warrantable": true },
+      "location": { "county": "Broward", "lat": 26.258, "lon": -80.113, "neighborhood": "East Pompano Beach, between Federal Hwy and the Intracoastal", "barrierIsland": false, "evacuationZone": "B", "floodZone": "unknown", "walkScore": 50, "summary": "Small single-family house east of Federal Highway, about a mile from the beach by car. Evacuation Zone B (Category 3 and up)." },
+      "market": { "monthsOfSupply": 4.6, "note": "Pompano Beach single-family supply 4.6 months (Sept 2026), a balanced market, unlike condos." },
+      "sources": [{ "title": "Homes.com single-family homes, Pompano Beach", "url": "https://www.homes.com/pompano-beach-fl/houses-for-sale/" }]
+    },
+    {
+      "meta": { "id": "1420-ne-44th-st", "title": "1420 NE 44th St, Pompano Beach, FL 33064", "source": "Redfin Pompano Beach houses", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "1420 NE 44th St", "unit": "", "city": "Pompano Beach", "state": "FL", "zip": "33064", "county": "Broward", "type": "house", "beds": 3, "baths": 2, "sqft": 1448, "yearBuilt": "unknown", "listPrice": 485000, "pricePerSqft": 335, "impactWindows": "unknown" },
+      "building": { "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": {},
+      "financing": { "warrantable": true },
+      "location": { "county": "Broward", "lat": 26.289, "lon": -80.118, "neighborhood": "Pompano Beach Highlands", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 40, "summary": "Updated 3/2 in Pompano Beach Highlands, west of Federal Highway near the Deerfield line. Outside the evacuation zones; 10 minutes to the beach, 8 to I-95." },
+      "market": { "monthsOfSupply": 4.6 },
+      "sources": [{ "title": "Redfin Pompano Beach homes for sale", "url": "https://www.redfin.com/city/15042/FL/Pompano-Beach" }]
+    },
+    {
+      "meta": { "id": "4250-ne-12th-ave", "title": "4250 NE 12th Ave, Pompano Beach, FL 33064", "source": "Movoto Pompano Beach single-family", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "4250 NE 12th Ave", "unit": "", "city": "Pompano Beach", "state": "FL", "zip": "33064", "county": "Broward", "type": "house", "beds": 3, "baths": 2, "sqft": 1387, "yearBuilt": "unknown", "listPrice": 462000, "pricePerSqft": 333, "impactWindows": "unknown" },
+      "building": { "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": {},
+      "financing": { "warrantable": true },
+      "location": { "county": "Broward", "lat": 26.287, "lon": -80.121, "neighborhood": "Pompano Beach Highlands", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 40, "summary": "Pompano Beach Highlands single-family, west of Federal Highway. Outside the evacuation zones." },
+      "market": { "monthsOfSupply": 4.6 },
+      "sources": [{ "title": "Movoto Pompano Beach single-family", "url": "https://www.movoto.com/pompano-beach-fl/single-family/" }]
+    },
+    {
+      "meta": { "id": "1544-nw-1st-ave", "title": "1544 NW 1st Ave (Solstice, new construction), Pompano Beach, FL 33060", "source": "Homes.com new construction townhomes, Pompano Beach", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "1544 NW 1st Ave", "unit": "", "city": "Pompano Beach", "state": "FL", "zip": "33060", "county": "Broward", "type": "townhouse", "beds": 2, "baths": 2.5, "sqft": 1350, "yearBuilt": 2026, "listPrice": 464999, "pricePerSqft": 344, "hoaMonthly": "unknown", "impactWindows": true, "parking": "1-car garage", "listingNote": "Builder notes a $25,000 City of Pompano Beach incentive at closing on some Solstice units (CRA program). Confirm eligibility and income limits." },
+      "building": { "name": "Solstice townhomes (Northwest CRA)", "habitableStories": 2, "roofYear": 2026, "roofType": "flat", "drainsReplaced": 2026, "panelBrand": "new" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "none expected (new)", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": false },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.25, "lon": -80.128, "neighborhood": "Northwest Pompano Beach (CRA district), near Dixie Hwy and the Tri-Rail corridor", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 50, "summary": "New 2026 townhome in the Northwest CRA redevelopment area, a mile from downtown Pompano and the 75-acre redevelopment site. Impact glass and a new roof mean low insurance and no deferred maintenance; the neighborhood is mid-transition." },
+      "market": { "monthsOfSupply": 8.9 },
+      "sources": [{ "title": "Homes.com new construction townhomes, Pompano Beach", "url": "https://www.homes.com/pompano-beach-fl/townhouses-for-sale/new-construction/" }]
+    },
+    {
+      "meta": { "id": "65-deer-creek-rd-h102", "title": "65 Deer Creek Rd #H102, Deerfield Beach, FL 33442", "source": "Homes.com Deerfield Beach 2-bedroom", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "65 Deer Creek Rd", "unit": "#H102", "city": "Deerfield Beach", "state": "FL", "zip": "33442", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1120, "yearBuilt": "unknown", "listPrice": 235000, "pricePerSqft": 210, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "name": "Deer Creek golf community", "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.306, "lon": -80.137, "neighborhood": "Deer Creek, Deerfield Beach (west of I-95 near Hillsboro Blvd)", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 30, "summary": "Golf-course community off Hillsboro Blvd with quick access to I-95 and the Turnpike; 15 minutes to Deerfield Beach pier. Car-dependent." },
+      "market": {},
+      "sources": [{ "title": "Homes.com 2-bedroom homes, Deerfield Beach", "url": "https://www.homes.com/deerfield-beach-fl/2-bedroom/" }]
+    },
+    {
+      "meta": { "id": "2755-ne-28th-ave-lhp", "title": "2755 NE 28th Ave (Lighthouse Bay), Lighthouse Point, FL 33064", "source": "Florida Home Finder, Lighthouse Bay Condo", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "2755 NE 28th Ave", "unit": "", "city": "Lighthouse Point", "state": "FL", "zip": "33064", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1180, "yearBuilt": 1973, "listPrice": 275000, "pricePerSqft": 233, "hoaMonthly": "unknown", "impactWindows": "unknown", "daysOnMarket": 137 },
+      "building": { "name": "Lighthouse Bay Condo, 28 units, established 1973", "habitableStories": "unknown", "unitsInBuilding": 28, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.26, "lon": -80.105, "neighborhood": "Lighthouse Point, east of Federal Highway near the Intracoastal", "barrierIsland": false, "evacuationZone": "B", "floodZone": "unknown", "walkScore": 45, "summary": "Lighthouse Point is a small, well-run city with low crime and its own police; this building is on the Intracoastal side, 10 minutes to the Pompano or Deerfield beaches." },
+      "market": {},
+      "sources": [{ "title": "Florida Home Finder, Lighthouse Bay Condo", "url": "https://www.floridahomefinder.com/lighthouse-point/lighthouse-bay-condo/" }]
+    },
+    {
+      "meta": { "id": "4502-n-federal-144e", "title": "4502 N Federal Hwy #144E, Lighthouse Point, FL 33064", "source": "Tricoli Team / Pompano Beach Realty Lighthouse Point condos", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "4502 N Federal Hwy", "unit": "#144E", "city": "Lighthouse Point", "state": "FL", "zip": "33064", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 984, "yearBuilt": "unknown", "listPrice": 264999, "pricePerSqft": 269, "hoaMonthly": "unknown", "impactWindows": "unknown", "listingDiscrepancies": ["One site shows $264,999 and another $244,500 for the same unit; confirm the current asking price."], "priceHistory": [{ "date": "2026", "price": 264999, "event": "Listed" }, { "date": "2026", "price": 244500, "event": "Shown lower on a second site" }] },
+      "building": { "name": "Lighthouse Point Plaza area, Federal Hwy", "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.288, "lon": -80.111, "neighborhood": "Lighthouse Point, Federal Highway corridor", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 60, "summary": "Remodeled unit on the Federal Highway side of Lighthouse Point; walkable to Publix and restaurants, outside the evacuation zones, 10 minutes to the beach." },
+      "market": {},
+      "sources": [{ "title": "Jeff Tricoli Team, Lighthouse Point condos", "url": "https://www.tricoliteam.com/florida/lighthouse-point-homes-for-sale/condos/" }]
+    },
+    {
+      "meta": { "id": "3909-n-ocean-113", "title": "3909 N Ocean Blvd #113, Fort Lauderdale, FL 33308", "source": "Homes.com 2-bedroom condos, Fort Lauderdale", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "3909 N Ocean Blvd", "unit": "#113", "city": "Fort Lauderdale", "state": "FL", "zip": "33308", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1145, "yearBuilt": "unknown", "listPrice": 338000, "pricePerSqft": 295, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "name": "Galt Ocean Mile area oceanfront", "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.181, "lon": -80.099, "neighborhood": "Galt Ocean Mile, Fort Lauderdale", "barrierIsland": true, "evacuationZone": "A", "floodZone": "unknown", "distanceToBeachFt": 200, "walkScore": 65, "summary": "Galt Ocean Mile: walkable strip of oceanfront towers with groceries and restaurants on A1A; most buildings are 1960s and 1970s high-rises now working through milestone inspections." },
+      "market": {},
+      "sources": [{ "title": "Homes.com 2-bedroom condos, Fort Lauderdale", "url": "https://www.homes.com/fort-lauderdale-fl/condos-for-sale/2-bedroom/" }]
+    },
+    {
+      "meta": { "id": "1170-n-federal-411", "title": "1170 N Federal Hwy #411, Fort Lauderdale, FL 33304", "source": "Homes.com 2-bedroom condos, Fort Lauderdale", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "1170 N Federal Hwy", "unit": "#411", "city": "Fort Lauderdale", "state": "FL", "zip": "33304", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1491, "yearBuilt": "unknown", "listPrice": 350000, "pricePerSqft": 235, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.138, "lon": -80.121, "neighborhood": "Fort Lauderdale, Federal Hwy near Sunrise Blvd (Gateway / Victoria Park edge)", "barrierIsland": false, "evacuationZone": "B", "floodZone": "unknown", "walkScore": 70, "summary": "Large 2/2 on the Federal Highway corridor between downtown and the beach; walkable to the Gateway shops, 10 minutes to Las Olas and the beach." },
+      "market": {},
+      "sources": [{ "title": "Homes.com 2-bedroom condos, Fort Lauderdale", "url": "https://www.homes.com/fort-lauderdale-fl/condos-for-sale/2-bedroom/" }]
+    },
+    {
+      "meta": { "id": "520-se-5th-ave-2404", "title": "520 SE 5th Ave #2404 (NuRiver Landing), Fort Lauderdale, FL 33301", "source": "Homes.com Fort Lauderdale condos", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "520 SE 5th Ave", "unit": "#2404", "city": "Fort Lauderdale", "state": "FL", "zip": "33301", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1150, "yearBuilt": 2006, "listPrice": 409000, "pricePerSqft": 356, "hoaMonthly": "unknown", "impactWindows": true, "listingNote": "Square footage not in the snippet; 1,150 is a typical 2-bed plan in this tower and must be confirmed." },
+      "building": { "name": "NuRiver Landing, 26-story downtown riverfront tower (2006)", "habitableStories": 26, "unitsInBuilding": 409, "roofYear": "unknown", "drainsReplaced": "n/a (2006 construction)", "panelBrand": "modern" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": false },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.117, "lon": -80.137, "neighborhood": "Downtown Fort Lauderdale, New River", "barrierIsland": false, "evacuationZone": "B", "floodZone": "unknown", "walkScore": 90, "summary": "Downtown riverfront high-rise with a full amenity deck; walk to Las Olas, Brightline and the Riverwalk. Milestone inspection due at 30 years (2036); HOA fees in towers like this typically run $900 to $1,300/mo." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Fort Lauderdale 2-bedroom condos, page 2", "url": "https://www.homes.com/fort-lauderdale-fl/condos-for-sale/2-bedroom/p2/" }]
+    },
+    {
+      "meta": { "id": "6309-bay-club-dr-3", "title": "6309 Bay Club Dr #3, Fort Lauderdale, FL 33308", "source": "Homes.com Fort Lauderdale condos", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "6309 Bay Club Dr", "unit": "#3", "city": "Fort Lauderdale", "state": "FL", "zip": "33308", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1200, "yearBuilt": "unknown", "listPrice": 339900, "pricePerSqft": 283, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "name": "Bay Club, Imperial Point area", "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.207, "lon": -80.109, "neighborhood": "Bay Colony / Imperial Point, east Fort Lauderdale", "barrierIsland": false, "evacuationZone": "B", "floodZone": "unknown", "walkScore": 40, "summary": "Quiet east Fort Lauderdale pocket near Holy Cross and Imperial Point hospitals, off Federal Highway; 10 minutes to Lauderdale-by-the-Sea." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Fort Lauderdale 2-bedroom condos", "url": "https://www.homes.com/fort-lauderdale-fl/condos-for-sale/2-bedroom/" }]
+    },
+    {
+      "meta": { "id": "8945-nw-23rd-st-cs", "title": "8945 NW 23rd St, Coral Springs, FL 33065", "source": "Homes.com Coral Springs townhomes", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "8945 NW 23rd St", "unit": "", "city": "Coral Springs", "state": "FL", "zip": "33065", "county": "Broward", "type": "townhouse", "beds": 3, "baths": 2.5, "sqft": 1354, "yearBuilt": "unknown", "listPrice": 305000, "pricePerSqft": 225, "hoaMonthly": "unknown", "impactWindows": "unknown", "priceHistory": [{ "date": "2026", "price": 325000, "event": "Listed" }, { "date": "2026", "price": 305000, "event": "$20,000 price drop" }] },
+      "building": { "habitableStories": 2, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": false },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.269, "lon": -80.247, "neighborhood": "Coral Springs (Atlantic Blvd and Riverside Dr area)", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 45, "summary": "Family-oriented suburb with A-rated schools and low crime; 30 to 40 minutes to the coast, Sawgrass Expressway nearby." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Coral Springs townhouses", "url": "https://www.homes.com/coral-springs-fl/townhouses-for-sale/" }]
+    },
+    {
+      "meta": { "id": "9110-sw-22nd-ct-d-davie", "title": "9110 SW 22nd Ct Unit D (Brentwood), Davie, FL 33324", "source": "Redfin Davie townhouses", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "9110 SW 22nd Ct", "unit": "Unit D", "city": "Davie", "state": "FL", "zip": "33324", "county": "Broward", "type": "townhouse", "beds": 3, "baths": 2.5, "sqft": 1400, "yearBuilt": "unknown", "listPrice": 329900, "pricePerSqft": 236, "hoaMonthly": 670, "impactWindows": "unknown", "listingNote": "Brentwood Townhouse Condo Association does not allow rentals (per listing). Square footage not in the snippet; 1,400 is an estimate." },
+      "building": { "name": "Brentwood Townhouse Condominium", "habitableStories": 2, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "no rentals allowed", "pets": "unknown", "ageRestricted": false },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.093, "lon": -80.274, "neighborhood": "Davie, near Pine Island Rd and I-595", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 45, "summary": "Central Broward townhouse community with a pool, near Nova Southeastern, Broward College and I-595; 20 minutes to downtown Fort Lauderdale." },
+      "market": {},
+      "sources": [{ "title": "Redfin Davie townhouses", "url": "https://www.redfin.com/city/4292/FL/Davie/townhouses" }]
+    },
+    {
+      "meta": { "id": "803-sw-119th-way-davie", "title": "803 SW 119th Way (Plantation Trace), Davie, FL 33325", "source": "Redfin 33325 townhouses", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "803 SW 119th Way", "unit": "", "city": "Davie", "state": "FL", "zip": "33325", "county": "Broward", "type": "townhouse", "beds": 3, "baths": 2, "sqft": 1548, "yearBuilt": "unknown", "listPrice": 425000, "pricePerSqft": 275, "hoaMonthly": "unknown", "impactWindows": "unknown", "listingDiscrepancies": ["Listed at $435,000 on one site and $425,000 on another."] },
+      "building": { "name": "Plantation Trace villas (clubhouse, pickleball)", "habitableStories": 1, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": false },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.096, "lon": -80.308, "neighborhood": "West Davie near Flamingo Rd and I-595", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 30, "summary": "Waterfront villa in a gated west Davie community; quick to I-595 and the Sawgrass corporate park, far from the coast." },
+      "market": {},
+      "sources": [{ "title": "Redfin 33325 townhouses", "url": "https://www.redfin.com/zipcode/33325/townhouses" }]
+    },
+    {
+      "meta": { "id": "52-canterbury-ln-tamarac", "title": "52 Canterbury Ln (Shaker Village), Tamarac, FL 33319", "source": "Redfin Tamarac townhouses", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "52 Canterbury Ln", "unit": "", "city": "Tamarac", "state": "FL", "zip": "33319", "county": "Broward", "type": "townhouse", "beds": 2, "baths": 2.5, "sqft": 1400, "yearBuilt": "unknown", "listPrice": 229000, "pricePerSqft": 164, "hoaMonthly": "unknown", "impactWindows": "unknown", "priceHistory": [{ "date": "2026", "price": 250000, "event": "Listed" }, { "date": "2026", "price": 229000, "event": "$21,000 price drop; seller financing offered" }] },
+      "building": { "name": "Shaker Village Phase 1", "habitableStories": 2, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.205, "lon": -80.229, "neighborhood": "Tamarac, Commercial Blvd and University Dr area", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 45, "summary": "Inland central Broward; cheapest per square foot in the pool. Check whether the community is 55+." },
+      "market": {},
+      "sources": [{ "title": "Redfin Tamarac townhouses", "url": "https://www.redfin.com/city/18064/FL/Tamarac/townhouses/page-2" }]
+    },
+    {
+      "meta": { "id": "3004-ne-5th-ter-206c-wm", "title": "3004 NE 5th Terrace #206C, Wilton Manors, FL 33334", "source": "Homes.com Wilton Manors condos", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "3004 NE 5th Terrace", "unit": "#206C", "city": "Wilton Manors", "state": "FL", "zip": "33334", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 950, "yearBuilt": "unknown", "listPrice": 319000, "pricePerSqft": 336, "hoaMonthly": "unknown", "impactWindows": "unknown", "listingNote": "Square footage not in the snippet; 950 is an estimate." },
+      "building": { "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.168, "lon": -80.136, "neighborhood": "Wilton Manors, east of the Wilton Drive district", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 72, "summary": "Walkable to Wilton Drive restaurants and nightlife; 10 minutes to downtown Fort Lauderdale and 12 to the beach." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Wilton Manors condos", "url": "https://www.homes.com/wilton-manors-fl/condos-for-sale/" }]
+    },
+    {
+      "meta": { "id": "805-w-oakland-park-e7", "title": "805 W Oakland Park Blvd Unit E7 (Racquet Club), Oakland Park, FL 33311", "source": "Homes.com Oakland Park / Wilton Manors under $300k", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "805 W Oakland Park Blvd", "unit": "Unit E7", "city": "Oakland Park", "state": "FL", "zip": "33311", "county": "Broward", "type": "townhouse", "beds": 2, "baths": 1.5, "sqft": 1000, "yearBuilt": "unknown", "listPrice": 220000, "pricePerSqft": 220, "hoaMonthly": "unknown", "impactWindows": "shutters on all openings" },
+      "building": { "name": "Racquet Club (gated)", "habitableStories": 2, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.166, "lon": -80.153, "neighborhood": "Oakland Park, west of I-95 on Oakland Park Blvd", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 55, "summary": "Gated townhouse community on a major corridor; 10 minutes to downtown Fort Lauderdale, 15 to the beach. Lower taxes than neighboring Wilton Manors." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Wilton Manors under $300k", "url": "https://www.homes.com/wilton-manors-fl/under-300k/" }]
+    },
+    {
+      "meta": { "id": "5850-nw-57th-ave-3-tamarac", "title": "5850 NW 57th Ave #3, Tamarac, FL 33319", "source": "Homes.com Tamarac condos", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "5850 NW 57th Ave", "unit": "#3", "city": "Tamarac", "state": "FL", "zip": "33319", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1595, "yearBuilt": "unknown", "listPrice": 319900, "pricePerSqft": 201, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.199, "lon": -80.224, "neighborhood": "Tamarac, Commercial Blvd corridor", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 40, "summary": "Large inland 2/2; many Tamarac communities are 55+, so confirm before falling for the square footage." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Tamarac condos", "url": "https://www.homes.com/tamarac-fl/condos-for-sale/" }]
+    }
+  ]
+}

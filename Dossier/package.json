@@ -1,0 +1,16 @@
+{
+  "name": "dossier",
+  "version": "0.1.0",
+  "description": "Pull a full dossier on any home: price, carrying costs, building and association health, hazards, history, and the issues that will show up in 1, 5, 10 and 30 years.",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test",
+    "report": "node bin/dossier.js"
+  },
+  "optionalDependencies": {
+    "@anthropic-ai/sdk": "^0.80.0"
+  }
+}

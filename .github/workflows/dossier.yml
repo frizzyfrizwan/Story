@@ -1,0 +1,40 @@
+name: Dossier
+
+on:
+  push:
+    branches: ["master"]
+    paths: ["Dossier/**", ".github/workflows/dossier.yml"]
+  pull_request:
+    paths: ["Dossier/**", ".github/workflows/dossier.yml"]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test and build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Dossier
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Unit tests
+        run: node --test
+      - name: CLI brief on the sample
+        run: node bin/dossier.js data/samples/3204-colony-club-rd-6.json
+      - name: CLI deal ranking on the example profile
+        run: node bin/deals.js data/profiles/example.json
+      - name: Build the single-file site
+        run: node bin/build-site.js
+      - name: Smoke-test the server
+        run: |
+          node server.js & sleep 1
+          curl -sf http://localhost:8787/ | grep -q "Dossier"
+          curl -sf http://localhost:8787/api/sample | grep -q "Colony Club"
+          curl -sf -X POST http://localhost:8787/api/report -H 'content-type: application/json' --data @data/samples/3204-colony-club-rd-6.json | grep -q '"verdict"'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dossier-site
+          path: Dossier/site/index.html

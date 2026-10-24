@@ -1,0 +1,2267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dossier</title>
+<meta name="description" content="Pull a full dossier on any home: price, cost to own, building and association health, hazards, history, and what will go wrong in 1, 5, 10 and 30 years.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* Layout: one column of stacked sections, each a plain band; the watch list is the spine of the page. */
+:root {
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --fg: #1b2430;
+  --muted: #5d6873;
+  --line: #d9dcd6;
+  --accent: #0f6b6b;
+  --accent-ink: #ffffff;
+  --critical: #9b2c1f;
+  --high: #b5651d;
+  --watch: #3b5f8a;
+  --info: #6b7280;
+  --good: #2f7a4a;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14181d; --surface: #1d2329; --fg: #e8e9e4; --muted: #a2aab2; --line: #343c45;
+    --accent: #4fb3ad; --accent-ink: #0f1a1a; --critical: #e07a6a; --high: #e0a35a; --watch: #86aee0; --info: #9aa3ad; --good: #6fc08b;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14181d; --surface: #1d2329; --fg: #e8e9e4; --muted: #a2aab2; --line: #343c45;
+  --accent: #4fb3ad; --accent-ink: #0f1a1a; --critical: #e07a6a; --high: #e0a35a; --watch: #86aee0; --info: #9aa3ad; --good: #6fc08b;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.inner { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.15; text-wrap: balance; margin: 0; }
+h2 { font-size: 1.35rem; margin-bottom: .5rem; }
+h3 { font-size: 1.05rem; }
+p { margin: 0 0 .75rem; max-width: 68ch; }
+a { color: var(--accent); }
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.masthead { border-bottom: 1px solid var(--line); background: var(--surface); }
+.masthead .inner { display: flex; align-items: baseline; gap: 1rem; padding-block: .9rem; flex-wrap: wrap; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 1.4rem; letter-spacing: -.01em; }
+.tagline { color: var(--muted); flex: 1 1 auto; min-width: 0; }
+.btn { font: inherit; font-weight: 600; background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); border-radius: 6px; padding: .5rem .9rem; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.panel { padding-block: 1.25rem; }
+.grid-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .75rem 1rem; }
+.grid-form label { display: flex; flex-direction: column; gap: .25rem; font-size: .9rem; color: var(--muted); min-width: 0; }
+.grid-form label.check { flex-direction: row; align-items: center; align-self: end; }
+.grid-form input, .grid-form select { font: inherit; padding: .45rem .5rem; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--fg); min-width: 0; }
+.grid-form .actions { grid-column: 1 / -1; display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+
+section.band { padding-block: 1.5rem; border-bottom: 1px solid var(--line); }
+.hero { display: grid; grid-template-columns: 1fr auto; gap: 1rem 2rem; align-items: start; }
+.hero h1 { font-size: clamp(1.5rem, 3.5vw, 2.2rem); }
+.hero .price { font-family: var(--display); font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 700; }
+.hero .specs { color: var(--muted); }
+.stance { display: inline-block; padding: .2rem .6rem; border-radius: 999px; font-weight: 600; font-size: .9rem; border: 1px solid currentColor; }
+.stance.Conditional { color: var(--high); }
+.stance.Reasonable { color: var(--good); }
+.stance.Proceed { color: var(--watch); }
+.verdict { font-size: 1.05rem; max-width: 70ch; }
+@media (max-width: 640px) { .hero { grid-template-columns: 1fr; } }
+
+.grades { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .6rem; }
+.grade { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: .6rem .7rem; min-width: 0; }
+.grade .letter { font-family: var(--display); font-size: 1.8rem; font-weight: 700; line-height: 1; }
+.grade .label { font-weight: 600; font-size: .9rem; }
+.grade .why { font-size: .85rem; color: var(--muted); margin-top: .3rem; }
+.grade[data-g="A"] .letter, .grade[data-g="B"] .letter { color: var(--good); }
+.grade[data-g="C"] .letter { color: var(--watch); }
+.grade[data-g="D"] .letter { color: var(--high); }
+.grade[data-g="F"] .letter { color: var(--critical); }
+
+.filters { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .75rem; }
+.chip { font: inherit; font-size: .85rem; padding: .2rem .6rem; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.horizon { margin-top: 1.1rem; }
+.horizon h3 { display: flex; align-items: baseline; gap: .6rem; margin-bottom: .5rem; }
+.horizon h3 .count { color: var(--muted); font-weight: 400; font-size: .9rem; }
+.watch { display: grid; gap: .5rem; }
+.item { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--info); border-radius: 4px; padding: .6rem .8rem; min-width: 0; }
+.item[data-s="critical"] { border-left-color: var(--critical); }
+.item[data-s="high"] { border-left-color: var(--high); }
+.item[data-s="watch"] { border-left-color: var(--watch); }
+.item summary { cursor: pointer; font-weight: 600; display: flex; gap: .5rem; align-items: baseline; flex-wrap: wrap; }
+.item summary .sev { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.item[data-s="critical"] .sev { color: var(--critical); }
+.item[data-s="high"] .sev { color: var(--high); }
+.item[data-s="watch"] .sev { color: var(--watch); }
+.item[data-s="info"] .sev { color: var(--info); }
+.item .conf { font-size: .75rem; color: var(--muted); font-weight: 400; }
+.item .body { margin-top: .4rem; font-size: .95rem; }
+.item .action { margin-top: .3rem; }
+.item .action b { color: var(--accent); }
+
+.costs { display: grid; grid-template-columns: 1.1fr 1fr; gap: 1.25rem; }
+@media (max-width: 720px) { .costs { grid-template-columns: 1fr; } }
+.stack { display: flex; height: 22px; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); margin: .5rem 0; }
+.stack span { display: block; height: 100%; }
+.legend { display: grid; grid-template-columns: auto 1fr auto; gap: .2rem .6rem; font-size: .92rem; align-items: center; }
+.legend i { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+.c0 { background: var(--accent); } .c1 { background: var(--watch); } .c2 { background: var(--high); } .c3 { background: var(--critical); } .c4 { background: var(--good); } .c5 { background: var(--info); }
+.big { font-family: var(--display); font-size: 1.9rem; font-weight: 700; }
+.toggle { display: flex; gap: .4rem; margin: .4rem 0 .6rem; }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+.tablewrap { overflow-x: auto; }
+th, td { text-align: left; padding: .35rem .5rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+td.num, th.num { text-align: right; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: .25rem 1.5rem; font-size: .95rem; }
+.facts div { display: flex; justify-content: space-between; gap: .75rem; padding: .3rem 0; border-bottom: 1px dotted var(--line); min-width: 0; }
+.facts div span:first-child { color: var(--muted); flex: 0 0 auto; }
+.facts div span:last-child { text-align: right; min-width: 0; overflow-wrap: anywhere; }
+.unknown { color: var(--high); font-weight: 600; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem 2rem; }
+.timeline { list-style: none; padding: 0; margin: 0; display: grid; gap: .35rem; }
+.timeline li { display: grid; grid-template-columns: 4.5em 1fr; gap: .6rem; }
+.timeline .yr { font-family: var(--mono); color: var(--muted); }
+.checklist { display: grid; gap: .4rem; }
+.checklist label { display: grid; grid-template-columns: auto 1fr; gap: .6rem; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: .5rem .7rem; }
+.checklist label.done { opacity: .55; text-decoration: line-through; }
+.checklist .who { font-size: .85rem; color: var(--muted); }
+.group-title { margin-top: .9rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.sources { font-size: .9rem; columns: 2; column-gap: 2rem; }
+@media (max-width: 720px) { .sources { columns: 1; } }
+.sources li { break-inside: avoid; margin-bottom: .3rem; }
+.foot { padding-block: 1.5rem; color: var(--muted); font-size: .9rem; }
+.nav { display: flex; gap: .5rem; }
+.budget { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .6rem; margin: .75rem 0 1rem; }
+.budget .tile { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: .6rem .7rem; min-width: 0; }
+.budget .tile .v { font-family: var(--display); font-size: 1.4rem; font-weight: 700; }
+.budget .tile .k { font-size: .85rem; color: var(--muted); }
+.deals { display: grid; gap: .75rem; }
+.deal { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: .8rem .9rem; display: grid; grid-template-columns: 1fr auto; gap: .5rem 1rem; min-width: 0; }
+.deal h3 { font-size: 1.05rem; }
+.deal .meta { color: var(--muted); font-size: .9rem; }
+.deal .score { text-align: right; }
+.deal .score .n { font-family: var(--display); font-size: 1.8rem; font-weight: 700; line-height: 1; }
+.deal .score .l { font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+.deal .score .l.Strong { color: var(--good); } .deal .score .l.Good { color: var(--accent); } .deal .score .l.Fair { color: var(--watch); } .deal .score .l.Weak, .deal .score .l.Pass { color: var(--high); }
+.gradechips { display: flex; gap: .3rem; flex-wrap: wrap; grid-column: 1 / -1; }
+.gchip { font-size: .75rem; border: 1px solid var(--line); border-radius: 4px; padding: .1rem .4rem; display: inline-flex; gap: .3rem; align-items: baseline; }
+.gchip b { font-family: var(--display); }
+.gchip[data-g="A"] b, .gchip[data-g="B"] b { color: var(--good); } .gchip[data-g="C"] b { color: var(--watch); } .gchip[data-g="D"] b { color: var(--high); } .gchip[data-g="F"] b { color: var(--critical); }
+.deal ul { margin: .2rem 0 0; padding-left: 1.1rem; font-size: .92rem; grid-column: 1 / -1; }
+.deal .actions2 { grid-column: 1 / -1; display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.deal .fitbar { grid-column: 1 / -1; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.deal .fitbar span { display: block; height: 100%; background: var(--good); }
+.deal .fitbar span.stretch { background: var(--high); }
+.excluded summary { cursor: pointer; color: var(--muted); }
+@media (max-width: 640px) { .deal { grid-template-columns: 1fr; } .deal .score { text-align: left; } }
+.prov { font-size: .85rem; color: var(--muted); }
+.prov span { margin-right: .8rem; }
+.narrative { white-space: pre-wrap; max-width: 70ch; }
+@media (prefers-reduced-motion: no-preference) { details .body { animation: fade .15s ease; } @keyframes fade { from { opacity: 0 } to { opacity: 1 } } }
+
+</style>
+</head>
+<body>
+<div id="app" class="app">
+  <header class="masthead">
+    <div class="inner">
+      <div class="brand">Dossier</div>
+      <div class="tagline">Everything about a home before you sign for it.</div>
+      <nav class="nav">
+        <button id="show-deals" class="btn" type="button">Find deals</button>
+        <button id="new-report" class="btn ghost" type="button">New report</button>
+      </nav>
+    </div>
+  </header>
+  <section id="deals-panel" class="panel inner" hidden>
+    <h2>Find deals for you</h2>
+    <p class="muted">Tell Dossier about your household and your job. It works out what you can carry, grades every home in the pool the same way it graded the sample, and ranks the ones that fit, with the drive to work. Nothing here leaves your device except the optional address lookup.</p>
+    <form id="profile-form" class="grid-form">
+      <label>Gross household income / year <input id="p-income" name="grossAnnualIncome" type="number" required placeholder="110000"></label>
+      <label>Other monthly debt payments <input id="p-debts" name="monthlyDebts" type="number" placeholder="car, student loans, cards" value="0"></label>
+      <label>Cash for down payment and closing <input id="p-cash" name="cashAvailable" type="number" required placeholder="80000"></label>
+      <label>People in the household <input id="p-household" name="household" type="number" min="1" value="2"></label>
+      <label>Minimum bedrooms <input id="p-beds" name="minBeds" type="number" min="0" placeholder="auto from household"></label>
+      <label>Loan type <select id="p-loan" name="loanType"><option value="conventional">Conventional (3% min down)</option><option value="fha">FHA (3.5% min down)</option></select></label>
+      <label>Preferred down payment <select id="p-down" name="preferredDownPct"><option value="0.2">20% if cash allows</option><option value="0.1">10%</option><option value="0.05">5%</option><option value="0.035">Minimum</option></select></label>
+      <label>Rate % <input id="p-rate" name="ratePct" type="number" step="0.05" value="7.32"></label>
+      <label>Home types <select id="p-types" name="types" multiple size="3"><option value="condo" selected>Condo</option><option value="townhouse" selected>Townhouse</option><option value="house" selected>Single-family</option></select></label>
+      <label>Every grade at least <select id="p-grade" name="minGrade"><option value="">No floor (rank everything)</option><option value="B">B</option><option value="A">A</option></select></label>
+      <label>Max drive to work (minutes) <input id="p-commute" name="maxCommuteMin" type="number" value="45"></label>
+      <label>Where you work <select id="p-hub" name="hub"><option value="">Choose a hub, or type an address below</option></select></label>
+      <label style="grid-column: span 2">Work address (looked up when the server is running) <input id="p-work" name="workAddress" placeholder="100 E Broward Blvd, Fort Lauderdale, FL"></label>
+      <label class="check"><input id="p-homestead" name="homestead" type="checkbox" checked> This will be my primary home (homestead)</label>
+      <div class="actions">
+        <button class="btn" type="submit">Show my deals</button>
+        <span id="deals-status" class="muted"></span>
+      </div>
+    </form>
+  </section>
+  <section id="deals" class="inner" hidden></section>
+  <section id="form-panel" class="panel inner" hidden>
+    <h2>Start a report</h2>
+    <p class="muted">Type what the listing shows. Dossier adds public-record layers (flood zone, elevation, census, nearby places) when a server is running, then grades the home and lists what will cost you money and when.</p>
+    <form id="listing-form" class="grid-form">
+      <label>Street address <input id="f-address" name="address" required placeholder="3204 Colony Club Rd"></label>
+      <label>Unit <input id="f-unit" name="unit" placeholder="Apt 6"></label>
+      <label>City <input id="f-city" name="city" required value="Pompano Beach"></label>
+      <label>State <input id="f-state" name="state" value="FL" maxlength="2"></label>
+      <label>ZIP <input id="f-zip" name="zip" required placeholder="33062"></label>
+      <label>County <input id="f-county" name="county" value="Broward"></label>
+      <label>Type <select id="f-type" name="type"><option value="condo">Condo</option><option value="townhouse">Townhouse</option><option value="house">Single-family</option></select></label>
+      <label>Asking price <input id="f-price" name="listPrice" type="number" required placeholder="299900"></label>
+      <label>Beds <input id="f-beds" name="beds" type="number" step="1"></label>
+      <label>Baths <input id="f-baths" name="baths" type="number" step="0.5"></label>
+      <label>Sq ft <input id="f-sqft" name="sqft" type="number"></label>
+      <label>Year built <input id="f-year" name="yearBuilt" type="number"></label>
+      <label>HOA / month <input id="f-hoa" name="hoaMonthly" type="number"></label>
+      <label>Days on market <input id="f-dom" name="daysOnMarket" type="number"></label>
+      <label>Habitable stories <input id="f-stories" name="stories" type="number"></label>
+      <label>Units in building <input id="f-units" name="units" type="number"></label>
+      <label>Roof year (if known) <input id="f-roof" name="roofYear" type="number"></label>
+      <label>Rent estimate / month <input id="f-rent" name="rentEstimate" type="number"></label>
+      <label>Evacuation zone <select id="f-evac" name="evacuationZone"><option value="">Unknown</option><option>A</option><option>B</option><option>C</option></select></label>
+      <label class="check"><input id="f-island" name="barrierIsland" type="checkbox"> On a barrier island</label>
+      <div class="actions">
+        <button class="btn" type="submit">Build report</button>
+        <button id="load-sample" class="btn ghost" type="button">Load the researched sample</button>
+        <span id="enrich-status" class="muted"></span>
+      </div>
+    </form>
+  </section>
+  <main id="report" class="inner"></main>
+  <footer class="inner foot">
+    <p>Dossier computes from public records and stated listing facts. Figures marked estimate are planning numbers, not quotes. Verify anything that changes your decision with the document named next to it.</p>
+  </footer>
+</div>
+<script>window.DOSSIER_SAMPLE = {
+  "meta": {
+    "id": "3204-colony-club-rd-6",
+    "title": "3204 Colony Club Rd Apt 6, Pompano Beach, FL 33062",
+    "researchedOn": "2026-10-21",
+    "mode": "researched",
+    "note": "Facts gathered from public listings, city and county documents, and state law summaries on 2026-10-21. Fields marked unknown were not available in public sources and are the first questions to ask."
+  },
+  "property": {
+    "address": "3204 Colony Club Rd",
+    "unit": "Apt 6",
+    "city": "Pompano Beach",
+    "state": "FL",
+    "zip": "33062",
+    "county": "Broward",
+    "type": "condo",
+    "beds": 2,
+    "baths": 2,
+    "sqft": 900,
+    "yearBuilt": 1963,
+    "lotAcres": 0.82,
+    "listPrice": 299900,
+    "pricePerSqft": 333,
+    "hoaMonthly": 175,
+    "listingAgent": "Brian Buckley",
+    "listingSource": "Zillow, viewed 2026-10-21",
+    "zestimateMissing": true,
+    "daysOnMarket": 256,
+    "priceHistory": [
+      { "date": "2026-02", "price": 399900, "event": "Listed (MLS F10524066, shown as 878 sq ft, 1.5 baths)" },
+      { "date": "2026-04", "price": 389000, "event": "Price cut" },
+      { "date": "2026-07", "price": 350000, "event": "Price cut (shown as for sale by owner on Zillow)" },
+      { "date": "2026-10", "price": 299900, "event": "Price cut; current asking" }
+    ],
+    "listingDiscrepancies": [
+      "Zillow shows 2 full baths and 900 sq ft; the MLS record (F10524066), Homes.com and Trulia's structured data show 1.5 baths and 878 sq ft.",
+      "The 0.82-acre lot is the whole complex parcel, not land that comes with the unit."
+    ],
+    "impactWindows": "unknown",
+    "floor": "unknown",
+    "parking": "1 carport space (per rental listing for Unit 1 in the same building)",
+    "salesHistory": [],
+    "salesHistoryNote": "No recorded prior sale for Apt 6 appeared in public listing sites. Pull the Broward County Property Appraiser record (web.bcpa.net) for deed history and the recorded condo book/page."
+  },
+  "building": {
+    "name": "Silver Thatch Apartment Buildings (Colony Club Rd low-rises, 3204 to 3213)",
+    "habitableStories": "unknown",
+    "habitableStoriesNote": "Neighboring 3205 Colony Club Rd is described as a 2-story building with 6 units; 3204 has at least units 1 to 6. Two stories is likely, which would exempt the building from the state milestone inspection and SIRS but not from Broward's 40/50-year recertification.",
+    "unitsInBuilding": "unknown (at least 6)",
+    "construction": "CBS (concrete block) typical for 1963 coastal low-rise; verify",
+    "roofYear": "unknown",
+    "roofType": "unknown",
+    "drainsReplaced": "unknown",
+    "panelBrand": "unknown",
+    "recertYear": "unknown",
+    "recertNote": "A 1963 building was due for Broward recertification in 2003, 2013 and 2023; next in 2033.",
+    "elevator": false,
+    "renovatedYear": "1988 shown on a neighboring unit's public record (3212 #6); unknown for this unit"
+  },
+  "association": {
+    "name": "unknown (city association list shows an association registered at 3204 Colony Club Rd Apt 3)",
+    "feeIncludes": "unknown",
+    "reservesUsd": "unknown",
+    "specialAssessments": "unknown",
+    "masterDeductible": "unknown",
+    "masterCarrier": "unknown",
+    "litigation": "unknown",
+    "rentalMinDays": "unknown (a furnished unit in this building rented on a yearly lease and seasonally with a 45-day minimum)",
+    "pets": "unknown (neighboring 3209 and 3213 Colony Club Rd list no pets)",
+    "ageRestricted": "unknown",
+    "delinquencyPct": "unknown",
+    "ownerOccupancyPct": "unknown"
+  },
+  "financing": {
+    "warrantable": "unknown",
+    "rate": 0.0732,
+    "rateNote": "30-year fixed average 7.32% on 2026-10-16 (Zillow); Freddie Mac weekly 7.28% on 2026-10-01."
+  },
+  "location": {
+    "county": "Broward",
+    "lat": 26.2345,
+    "lon": -80.0905,
+    "latLonNote": "Approximate (barrier island near NE 3rd St); the live geocoder replaces it.",
+    "neighborhood": "Beach (Pompano Beach barrier island)",
+    "barrierIsland": true,
+    "summary": "On the barrier island between the Intracoastal Waterway and the Atlantic, about one block from the sand and roughly 1,500 ft from the Pompano Beach pier and Fishing Village (Beach House, Oceanic, Lucky Fish, the Briny). Hillsboro Inlet, the lighthouse and the charter fleet are about a mile north. Car-dependent for groceries; Publix and Pompano Citi Centre are across the Intracoastal on Federal Highway.",
+    "distanceToBeachFt": 500,
+    "distanceToPierFt": 1500,
+    "evacuationZone": "A",
+    "floodZone": "unknown",
+    "floodZoneNote": "Not confirmed. New FEMA coastal maps effective 2024-07-31. Nearby 33062 parcels show AE; the A1A ridge has X pockets. Confirm with FEMA MSC and the city Building Division (954-786-4669).",
+    "elevationFt": "unknown",
+    "walkScore": 45,
+    "transitScore": 28,
+    "bikeScore": 52,
+    "walkScoreNote": "Walk Score reports 42 to 56 for addresses on Colony Club Rd; the Beach neighborhood averages 43 (car-dependent).",
+    "firstStreet": {
+      "note": "First Street scores for the unit were not published; a 33062 comparison parcel (801 S Federal Hwy) shows Flood: Major, Fire: Minimal, Heat: Extreme, Wind: Extreme with a 99% chance of a strong wind event in 30 years. Citywide Pompano Beach: flood moderate, wind extreme, heat extreme."
+    },
+    "airport": "Pompano Beach Airpark about 2.5 miles west; historic helicopter-training noise complaints, mostly over neighborhoods near the field.",
+    "schools": {
+      "note": "Broward County Public Schools. Assignment for this address must be confirmed with the district locator; the nearest zoned schools are in the 33060/33064 area across the Intracoastal. Pompano Beach High (600 NE 13th Ave) is an A-rated all-magnet school by application, not by address. Cresthaven Elementary (33064) earned a B in 2024-25 after a run of Cs.",
+      "verifyUrl": "https://www.browardschools.com/Page/44765"
+    },
+    "transit": "No rail on the island. Tri-Rail Pompano Beach station is at NW 8th Ave and 35th St; Brightline's nearest stops are Boca Raton and Fort Lauderdale. Broward County Transit route 11 runs A1A.",
+    "commute": "I-95 via Atlantic Blvd about 12 minutes; Fort Lauderdale downtown about 30 minutes; FLL airport about 35 minutes; Boca Raton about 25 minutes."
+  },
+  "demographics": {
+    "zip": "33062",
+    "population2024": 24920,
+    "medianAge": 60,
+    "medianHouseholdIncome": 83582,
+    "ownerOccupiedPct": 72,
+    "vacantPct": 37,
+    "vacantNote": "High vacancy is seasonal and second-home stock, not distress.",
+    "source": "US Census ACS 2024 5-year estimates via zip-codes.com"
+  },
+  "crime": {
+    "cityPropertyCrimePer1000": 21,
+    "cityViolentPer100k": 267,
+    "note": "Citywide figures (2024 FBI data via NeighborhoodScout; violent figure per Proximitii). Sources disagree on whether Pompano's violent rate is above or below national. Incidents concentrate inland and in the northwest; the beach is among the quieter areas, with car break-ins at beach parking the common complaint.",
+    "verifyUrl": "https://www.pompanobeachfl.gov/government/departments/bso"
+  },
+  "market": {
+    "asOf": "2026-09",
+    "cityCondoMedianPrice": 256500,
+    "cityCondoMedianPriceYoYPct": 2.6,
+    "monthsOfSupply": 8.9,
+    "activeCondoListings": 869,
+    "activeListingsYoYPct": -18.8,
+    "medianPricePerSqft": 397,
+    "medianPricePerSqftNote": "Average asking price per sq ft for Pompano Beach condo listings, 2026-05 (skewed up by oceanfront towers). Broward county-wide condo median sold price per sq ft was about $206, down 8% year over year, in the 2026 winter season.",
+    "browardCondoMedian": 255000,
+    "browardCondoMedianYoYPct": -4,
+    "zip33062MedianAllTypes": 457500,
+    "zipDaysToSell": 102,
+    "note": "Pompano Beach Realty monthly report, September 2026: condo median $256,500 (+2.6%), 8.9 months of supply (down from 11.1 a year earlier). Broward condo median $255,000 (-4% YoY) in July 2026.",
+    "vintageHeadwind": "About 85% of South Florida condos listed for sale are 30 or more years old, and the price index for 'vintage' Broward buildings has lagged the market since the 2022 reforms. Buyers are paying a premium for post-2000 buildings with completed inspections and funded reserves."
+  },
+  "rents": {
+    "estimateMonthly": 2100,
+    "evidence": [
+      "3204 Colony Club Rd Unit 1 (same building): furnished 2/2, $2,000/mo on a yearly lease (2024-25); seasonal $2,500/mo with 45-day minimum",
+      "3208 Colony Club Rd: 2/2, 944 sq ft, $2,100/mo (active 2026, built 1966)",
+      "3213 Colony Club Rd: 2/2 units asked $2,790 to $3,300/mo (2025)",
+      "Pompano Beach average asking rent $2,371 (Zillow ZORI, June 2026, +2.9% YoY)"
+    ],
+    "managementPct": 8
+  },
+  "comps": [
+    { "address": "3213 Colony Club Rd", "beds": 2, "baths": 2, "sqft": 948, "price": 333000, "status": "Active, 28 days", "hoa": 200, "yearBuilt": 1965, "note": "Lions Gate Silver Thatch; closest active comp" },
+    { "address": "3209 Colony Club Rd #1-W", "beds": 2, "baths": 2, "sqft": 920, "price": 255000, "status": "Sold (listed $279,900; earlier asking $324,500)", "yearBuilt": 1978, "note": "Prior sale $175,000 on 2021-07-02" },
+    { "address": "3209 Colony Club Rd #4-W", "beds": 2, "baths": 2, "sqft": 948, "price": 225000, "status": "Sold 2021-05-12" },
+    { "address": "3213 Colony Club Rd #3-E", "beds": 2, "baths": 2, "sqft": 948, "price": 220000, "status": "Sold 2021-05-10" },
+    { "address": "3208 Colony Club Rd #4", "beds": 2, "baths": 2, "sqft": 1000, "price": 185000, "status": "Sold 2020-11-19", "yearBuilt": 1966 },
+    { "address": "3212 Colony Club Rd #6", "beds": 2, "baths": 2, "sqft": 848, "price": null, "status": "Redfin estimate $270,000 to $330,000", "yearBuilt": 1963, "note": "Public record: Silver Thatch Apartment Building 4, renovated 1988" }
+  ],
+  "development": [
+    {
+      "id": "w-pompano",
+      "title": "W Pompano hotel-condo tower at 20 N Ocean Dr (ground-breaking expected 2026, opening 2029)",
+      "why": "A 24-story Related Group and Marriott project at the pier end of the beach. Three years of construction traffic and noise within a few blocks, then a higher-end anchor that lifts nearby values.",
+      "action": "Check the construction staging plan and haul route at the city.",
+      "horizon": "1-3y",
+      "severity": "watch",
+      "confidence": "medium"
+    },
+    {
+      "id": "downtown",
+      "title": "75-acre downtown redevelopment (Atlantic Blvd and Dixie Hwy, RocaPoint; new city hall starting 2026)",
+      "why": "About 4 million sq ft of mixed use three miles west. Adds restaurants, jobs and traffic on Atlantic Blvd, the island's main link to I-95.",
+      "horizon": "3-10y",
+      "severity": "info",
+      "confidence": "medium"
+    },
+    {
+      "id": "oceanfront-towers",
+      "title": "Oceanfront tower wave: Casamar and Solemar open; Ritz-Carlton Residences (2026) and Waldorf Astoria (2027) finishing to the south; Armani/Casa in review",
+      "why": "Pompano's beach is repricing upward at the top end. That supports land value under older low-rises and raises the odds of a developer offer for a 0.82-acre parcel, but also raises insurance and tax reference points citywide.",
+      "horizon": "3-10y",
+      "severity": "info",
+      "confidence": "high"
+    },
+    {
+      "id": "beach-sand",
+      "title": "Beach renourishment cycle",
+      "why": "Hurricane Nicole (2022) washed out trucked-in sand from NE 16th St north to Hillsboro Inlet. Broward's shore protection program and the Army Corps re-nourish on a multi-year cycle; the stretch nearest the inlet erodes fastest.",
+      "horizon": "3-10y",
+      "severity": "info",
+      "confidence": "medium"
+    }
+  ],
+  "insurance": {
+    "ho6Annual": null,
+    "floodAnnual": null,
+    "note": "No quotes obtained. Planning range for an older coastal Broward unit: HO-6 $1,500 to $2,800/yr; NFIP contents $450 to $1,500/yr. Citizens rates fell an average 8.7% at spring 2026 renewals."
+  },
+  "history": {
+    "timeline": [
+      { "year": 1963, "event": "Building completed; Pompano Beach's barrier island was mostly two-story rental apartments and motels." },
+      { "year": 1988, "event": "Renovation year recorded on a neighboring Silver Thatch unit; probable conversion or refurbishment era for the complex." },
+      { "year": 2003, "event": "First Broward 40-year recertification due." },
+      { "year": 2005, "event": "Hurricane Wilma: widespread roof damage and a boil-water order in Pompano Beach." },
+      { "year": 2013, "event": "50-year recertification due." },
+      { "year": 2017, "event": "Hurricane Irma: east-coast surge and wind; downed trees across Pompano." },
+      { "year": 2021, "event": "Neighboring 2-bed units sold for $175,000 to $225,000. Surfside collapse (June) triggers Florida's condo safety reforms." },
+      { "year": 2022, "event": "Hurricane Nicole strips sand from the north beach. SB 4-D creates milestone inspections and SIRS." },
+      { "year": 2023, "event": "60-year recertification due. Pompano Beach Fishing Village and pier reopen." },
+      { "year": 2024, "event": "New FEMA coastal flood maps effective July 31." },
+      { "year": 2025, "event": "HB 913 narrows milestone/SIRS scope to 3+ habitable stories; city publishes its Vulnerability Assessment (March)." },
+      { "year": 2026, "event": "Unit listed at $399,900 (Feb) and cut to $299,900 by October. Fannie/Freddie end Limited Review for condos (Aug 3)." }
+    ]
+  },
+  "sources": [
+    { "title": "Zillow listing, 3204 Colony Club Rd Apt 6 (screenshot 2026-10-21)", "url": "https://www.zillow.com/" },
+    { "title": "Trulia FSBO listing for 3204 Colony Club Rd #6 ($299,900; 253 to 256 days; 1.5 baths in structured data)", "url": "https://www.trulia.com/for_sale/Pompano_Beach,FL/fsbo_lt/1_als/" },
+    { "title": "Homes.com 33062 listings ($399,900; 878 sq ft; 1.5 baths)", "url": "https://www.homes.com/pompano-beach-fl/33062/" },
+    { "title": "Apartments.com rental listing, 3204 Colony Club Rd Unit 1 (built 1963; 872 sq ft; carport)", "url": "https://www.apartments.com/3204-colony-club-rd-pompano-beach-fl-unit-1/dzvfn5k/" },
+    { "title": "Redfin, 3212 Colony Club Rd #6 (Silver Thatch Apartment Building 4; built 1963; renovated 1988)", "url": "https://www.redfin.com/FL/Pompano-Beach/3212-Colony-Club-Rd-33062/unit-6/home/41529260" },
+    { "title": "Redfin, 3209 Colony Club Rd #1-W (sold $175,000 2021-07-02; one block from the beach)", "url": "https://www.redfin.com/FL/Pompano-Beach/3209-Colony-Club-Rd-33062/unit-1-W/home/41528910" },
+    { "title": "Estately, Lion's Gate Silver Thatch sold listings (2021 sales)", "url": "https://www.estately.com/FL/Lion's_Gate_Silver_Thatch_Condominiums,_Pompano_Beach/sold" },
+    { "title": "17th Realty, 3213 Colony Club Rd active at $333,000, $200/mo maintenance", "url": "https://www.17threalty.com/homes-mls/property/43eecdc2c28b49a2f87a7173237bcadd/3213-colony-club-rd-pompano-beach-fl-33062-pompano-beach/" },
+    { "title": "RE/MAX, 3208 Colony Club Rd rental $2,100/mo (MLS F10529765)", "url": "https://www.remax.com/fl/pompano-beach/home-details/3208-colony-club-rd-pompano-beach-fl-33062/9412755674798136416/M00000170/F10529765" },
+    { "title": "By The Sea Realty, 3205 Colony Club Rd #2 (2-story, 6-unit building between the Intracoastal and the ocean)", "url": "https://www.bythesearealty.com/property-search/listing/SEF/A11679208/Pompano-Beach/3205-Colony-Club-Rd-2" },
+    { "title": "Walk Score, Pompano Beach neighborhoods (Beach: 43 / 30 / 52)", "url": "https://www.walkscore.com/FL/Pompano_Beach" },
+    { "title": "City of Pompano Beach HOA and condo association list (2026-01)", "url": "https://cdn.pompanobeachfl.gov/city/pages/residents/HOA_Condo_Associations_Updated_2026-01-060-new.pdf" },
+    { "title": "City of Pompano Beach evacuation zones", "url": "https://pompanobeachfl.gov/residents/emergency-management/evacuation-zones-and-shelters" },
+    { "title": "City of Pompano Beach 2026 flood mailer (new coastal maps effective 2024-07-31; Building Division contact)", "url": "https://cdn.pompanobeachfl.gov/city/pages/flood/2026_COPB_FloodMailer_4x9-flipbook.pdf" },
+    { "title": "City of Pompano Beach Vulnerability Assessment, final, March 2025 (RS&H)", "url": "https://cdn.pompanobeachfl.gov/city/pages/sustainability/250603-Final-Pompano-Beach-VA.pdf" },
+    { "title": "Broward County sea level rise planning (Unified SE Florida projection; 5 ft NAVD seawall standard by 2050)", "url": "https://broward.org/Climate/Toolbox/Pages/SeaLevelRise.aspx" },
+    { "title": "Pompano Beach Resolution 2025-215, final millage 5.2181", "url": "https://cdn.pompanobeachfl.gov/city/pages/budget/Resolution-No.2025-215-Final-Millage-Rates-Certified.pdf" },
+    { "title": "Broward County FY26 adopted countywide millage 5.6658", "url": "https://www.broward.org/Budget/Documents/FY26/01%20Millage%20Countywide(1183780.2).pdf" },
+    { "title": "FDOE Broward district summary budget FY2025-26 (school millage 6.4845)", "url": "https://www.fldoe.org/file/7507/BrowardTotalBUD2526.pdf" },
+    { "title": "Florida HB 913 (2025) summary: milestone/SIRS scope, deadlines, reserve pooling", "url": "https://www.ksnlaw.com/blog/florida-hb-913-requirements-florida-condominium-cooperative-associations/" },
+    { "title": "Florida Senate bill analysis, HB 913", "url": "https://www.flsenate.gov/Session/Bill/2025/913/Analyses/h0913c.COM.PDF" },
+    { "title": "Conventional condo financing 2026: Fannie/Freddie end Limited Review, reserves 10% to 15%, deductible cap", "url": "https://www.landmarksignaturerealty.com/blog/conventional-condo-financing-2026" },
+    { "title": "Pompano Beach Realty market update, September 2026", "url": "https://www.pompanobeachrealty.com/pompano-beach-real-estate-market-september-2026/" },
+    { "title": "Echo Fine Properties, Broward condos and townhomes update, July 2026", "url": "https://www.echofineproperties.com/?p=161287" },
+    { "title": "WLRN, South Florida condo market, March 2026", "url": "https://www.wlrn.org/business/2026-03-17/south-florida-condo-market-prices" },
+    { "title": "Peter Zalewski, Broward condo prices fall / vintage index", "url": "https://peterzalewski.substack.com/p/broward-county-condo-prices-fall" },
+    { "title": "Zillow rental market trends, Pompano Beach (June 2026)", "url": "https://www.zillow.com/home-values/72390/pompano-beach-fl-33061/" },
+    { "title": "Trading Economics / Zillow, 30-year mortgage rate, October 2026", "url": "https://tradingeconomics.com/united-states/30-year-mortgage-rate/news/588887" },
+    { "title": "WGCU, Citizens 8.7% average rate cut for 2026", "url": "https://www.wgcu.org/government-politics/2026-01-12/bigger-citizens-rate-cut-backed-desantis-denigrates-original-plan" },
+    { "title": "Stone Building Solutions, HO-6 cost in Florida (OIR figures)", "url": "https://stonebldg.com/how-much-does-ho-6-condo-insurance-cost-in-florida/" },
+    { "title": "City of Pompano Beach short-term rental submittal requirements (fees)", "url": "https://cdn.pompanobeachfl.gov/city/pages/btr/Short-term_rental_app_submittal_requirements.pdf" },
+    { "title": "Redfin, 801 S Federal Hwy #1117 climate factors (First Street)", "url": "https://www.redfin.com/FL/Pompano-Beach/801-S-Federal-Hwy-33062/unit-1117/home/41697667" },
+    { "title": "NeighborhoodScout, Pompano Beach crime", "url": "https://www.neighborhoodscout.com/fl/pompano-beach/crime" },
+    { "title": "zip-codes.com, ZIP 33062 demographics (ACS 2024)", "url": "https://www.zip-codes.com/zip-code/33062/zip-code-33062.asp" },
+    { "title": "Hotel Dive / Multifamily Dive, Related Group W Pompano and Waldorf Astoria", "url": "https://www.hoteldive.com/news/related-group-hilton-waldorf-astoria-branded-condos/697883/" },
+    { "title": "ConstructConnect, Pompano Beach downtown redevelopment (RocaPoint)", "url": "https://projects.constructconnect.com/details/7593401-100-west-atlantic-boulevard-new-downtown&find_loc=florida-33060" },
+    { "title": "CBS Miami, Broward beach erosion after Nicole", "url": "https://www.cbsnews.com/amp/miami/news/broward-reports-widespread-beach-erosion-after-nicole-lashes-coast" },
+    { "title": "HurricaneCity, 2005 damage reports (Wilma in Pompano Beach)", "url": "https://www.hurricanecity.com/dam/dam2005.htm" },
+    { "title": "Broward County Public Schools, Pompano Beach High", "url": "https://www.browardschools.com/pompanobeachhigh" },
+    { "title": "Cresthaven Elementary executive summary 2025-26", "url": "https://web01.browardschools.com/ospa/ospa-central2/_sip_all_plans/2026/0901_09052025_Cresthaven-Elementary-Cognia-Executive-Summary-2025-2026.pdf" }
+  ]
+}
+;
+window.DOSSIER_CANDIDATES = {
+  "meta": {
+    "title": "South Florida candidate pool",
+    "seenOn": "2026-10-21",
+    "note": "Active or recently active listings seen on public listing sites on the date shown. Prices and status change daily; every entry must be re-verified on the MLS before an offer. Coordinates are approximate (about half a mile). Fields marked unknown were not in the public snippet and become questions in each dossier."
+  },
+  "candidates": [
+    {
+      "meta": { "id": "605-oaks-dr-305", "title": "605 Oaks Dr #305, Pompano Beach, FL 33069", "source": "movewithmomentum.com listing", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "605 Oaks Dr", "unit": "#305", "city": "Pompano Beach", "state": "FL", "zip": "33069", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1064, "yearBuilt": 1975, "listPrice": 240000, "pricePerSqft": 226, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "name": "Oaks of Pompano area, west Pompano near Palm Aire", "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.236, "lon": -80.157, "neighborhood": "West Pompano Beach / Palm Aire, inland", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 45, "summary": "Inland west Pompano Beach near Palm Aire golf courses and Festival Marketplace; 5 minutes to the Turnpike and I-95 via Atlantic Blvd; 15 minutes to the beach by car." },
+      "market": { "monthsOfSupply": 8.9, "cityCondoMedianPrice": 256500, "medianPricePerSqft": 397, "medianPricePerSqftNote": "City condo listing average, skewed by oceanfront towers." },
+      "sources": [{ "title": "Move With Momentum listing, 605 Oaks Drive #305", "url": "https://movewithmomentum.com/listings/idx-beaches/605-oaks-drive-305-pompano-beach" }]
+    },
+    {
+      "meta": { "id": "401-briny-ave-708", "title": "401 Briny Ave #708 (Sea Point), Pompano Beach, FL 33062", "source": "Homes.com 2-bedroom condos, Pompano Beach", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "401 Briny Ave", "unit": "#708", "city": "Pompano Beach", "state": "FL", "zip": "33062", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1250, "yearBuilt": "unknown", "listPrice": 445000, "pricePerSqft": 356, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "name": "Sea Point, 31-unit oceanfront building", "habitableStories": 8, "unitsInBuilding": 31, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.229, "lon": -80.089, "neighborhood": "Pompano Beach oceanfront, south of the pier", "barrierIsland": true, "evacuationZone": "A", "floodZone": "unknown", "distanceToBeachFt": 100, "walkScore": 55, "summary": "Oceanfront on Briny Ave a short walk south of the pier and Fishing Village. Direct beach access; A1A traffic and seasonal crowds." },
+      "market": { "monthsOfSupply": 8.9, "cityCondoMedianPrice": 256500, "medianPricePerSqft": 397 },
+      "sources": [{ "title": "Homes.com 2-bedroom condos for sale, Pompano Beach", "url": "https://www.homes.com/pompano-beach-fl/condos-for-sale/2-bedroom/" }]
+    },
+    {
+      "meta": { "id": "1230-ne-26th-ter", "title": "1230 NE 26th Terrace, Pompano Beach, FL 33062", "source": "Redfin / Homes.com Pompano Beach houses", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "1230 NE 26th Terrace", "unit": "", "city": "Pompano Beach", "state": "FL", "zip": "33062", "county": "Broward", "type": "house", "beds": 3, "baths": 2, "sqft": 1015, "yearBuilt": "unknown", "listPrice": 415000, "pricePerSqft": 409, "impactWindows": "unknown" },
+      "building": { "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": {},
+      "financing": { "warrantable": true },
+      "location": { "county": "Broward", "lat": 26.258, "lon": -80.113, "neighborhood": "East Pompano Beach, between Federal Hwy and the Intracoastal", "barrierIsland": false, "evacuationZone": "B", "floodZone": "unknown", "walkScore": 50, "summary": "Small single-family house east of Federal Highway, about a mile from the beach by car. Evacuation Zone B (Category 3 and up)." },
+      "market": { "monthsOfSupply": 4.6, "note": "Pompano Beach single-family supply 4.6 months (Sept 2026), a balanced market, unlike condos." },
+      "sources": [{ "title": "Homes.com single-family homes, Pompano Beach", "url": "https://www.homes.com/pompano-beach-fl/houses-for-sale/" }]
+    },
+    {
+      "meta": { "id": "1420-ne-44th-st", "title": "1420 NE 44th St, Pompano Beach, FL 33064", "source": "Redfin Pompano Beach houses", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "1420 NE 44th St", "unit": "", "city": "Pompano Beach", "state": "FL", "zip": "33064", "county": "Broward", "type": "house", "beds": 3, "baths": 2, "sqft": 1448, "yearBuilt": "unknown", "listPrice": 485000, "pricePerSqft": 335, "impactWindows": "unknown" },
+      "building": { "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": {},
+      "financing": { "warrantable": true },
+      "location": { "county": "Broward", "lat": 26.289, "lon": -80.118, "neighborhood": "Pompano Beach Highlands", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 40, "summary": "Updated 3/2 in Pompano Beach Highlands, west of Federal Highway near the Deerfield line. Outside the evacuation zones; 10 minutes to the beach, 8 to I-95." },
+      "market": { "monthsOfSupply": 4.6 },
+      "sources": [{ "title": "Redfin Pompano Beach homes for sale", "url": "https://www.redfin.com/city/15042/FL/Pompano-Beach" }]
+    },
+    {
+      "meta": { "id": "4250-ne-12th-ave", "title": "4250 NE 12th Ave, Pompano Beach, FL 33064", "source": "Movoto Pompano Beach single-family", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "4250 NE 12th Ave", "unit": "", "city": "Pompano Beach", "state": "FL", "zip": "33064", "county": "Broward", "type": "house", "beds": 3, "baths": 2, "sqft": 1387, "yearBuilt": "unknown", "listPrice": 462000, "pricePerSqft": 333, "impactWindows": "unknown" },
+      "building": { "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": {},
+      "financing": { "warrantable": true },
+      "location": { "county": "Broward", "lat": 26.287, "lon": -80.121, "neighborhood": "Pompano Beach Highlands", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 40, "summary": "Pompano Beach Highlands single-family, west of Federal Highway. Outside the evacuation zones." },
+      "market": { "monthsOfSupply": 4.6 },
+      "sources": [{ "title": "Movoto Pompano Beach single-family", "url": "https://www.movoto.com/pompano-beach-fl/single-family/" }]
+    },
+    {
+      "meta": { "id": "1544-nw-1st-ave", "title": "1544 NW 1st Ave (Solstice, new construction), Pompano Beach, FL 33060", "source": "Homes.com new construction townhomes, Pompano Beach", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "1544 NW 1st Ave", "unit": "", "city": "Pompano Beach", "state": "FL", "zip": "33060", "county": "Broward", "type": "townhouse", "beds": 2, "baths": 2.5, "sqft": 1350, "yearBuilt": 2026, "listPrice": 464999, "pricePerSqft": 344, "hoaMonthly": "unknown", "impactWindows": true, "parking": "1-car garage", "listingNote": "Builder notes a $25,000 City of Pompano Beach incentive at closing on some Solstice units (CRA program). Confirm eligibility and income limits." },
+      "building": { "name": "Solstice townhomes (Northwest CRA)", "habitableStories": 2, "roofYear": 2026, "roofType": "flat", "drainsReplaced": 2026, "panelBrand": "new" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "none expected (new)", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": false },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.25, "lon": -80.128, "neighborhood": "Northwest Pompano Beach (CRA district), near Dixie Hwy and the Tri-Rail corridor", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 50, "summary": "New 2026 townhome in the Northwest CRA redevelopment area, a mile from downtown Pompano and the 75-acre redevelopment site. Impact glass and a new roof mean low insurance and no deferred maintenance; the neighborhood is mid-transition." },
+      "market": { "monthsOfSupply": 8.9 },
+      "sources": [{ "title": "Homes.com new construction townhomes, Pompano Beach", "url": "https://www.homes.com/pompano-beach-fl/townhouses-for-sale/new-construction/" }]
+    },
+    {
+      "meta": { "id": "65-deer-creek-rd-h102", "title": "65 Deer Creek Rd #H102, Deerfield Beach, FL 33442", "source": "Homes.com Deerfield Beach 2-bedroom", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "65 Deer Creek Rd", "unit": "#H102", "city": "Deerfield Beach", "state": "FL", "zip": "33442", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1120, "yearBuilt": "unknown", "listPrice": 235000, "pricePerSqft": 210, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "name": "Deer Creek golf community", "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.306, "lon": -80.137, "neighborhood": "Deer Creek, Deerfield Beach (west of I-95 near Hillsboro Blvd)", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 30, "summary": "Golf-course community off Hillsboro Blvd with quick access to I-95 and the Turnpike; 15 minutes to Deerfield Beach pier. Car-dependent." },
+      "market": {},
+      "sources": [{ "title": "Homes.com 2-bedroom homes, Deerfield Beach", "url": "https://www.homes.com/deerfield-beach-fl/2-bedroom/" }]
+    },
+    {
+      "meta": { "id": "2755-ne-28th-ave-lhp", "title": "2755 NE 28th Ave (Lighthouse Bay), Lighthouse Point, FL 33064", "source": "Florida Home Finder, Lighthouse Bay Condo", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "2755 NE 28th Ave", "unit": "", "city": "Lighthouse Point", "state": "FL", "zip": "33064", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1180, "yearBuilt": 1973, "listPrice": 275000, "pricePerSqft": 233, "hoaMonthly": "unknown", "impactWindows": "unknown", "daysOnMarket": 137 },
+      "building": { "name": "Lighthouse Bay Condo, 28 units, established 1973", "habitableStories": "unknown", "unitsInBuilding": 28, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.26, "lon": -80.105, "neighborhood": "Lighthouse Point, east of Federal Highway near the Intracoastal", "barrierIsland": false, "evacuationZone": "B", "floodZone": "unknown", "walkScore": 45, "summary": "Lighthouse Point is a small, well-run city with low crime and its own police; this building is on the Intracoastal side, 10 minutes to the Pompano or Deerfield beaches." },
+      "market": {},
+      "sources": [{ "title": "Florida Home Finder, Lighthouse Bay Condo", "url": "https://www.floridahomefinder.com/lighthouse-point/lighthouse-bay-condo/" }]
+    },
+    {
+      "meta": { "id": "4502-n-federal-144e", "title": "4502 N Federal Hwy #144E, Lighthouse Point, FL 33064", "source": "Tricoli Team / Pompano Beach Realty Lighthouse Point condos", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "4502 N Federal Hwy", "unit": "#144E", "city": "Lighthouse Point", "state": "FL", "zip": "33064", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 984, "yearBuilt": "unknown", "listPrice": 264999, "pricePerSqft": 269, "hoaMonthly": "unknown", "impactWindows": "unknown", "listingDiscrepancies": ["One site shows $264,999 and another $244,500 for the same unit; confirm the current asking price."], "priceHistory": [{ "date": "2026", "price": 264999, "event": "Listed" }, { "date": "2026", "price": 244500, "event": "Shown lower on a second site" }] },
+      "building": { "name": "Lighthouse Point Plaza area, Federal Hwy", "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.288, "lon": -80.111, "neighborhood": "Lighthouse Point, Federal Highway corridor", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 60, "summary": "Remodeled unit on the Federal Highway side of Lighthouse Point; walkable to Publix and restaurants, outside the evacuation zones, 10 minutes to the beach." },
+      "market": {},
+      "sources": [{ "title": "Jeff Tricoli Team, Lighthouse Point condos", "url": "https://www.tricoliteam.com/florida/lighthouse-point-homes-for-sale/condos/" }]
+    },
+    {
+      "meta": { "id": "3909-n-ocean-113", "title": "3909 N Ocean Blvd #113, Fort Lauderdale, FL 33308", "source": "Homes.com 2-bedroom condos, Fort Lauderdale", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "3909 N Ocean Blvd", "unit": "#113", "city": "Fort Lauderdale", "state": "FL", "zip": "33308", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1145, "yearBuilt": "unknown", "listPrice": 338000, "pricePerSqft": 295, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "name": "Galt Ocean Mile area oceanfront", "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.181, "lon": -80.099, "neighborhood": "Galt Ocean Mile, Fort Lauderdale", "barrierIsland": true, "evacuationZone": "A", "floodZone": "unknown", "distanceToBeachFt": 200, "walkScore": 65, "summary": "Galt Ocean Mile: walkable strip of oceanfront towers with groceries and restaurants on A1A; most buildings are 1960s and 1970s high-rises now working through milestone inspections." },
+      "market": {},
+      "sources": [{ "title": "Homes.com 2-bedroom condos, Fort Lauderdale", "url": "https://www.homes.com/fort-lauderdale-fl/condos-for-sale/2-bedroom/" }]
+    },
+    {
+      "meta": { "id": "1170-n-federal-411", "title": "1170 N Federal Hwy #411, Fort Lauderdale, FL 33304", "source": "Homes.com 2-bedroom condos, Fort Lauderdale", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "1170 N Federal Hwy", "unit": "#411", "city": "Fort Lauderdale", "state": "FL", "zip": "33304", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1491, "yearBuilt": "unknown", "listPrice": 350000, "pricePerSqft": 235, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.138, "lon": -80.121, "neighborhood": "Fort Lauderdale, Federal Hwy near Sunrise Blvd (Gateway / Victoria Park edge)", "barrierIsland": false, "evacuationZone": "B", "floodZone": "unknown", "walkScore": 70, "summary": "Large 2/2 on the Federal Highway corridor between downtown and the beach; walkable to the Gateway shops, 10 minutes to Las Olas and the beach." },
+      "market": {},
+      "sources": [{ "title": "Homes.com 2-bedroom condos, Fort Lauderdale", "url": "https://www.homes.com/fort-lauderdale-fl/condos-for-sale/2-bedroom/" }]
+    },
+    {
+      "meta": { "id": "520-se-5th-ave-2404", "title": "520 SE 5th Ave #2404 (NuRiver Landing), Fort Lauderdale, FL 33301", "source": "Homes.com Fort Lauderdale condos", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "520 SE 5th Ave", "unit": "#2404", "city": "Fort Lauderdale", "state": "FL", "zip": "33301", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1150, "yearBuilt": 2006, "listPrice": 409000, "pricePerSqft": 356, "hoaMonthly": "unknown", "impactWindows": true, "listingNote": "Square footage not in the snippet; 1,150 is a typical 2-bed plan in this tower and must be confirmed." },
+      "building": { "name": "NuRiver Landing, 26-story downtown riverfront tower (2006)", "habitableStories": 26, "unitsInBuilding": 409, "roofYear": "unknown", "drainsReplaced": "n/a (2006 construction)", "panelBrand": "modern" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": false },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.117, "lon": -80.137, "neighborhood": "Downtown Fort Lauderdale, New River", "barrierIsland": false, "evacuationZone": "B", "floodZone": "unknown", "walkScore": 90, "summary": "Downtown riverfront high-rise with a full amenity deck; walk to Las Olas, Brightline and the Riverwalk. Milestone inspection due at 30 years (2036); HOA fees in towers like this typically run $900 to $1,300/mo." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Fort Lauderdale 2-bedroom condos, page 2", "url": "https://www.homes.com/fort-lauderdale-fl/condos-for-sale/2-bedroom/p2/" }]
+    },
+    {
+      "meta": { "id": "6309-bay-club-dr-3", "title": "6309 Bay Club Dr #3, Fort Lauderdale, FL 33308", "source": "Homes.com Fort Lauderdale condos", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "6309 Bay Club Dr", "unit": "#3", "city": "Fort Lauderdale", "state": "FL", "zip": "33308", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1200, "yearBuilt": "unknown", "listPrice": 339900, "pricePerSqft": 283, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "name": "Bay Club, Imperial Point area", "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.207, "lon": -80.109, "neighborhood": "Bay Colony / Imperial Point, east Fort Lauderdale", "barrierIsland": false, "evacuationZone": "B", "floodZone": "unknown", "walkScore": 40, "summary": "Quiet east Fort Lauderdale pocket near Holy Cross and Imperial Point hospitals, off Federal Highway; 10 minutes to Lauderdale-by-the-Sea." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Fort Lauderdale 2-bedroom condos", "url": "https://www.homes.com/fort-lauderdale-fl/condos-for-sale/2-bedroom/" }]
+    },
+    {
+      "meta": { "id": "8945-nw-23rd-st-cs", "title": "8945 NW 23rd St, Coral Springs, FL 33065", "source": "Homes.com Coral Springs townhomes", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "8945 NW 23rd St", "unit": "", "city": "Coral Springs", "state": "FL", "zip": "33065", "county": "Broward", "type": "townhouse", "beds": 3, "baths": 2.5, "sqft": 1354, "yearBuilt": "unknown", "listPrice": 305000, "pricePerSqft": 225, "hoaMonthly": "unknown", "impactWindows": "unknown", "priceHistory": [{ "date": "2026", "price": 325000, "event": "Listed" }, { "date": "2026", "price": 305000, "event": "$20,000 price drop" }] },
+      "building": { "habitableStories": 2, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": false },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.269, "lon": -80.247, "neighborhood": "Coral Springs (Atlantic Blvd and Riverside Dr area)", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 45, "summary": "Family-oriented suburb with A-rated schools and low crime; 30 to 40 minutes to the coast, Sawgrass Expressway nearby." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Coral Springs townhouses", "url": "https://www.homes.com/coral-springs-fl/townhouses-for-sale/" }]
+    },
+    {
+      "meta": { "id": "9110-sw-22nd-ct-d-davie", "title": "9110 SW 22nd Ct Unit D (Brentwood), Davie, FL 33324", "source": "Redfin Davie townhouses", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "9110 SW 22nd Ct", "unit": "Unit D", "city": "Davie", "state": "FL", "zip": "33324", "county": "Broward", "type": "townhouse", "beds": 3, "baths": 2.5, "sqft": 1400, "yearBuilt": "unknown", "listPrice": 329900, "pricePerSqft": 236, "hoaMonthly": 670, "impactWindows": "unknown", "listingNote": "Brentwood Townhouse Condo Association does not allow rentals (per listing). Square footage not in the snippet; 1,400 is an estimate." },
+      "building": { "name": "Brentwood Townhouse Condominium", "habitableStories": 2, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "no rentals allowed", "pets": "unknown", "ageRestricted": false },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.093, "lon": -80.274, "neighborhood": "Davie, near Pine Island Rd and I-595", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 45, "summary": "Central Broward townhouse community with a pool, near Nova Southeastern, Broward College and I-595; 20 minutes to downtown Fort Lauderdale." },
+      "market": {},
+      "sources": [{ "title": "Redfin Davie townhouses", "url": "https://www.redfin.com/city/4292/FL/Davie/townhouses" }]
+    },
+    {
+      "meta": { "id": "803-sw-119th-way-davie", "title": "803 SW 119th Way (Plantation Trace), Davie, FL 33325", "source": "Redfin 33325 townhouses", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "803 SW 119th Way", "unit": "", "city": "Davie", "state": "FL", "zip": "33325", "county": "Broward", "type": "townhouse", "beds": 3, "baths": 2, "sqft": 1548, "yearBuilt": "unknown", "listPrice": 425000, "pricePerSqft": 275, "hoaMonthly": "unknown", "impactWindows": "unknown", "listingDiscrepancies": ["Listed at $435,000 on one site and $425,000 on another."] },
+      "building": { "name": "Plantation Trace villas (clubhouse, pickleball)", "habitableStories": 1, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": false },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.096, "lon": -80.308, "neighborhood": "West Davie near Flamingo Rd and I-595", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 30, "summary": "Waterfront villa in a gated west Davie community; quick to I-595 and the Sawgrass corporate park, far from the coast." },
+      "market": {},
+      "sources": [{ "title": "Redfin 33325 townhouses", "url": "https://www.redfin.com/zipcode/33325/townhouses" }]
+    },
+    {
+      "meta": { "id": "52-canterbury-ln-tamarac", "title": "52 Canterbury Ln (Shaker Village), Tamarac, FL 33319", "source": "Redfin Tamarac townhouses", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "52 Canterbury Ln", "unit": "", "city": "Tamarac", "state": "FL", "zip": "33319", "county": "Broward", "type": "townhouse", "beds": 2, "baths": 2.5, "sqft": 1400, "yearBuilt": "unknown", "listPrice": 229000, "pricePerSqft": 164, "hoaMonthly": "unknown", "impactWindows": "unknown", "priceHistory": [{ "date": "2026", "price": 250000, "event": "Listed" }, { "date": "2026", "price": 229000, "event": "$21,000 price drop; seller financing offered" }] },
+      "building": { "name": "Shaker Village Phase 1", "habitableStories": 2, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.205, "lon": -80.229, "neighborhood": "Tamarac, Commercial Blvd and University Dr area", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 45, "summary": "Inland central Broward; cheapest per square foot in the pool. Check whether the community is 55+." },
+      "market": {},
+      "sources": [{ "title": "Redfin Tamarac townhouses", "url": "https://www.redfin.com/city/18064/FL/Tamarac/townhouses/page-2" }]
+    },
+    {
+      "meta": { "id": "3004-ne-5th-ter-206c-wm", "title": "3004 NE 5th Terrace #206C, Wilton Manors, FL 33334", "source": "Homes.com Wilton Manors condos", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "3004 NE 5th Terrace", "unit": "#206C", "city": "Wilton Manors", "state": "FL", "zip": "33334", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 950, "yearBuilt": "unknown", "listPrice": 319000, "pricePerSqft": 336, "hoaMonthly": "unknown", "impactWindows": "unknown", "listingNote": "Square footage not in the snippet; 950 is an estimate." },
+      "building": { "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.168, "lon": -80.136, "neighborhood": "Wilton Manors, east of the Wilton Drive district", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 72, "summary": "Walkable to Wilton Drive restaurants and nightlife; 10 minutes to downtown Fort Lauderdale and 12 to the beach." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Wilton Manors condos", "url": "https://www.homes.com/wilton-manors-fl/condos-for-sale/" }]
+    },
+    {
+      "meta": { "id": "805-w-oakland-park-e7", "title": "805 W Oakland Park Blvd Unit E7 (Racquet Club), Oakland Park, FL 33311", "source": "Homes.com Oakland Park / Wilton Manors under $300k", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "805 W Oakland Park Blvd", "unit": "Unit E7", "city": "Oakland Park", "state": "FL", "zip": "33311", "county": "Broward", "type": "townhouse", "beds": 2, "baths": 1.5, "sqft": 1000, "yearBuilt": "unknown", "listPrice": 220000, "pricePerSqft": 220, "hoaMonthly": "unknown", "impactWindows": "shutters on all openings" },
+      "building": { "name": "Racquet Club (gated)", "habitableStories": 2, "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.166, "lon": -80.153, "neighborhood": "Oakland Park, west of I-95 on Oakland Park Blvd", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 55, "summary": "Gated townhouse community on a major corridor; 10 minutes to downtown Fort Lauderdale, 15 to the beach. Lower taxes than neighboring Wilton Manors." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Wilton Manors under $300k", "url": "https://www.homes.com/wilton-manors-fl/under-300k/" }]
+    },
+    {
+      "meta": { "id": "5850-nw-57th-ave-3-tamarac", "title": "5850 NW 57th Ave #3, Tamarac, FL 33319", "source": "Homes.com Tamarac condos", "seenOn": "2026-10-21", "mode": "pool" },
+      "property": { "address": "5850 NW 57th Ave", "unit": "#3", "city": "Tamarac", "state": "FL", "zip": "33319", "county": "Broward", "type": "condo", "beds": 2, "baths": 2, "sqft": 1595, "yearBuilt": "unknown", "listPrice": 319900, "pricePerSqft": 201, "hoaMonthly": "unknown", "impactWindows": "unknown" },
+      "building": { "habitableStories": "unknown", "unitsInBuilding": "unknown", "roofYear": "unknown", "drainsReplaced": "unknown", "panelBrand": "unknown" },
+      "association": { "reservesUsd": "unknown", "specialAssessments": "unknown", "masterDeductible": "unknown", "rentalMinDays": "unknown", "pets": "unknown", "ageRestricted": "unknown" },
+      "financing": { "warrantable": "unknown" },
+      "location": { "county": "Broward", "lat": 26.199, "lon": -80.224, "neighborhood": "Tamarac, Commercial Blvd corridor", "barrierIsland": false, "evacuationZone": "none", "floodZone": "unknown", "walkScore": 40, "summary": "Large inland 2/2; many Tamarac communities are 55+, so confirm before falling for the square footage." },
+      "market": {},
+      "sources": [{ "title": "Homes.com Tamarac condos", "url": "https://www.homes.com/tamarac-fl/condos-for-sale/" }]
+    }
+  ]
+}
+;</script>
+<script>
+// ---- src/knowledge/florida.js
+// Florida-specific reference data used by the rules engine and the cost model.
+// Every figure carries its source and an "asOf" date so the report can show provenance.
+// Numbers here are planning figures, not quotes. The report labels them as estimates.
+
+const FLORIDA = {
+  asOf: "2026-10",
+
+  // Chapter 718 (Condominium Act) after SB 4-D (2022), SB 154 (2023) and HB 913 (2025).
+  condoLaw: {
+    milestoneInspection: {
+      appliesToHabitableStories: 3,
+      ageYears: 30,
+      coastalAgeYears: 25, // local authority may require at 25 within 3 miles of the coast
+      repeatEveryYears: 10,
+      note: "Structural milestone inspection, Fla. Stat. 553.899. Buildings under three habitable stories are exempt.",
+    },
+    sirs: {
+      appliesToHabitableStories: 3,
+      deadline: "2025-12-31",
+      deadlineIfCoordinatedWithMilestone: "2026-12-31",
+      fundingStarts: "2026-01-01",
+      itemThresholdUsd: 25000,
+      note: "Structural Integrity Reserve Study, Fla. Stat. 718.112(2)(g). Reserves for SIRS items cannot be waived.",
+    },
+    nonSirsReserves: {
+      note: "Buildings under three habitable stories may still waive or reduce reserves by majority vote (718.112(2)(f)). A low fee can mean waived reserves, not a cheap building.",
+    },
+    resaleDisclosure: {
+      statute: "718.503(2)",
+      rescissionBusinessDays: 3,
+      docs: [
+        "Declaration, articles, bylaws, rules",
+        "Most recent year-end financial statement and current budget",
+        "Milestone inspection summary (or statement that none is required)",
+        "SIRS (or statement that none is required)",
+        "Frequently asked questions sheet",
+        "Approved board minutes for the prior 12 months",
+      ],
+    },
+    estoppel: { statute: "718.116(8)", maxFeeUsd: 250, rushFeeUsd: 100, delinquentExtraUsd: 150, businessDays: 10 },
+    termination: {
+      statute: "718.117",
+      note: "A condominium can be terminated with 80% owner approval if no more than 5% object. Older low-rise buildings on large coastal parcels are the usual targets.",
+    },
+  },
+
+  // Broward County building recertification (older than the state milestone program, still in force).
+  browardRecert: {
+    firstAtYears: 40,
+    repeatEveryYears: 10,
+    exemptBelowSqft: 3500,
+    note: "Broward County Board of Rules and Appeals: structural and electrical recertification at 40 years and every 10 years after.",
+  },
+
+  // Lending. Fannie Mae LL-2026-03 and the matching Freddie Mac bulletin (2026-03-18).
+  lending: {
+    limitedReviewRetired: "2026-08-03",
+    minReservesPctOfBudget: 10,
+    minReservesPctOfBudgetFrom: { date: "2027-01-04", pct: 15 },
+    masterDeductibleCapPerUnitUsd: { amount: 50000, from: "2026-07-01" },
+    delinquencyRedFlagPct: 15,
+    note: "Projects that fail the full review become non-warrantable: cash or portfolio loans only, which shrinks the buyer pool on resale.",
+  },
+
+  // Property tax. Millage is per $1,000 of taxable value.
+  tax: {
+    saveOurHomesCapPct: 3,
+    nonHomesteadCapPct: 10,
+    homesteadExemptionUsd: 50000,
+    homesteadExemptionSchoolUsd: 25000,
+    // Broward County Property Appraiser practice: just value on resale lands near 85% of the sale price.
+    justValueRatioOfSale: 0.85,
+    millage: {
+      // Used when a city has no entry. Broward municipalities ran about 17.5 to 21 mills on the 2025 roll.
+      "_default": {
+        asOf: "2025 tax roll, Broward county-typical estimate",
+        county: 5.6658,
+        school: 6.4845,
+        city: 6.1,
+        cityDebt: 0,
+        ems: 0,
+        otherDistrictsEstimate: 1.5,
+        total: 19.8,
+        estimated: true,
+        sources: ["Broward County FY26 adopted millage; FDOE Broward school millage; municipal rates vary"],
+      },
+      "Pompano Beach": {
+        asOf: "2025 tax roll (FY2025-26)",
+        county: 5.6658,
+        school: 6.4845,
+        city: 5.2181,
+        cityDebt: 0.4427,
+        ems: 0.5,
+        otherDistrictsEstimate: 1.5, // hospital district, children's services council, SFWMD, FIND, Everglades
+        total: 19.81,
+        sources: [
+          "Pompano Beach Resolution 2025-215 (operating 5.2181) and 2025-218 (EMS 0.5000)",
+          "Broward County FY26 adopted millage 5.6658",
+          "FDOE Broward district summary FY2025-26 school millage 6.4845",
+        ],
+      },
+    },
+  },
+
+  // Insurance planning ranges for a unit owner (HO-6) and NFIP contents, Broward coastal, older building.
+  insurance: {
+    ho6AnnualRange: [1500, 2800],
+    // Single-family HO-3 with windstorm, coastal Broward, older roof: planning range.
+    ho3AnnualRange: [4500, 8500],
+    pmiAnnualPctOfLoan: 0.006, // conventional PMI when down payment is under 20%
+    fhaMipAnnualPct: 0.0055,
+    floodContentsAnnualRange: [450, 1500],
+    lossAssessmentRiderAnnualUsd: 30,
+    citizens2026AvgChangePct: -8.7,
+    sources: [
+      "Florida OIR: HO-6 average about $1,729/yr statewide (Q1 2025); Miami about $2,570/yr",
+      "Florida OIR Jan 2026: Citizens average -8.7% at renewal from spring 2026",
+    ],
+  },
+
+  // Debt-to-income guidelines. Front = housing cost / gross income; back = housing + other debts / gross income.
+  dti: {
+    comfortable: { front: 0.28, back: 0.36, label: "Comfortable (28/36)" },
+    stretch: { front: 0.31, back: 0.43, label: "Stretch (31/43, needs automated underwriting approval)" },
+    minDownPct: { conventional: 0.03, fha: 0.035 },
+    closingCostPct: 0.03,
+    reserveMonths: 2, // lenders like to see two months of housing cost left after closing
+  },
+
+  // Typical monthly HOA when the listing does not say, $ per sq ft per month, by type and age.
+  hoaEstimatePerSqft: { condoOld: 0.55, condoNew: 0.75, townhouse: 0.25, house: 0 },
+
+  mortgage: {
+    rate30yr: 0.0732,
+    rateAsOf: "2026-10-16",
+    source: "Zillow daily average 30-year fixed, 2026-10-16 (Freddie Mac weekly 7.28% on 2026-10-01)",
+  },
+
+  // Southeast Florida Regional Climate Compact, Unified Sea Level Rise Projection (2019).
+  seaLevel: {
+    by2040InchesRange: [10, 17],
+    by2070InchesRange: [21, 54],
+    by2120InchesRange: [40, 136],
+    baseline: "2000 mean sea level, Key West tide gauge",
+    browardTidalBarrierStandardFtNavd: { until2035: 4, by2050: 5 },
+  },
+
+  evacuation: {
+    "Broward": {
+      A: "East of the Intracoastal Waterway and all mobile home parks. Mandatory for Category 1 and 2 storms.",
+      B: "East of US 1 (Federal Highway). Mandatory for Category 3 and higher.",
+    },
+  },
+
+  shortTermRental: {
+    "Pompano Beach": {
+      permitRequired: true,
+      initialFeeUsd: 675,
+      renewalFeeUsd: 375,
+      permitYear: "Oct 1 to Sep 30",
+      contactWithinMiles: 25,
+      occupancyPerBedroom: 2,
+      source: "City of Pompano Beach BTR Division short-term rental submittal requirements (form rev. 2026-07-16)",
+    },
+  },
+};
+
+// Component lifecycles used for "what breaks next" projections (years).
+const LIFECYCLES = {
+  castIronDrain: { life: 50, note: "Pre-1975 buildings used cast iron drain lines; slab-on-grade coastal buildings often fail at 40 to 50 years." },
+  galvanizedSupply: { life: 45 },
+  flatRoofModifiedBitumen: { life: 18 },
+  tileRoof: { life: 35 },
+  shingleRoof: { life: 17 },
+  electricalPanel: { life: 40, note: "Federal Pacific and Zinsco panels are uninsurable with most Florida carriers." },
+  aluminumWiringEra: [1965, 1973],
+  windowImpactUpgradeCycle: 30,
+  hvac: { life: 14 },
+  waterHeater: { life: 11 },
+  elevator: { life: 25 },
+  seawall: { life: 50 },
+  exteriorPaintWaterproofing: { life: 8 },
+  asphaltPaving: { life: 20 },
+};
+
+// ---- src/knowledge/checklist.js
+// Due-diligence questions. Each item names who answers it and which fact it unlocks,
+// so the UI can hide questions that the facts already answer.
+
+const CHECKLIST = [
+  // Unit
+  { id: "sqft", group: "Unit", ask: "Which square footage and bath count is correct? Listings for this unit disagree.", who: "Listing agent, Broward Property Appraiser record", unlocks: "property.sqft" },
+  { id: "floor", group: "Unit", ask: "Which floor is the unit on, and what is the finished-floor elevation?", who: "Agent; elevation certificate from the association", unlocks: "location.elevationFt" },
+  { id: "windows", group: "Unit", ask: "Are the windows and doors impact-rated, and is there a wind mitigation report?", who: "Agent, inspector", unlocks: "property.impactWindows" },
+  { id: "plumbing", group: "Unit", ask: "Has the unit been re-piped? Have the building's cast-iron drain lines been lined or replaced?", who: "Association, inspector (sewer camera scope)", unlocks: "building.drainsReplaced" },
+  { id: "electrical", group: "Unit", ask: "What panel brand is in the unit and in the meter room? When was the building's electrical last recertified?", who: "Inspector, 40-year recertification report", unlocks: "building.panelBrand" },
+  { id: "fourpoint", group: "Unit", ask: "Get a 4-point inspection and a written HO-6 quote inside the inspection period.", who: "Inspector, insurance agent", unlocks: "insurance.ho6Annual" },
+  // Association
+  { id: "docs", group: "Association", ask: "Request the full 718.503 package: declaration, bylaws, rules, budget, year-end financials, FAQ sheet, 12 months of minutes.", who: "Seller (at seller's expense by statute)", unlocks: "association.docsReceived" },
+  { id: "reserves", group: "Association", ask: "How much is in reserves, and were reserves waived or reduced in the last three budgets?", who: "Budget, minutes", unlocks: "association.reservesUsd" },
+  { id: "assessments", group: "Association", ask: "Any special assessments passed, pending, or discussed in the last 24 months of minutes?", who: "Minutes, estoppel certificate", unlocks: "association.specialAssessments" },
+  { id: "recert", group: "Association", ask: "Produce the latest Broward 40/50-year recertification report (structural and electrical) and any engineer's follow-up.", who: "Association, city building department", unlocks: "building.recertYear" },
+  { id: "roof", group: "Association", ask: "Roof type, age, and warranty. When is replacement budgeted?", who: "Association", unlocks: "building.roofYear" },
+  { id: "master", group: "Association", ask: "Master policy declarations page: carrier, wind deductible, flood policy (RCBAP) and limits, per-unit deductible, loss assessment history.", who: "Association, its insurance agent", unlocks: "association.masterDeductible" },
+  { id: "litigation", group: "Association", ask: "Any pending litigation, code violations, or open permits on the building?", who: "Association, city permit portal, Broward clerk search", unlocks: "association.litigation" },
+  { id: "rules", group: "Association", ask: "Rental minimum term, approval process, pet rules, age restriction (55+?), parking assignment, owner-occupancy ratio.", who: "Rules, FAQ sheet", unlocks: "association.rentalMinDays" },
+  { id: "delinquency", group: "Association", ask: "What share of units are 60+ days delinquent? How many units does any single owner hold?", who: "Lender questionnaire, association", unlocks: "association.delinquencyPct" },
+  { id: "warrantable", group: "Financing", ask: "Ask your lender to run the full condo project review before you waive financing contingencies.", who: "Lender", unlocks: "financing.warrantable" },
+  // Hazards
+  { id: "floodzone", group: "Hazards", ask: "Confirm the FEMA flood zone and base flood elevation on the 2024 effective coastal maps, and get the elevation certificate.", who: "City Building Division 954-786-4669, floodzoneinfo@copbfl.com; FEMA Map Service Center", unlocks: "location.floodZone" },
+  { id: "floodquote", group: "Hazards", ask: "Get an NFIP or private flood contents quote for the unit.", who: "Insurance agent", unlocks: "insurance.floodAnnual" },
+  { id: "history", group: "Hazards", ask: "Any history of water intrusion, mold remediation, or insurance claims on the building (CLUE report)?", who: "Seller disclosure, association, CLUE report", unlocks: "building.claimsHistory" },
+  // Title and taxes
+  { id: "estoppel", group: "Closing", ask: "Order the estoppel certificate early (fee capped at $250, 10 business days).", who: "Title company", unlocks: "association.estoppelReceived" },
+  { id: "taxes", group: "Closing", ask: "Model taxes on the purchase price, not the seller's bill. Seller's capped assessment resets at closing.", who: "Broward Property Appraiser tax estimator", unlocks: "taxes.annualEstimate" },
+];
+
+// ---- src/knowledge/places.js
+// South Florida employment hubs for the commute model when no geocoder is reachable. Coordinates are approximate (within about half a mile).
+const HUBS = [
+  { id: "ftl-downtown", name: "Downtown Fort Lauderdale (Las Olas / Brickell Ave)", lat: 26.1224, lon: -80.1373 },
+  { id: "fll", name: "Fort Lauderdale-Hollywood Airport (FLL) / Port Everglades", lat: 26.0726, lon: -80.1527 },
+  { id: "broward-health", name: "Broward Health Medical Center", lat: 26.1030, lon: -80.1430 },
+  { id: "holy-cross", name: "Holy Cross Health (Fort Lauderdale)", lat: 26.1880, lon: -80.1200 },
+  { id: "cypress-creek", name: "Cypress Creek office district (Fort Lauderdale)", lat: 26.2030, lon: -80.1430 },
+  { id: "pompano-downtown", name: "Downtown Pompano Beach (Atlantic Blvd)", lat: 26.2379, lon: -80.1248 },
+  { id: "pompano-industrial", name: "Pompano Beach industrial / Copans Rd", lat: 26.2550, lon: -80.1500 },
+  { id: "broward-health-north", name: "Broward Health North (Deerfield Beach)", lat: 26.2890, lon: -80.1120 },
+  { id: "deerfield-office", name: "Deerfield Beach Hillsboro Blvd offices (I-95)", lat: 26.3180, lon: -80.1300 },
+  { id: "boca-downtown", name: "Downtown Boca Raton / Mizner Park", lat: 26.3500, lon: -80.0840 },
+  { id: "boca-fau", name: "Boca Raton Town Center / FAU / Office Depot campus", lat: 26.3660, lon: -80.1300 },
+  { id: "coral-springs", name: "Coral Springs (University Dr / Sample Rd)", lat: 26.2710, lon: -80.2706 },
+  { id: "sawgrass", name: "Sunrise / Sawgrass corporate park", lat: 26.1510, lon: -80.3260 },
+  { id: "plantation-midtown", name: "Plantation Midtown (Broward Blvd / University)", lat: 26.1200, lon: -80.2530 },
+  { id: "nova-davie", name: "Davie (Nova Southeastern / Broward College)", lat: 26.0790, lon: -80.2420 },
+  { id: "weston", name: "Weston Town Center", lat: 26.1000, lon: -80.4000 },
+  { id: "memorial-hollywood", name: "Memorial Regional Hospital (Hollywood)", lat: 26.0150, lon: -80.1550 },
+  { id: "aventura", name: "Aventura", lat: 25.9560, lon: -80.1390 },
+  { id: "miami-brickell", name: "Downtown Miami / Brickell", lat: 25.7650, lon: -80.1930 },
+  { id: "mia", name: "Miami International Airport / Doral", lat: 25.7950, lon: -80.2870 },
+  { id: "wpb", name: "Downtown West Palm Beach", lat: 26.7150, lon: -80.0530 },
+];
+
+function haversineMiles(lat1, lon1, lat2, lon2) {
+  const R = 3958.8, toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// Drive-time estimate for Broward and neighbors: road distance about 1.35x straight line, 26 mph average door to door in peak, plus 5 minutes to park.
+function commute(from, to) {
+  if (!from?.lat || !to?.lat) return null;
+  const straight = haversineMiles(from.lat, from.lon, to.lat, to.lon);
+  const road = straight * 1.35;
+  const peakMin = Math.round((road / 26) * 60 + 5);
+  const offPeakMin = Math.round((road / 34) * 60 + 4);
+  return { miles: Math.round(road * 10) / 10, peakMin, offPeakMin };
+}
+
+// ---- src/engine/costs.js
+// Carrying-cost model. Pure functions, no I/O. Everything returns numbers in USD.
+
+function monthlyPayment(principal, annualRate, years = 30) {
+  if (principal <= 0) return 0;
+  const r = annualRate / 12;
+  const n = years * 12;
+  if (r === 0) return principal / n;
+  return (principal * r) / (1 - Math.pow(1 + r, -n));
+}
+
+function millageFor(city) {
+  return FLORIDA.tax.millage[city] || FLORIDA.tax.millage._default;
+}
+
+// Florida property tax estimate on a fresh purchase.
+function estimateTaxes({ price, millageTable, homestead = false }) {
+  const m = millageTable;
+  if (!m) return null;
+  const justValue = price * FLORIDA.tax.justValueRatioOfSale;
+  const nonSchoolMillage = m.total - m.school;
+  let taxable = justValue;
+  let taxableSchool = justValue;
+  if (homestead) {
+    taxable = Math.max(0, justValue - FLORIDA.tax.homesteadExemptionUsd);
+    taxableSchool = Math.max(0, justValue - FLORIDA.tax.homesteadExemptionSchoolUsd);
+  }
+  const annual = (taxable * nonSchoolMillage + taxableSchool * m.school) / 1000;
+  return {
+    justValue: Math.round(justValue),
+    taxableValue: Math.round(taxable),
+    millage: m.total,
+    millageEstimated: Boolean(m.estimated),
+    annual: Math.round(annual),
+    monthly: Math.round(annual / 12),
+    homestead,
+    note: (homestead
+      ? "Homestead: $50,000 exemption ($25,000 against school levy); future assessment growth capped at 3%/yr."
+      : "Non-homestead: assessment growth capped at 10%/yr; no exemption.") + (m.estimated ? " Millage is a county-typical estimate for this city." : ""),
+  };
+}
+
+// HOA when the listing does not state one.
+function estimateHoa(p) {
+  if (p.hoaMonthly !== undefined && p.hoaMonthly !== null && p.hoaMonthly !== "unknown") return { hoa: Number(p.hoaMonthly), estimated: false };
+  const sqft = p.sqft || 1000;
+  const age = p.yearBuilt ? new Date().getFullYear() - p.yearBuilt : 40;
+  const k = FLORIDA.hoaEstimatePerSqft;
+  const rate = p.type === "house" ? k.house : p.type === "townhouse" ? k.townhouse : age < 20 ? k.condoNew : k.condoOld;
+  return { hoa: Math.round(sqft * rate), estimated: rate > 0 };
+}
+
+function carryingCosts(facts, opts = {}) {
+  const p = facts.property;
+  const price = opts.price ?? p.listPrice;
+  const downPct = opts.downPct ?? 0.2;
+  const rate = opts.rate ?? facts.financing?.rate ?? FLORIDA.mortgage.rate30yr;
+  const homestead = opts.homestead ?? true;
+  const loanType = opts.loanType ?? "conventional";
+  const millage = millageFor(p.city);
+
+  const loan = price * (1 - downPct);
+  const pi = monthlyPayment(loan, rate);
+  const taxes = estimateTaxes({ price, millageTable: millage, homestead });
+  const ins = facts.insurance || {};
+  const isHouse = p.type === "house";
+  const ho6 = ins.ho6Annual ?? avg(isHouse ? FLORIDA.insurance.ho3AnnualRange : FLORIDA.insurance.ho6AnnualRange);
+  const floodExposed = /^(A|V)/.test(facts.location?.floodZone || "") || facts.location?.barrierIsland;
+  const flood = ins.floodAnnual ?? (floodExposed ? avg(FLORIDA.insurance.floodContentsAnnualRange) * (isHouse ? 2.5 : 1) : 0);
+  const hoaInfo = estimateHoa(p);
+  const utilities = opts.utilitiesMonthly ?? estimateUtilities(p.sqft, isHouse);
+  const pmi = downPct < 0.2 ? (loan * (loanType === "fha" ? FLORIDA.insurance.fhaMipAnnualPct : FLORIDA.insurance.pmiAnnualPctOfLoan)) / 12 : 0;
+
+  const monthly = {
+    principalAndInterest: Math.round(pi),
+    pmi: Math.round(pmi),
+    taxes: taxes ? taxes.monthly : null,
+    hoa: hoaInfo.hoa,
+    ho6: Math.round(ho6 / 12),
+    flood: Math.round(flood / 12),
+    utilities,
+  };
+  const total = Object.values(monthly).reduce((a, b) => a + (b || 0), 0);
+  const cashToClose = Math.round(price * downPct + price * FLORIDA.dti.closingCostPct);
+
+  return {
+    assumptions: { price, downPct, rate, homestead, loanType, termYears: 30, loan: Math.round(loan), ho6Annual: Math.round(ho6), floodAnnual: Math.round(flood), hoaEstimated: hoaInfo.estimated, insuranceKind: isHouse ? "HO-3 (house, with windstorm)" : "HO-6 (unit owner)" },
+    monthly,
+    totalMonthly: total,
+    housingCostForDti: total - monthly.utilities,
+    totalMonthlyExcludingMortgage: total - monthly.principalAndInterest - monthly.pmi,
+    cashToClose,
+    taxes,
+  };
+}
+
+function estimateUtilities(sqft = 900, isHouse = false) {
+  // Electric (South Florida, cooling-heavy) plus water/sewer where not in the HOA fee.
+  return Math.round((isHouse ? 160 : 110) + (sqft / 1000) * 60);
+}
+
+function avg([a, b]) {
+  return (a + b) / 2;
+}
+
+// Project monthly HOA and total carry over N years under a scenario.
+function projection(carry, { years = 10, hoaGrowthPct = 7, insuranceGrowthPct = 6, taxGrowthPct = 3, specialAssessments = [] } = {}) {
+  const rows = [];
+  let hoa = carry.monthly.hoa;
+  let ho6 = carry.monthly.ho6;
+  let flood = carry.monthly.flood;
+  let taxes = carry.monthly.taxes || 0;
+  const pi = carry.monthly.principalAndInterest + (carry.monthly.pmi || 0);
+  const util = carry.monthly.utilities;
+  const start = new Date().getFullYear();
+  for (let y = 0; y <= years; y++) {
+    const year = start + y;
+    const sa = specialAssessments.filter((s) => s.year === year).reduce((a, s) => a + s.amount, 0);
+    rows.push({
+      year,
+      hoa: Math.round(hoa),
+      insurance: Math.round(ho6 + flood),
+      taxes: Math.round(taxes),
+      monthly: Math.round(pi + hoa + ho6 + flood + taxes + util),
+      specialAssessment: sa,
+      annualTotal: Math.round((pi + hoa + ho6 + flood + taxes + util) * 12 + sa),
+    });
+    hoa *= 1 + hoaGrowthPct / 100;
+    ho6 *= 1 + insuranceGrowthPct / 100;
+    flood *= 1 + Math.min(18, insuranceGrowthPct + 4) / 100; // NFIP glide path allows up to 18%/yr
+    taxes *= 1 + taxGrowthPct / 100;
+  }
+  return rows;
+}
+
+// Rental math for an investor view.
+function rentalMath(facts, carry) {
+  const rent = facts.rents?.estimateMonthly;
+  if (!rent) return null;
+  const price = carry.assumptions.price;
+  const vacancyPct = 8;
+  const mgmtPct = facts.rents?.managementPct ?? 8;
+  const gross = rent * 12;
+  const effective = gross * (1 - vacancyPct / 100);
+  const opex = (carry.monthly.hoa + carry.monthly.ho6 + carry.monthly.flood + (carry.monthly.taxes || 0)) * 12 + effective * (mgmtPct / 100) + 600; // repairs
+  const noi = effective - opex;
+  return {
+    rentMonthly: rent,
+    grossYieldPct: round1((gross / price) * 100),
+    capRatePct: round1((noi / price) * 100),
+    noiAnnual: Math.round(noi),
+    cashFlowMonthly: Math.round(noi / 12 - carry.monthly.principalAndInterest - (carry.monthly.pmi || 0)),
+    assumptions: { vacancyPct, managementPct: mgmtPct, repairsAnnual: 600, note: "Taxes shown use the homestead figure if the carry model did; a rental pays non-homestead taxes, about 20% more." },
+  };
+}
+
+function round1(x) {
+  return Math.round(x * 10) / 10;
+}
+
+// ---- src/engine/rules.js
+// Rules engine: turns facts into watch items on a time horizon.
+// A rule may fire on a known fact, or on an unknown one (then it asks for the fact).
+// Horizons: now (before closing), 1-3y, 3-10y, 10-30y.
+// Severity: critical > high > watch > info. "verify" marks items that depend on an unknown.
+
+const YEAR = new Date().getFullYear();
+
+const unknown = (v) => v === undefined || v === null || v === "unknown";
+
+function runRules(facts) {
+  const items = [];
+  const add = (item) => items.push({ confidence: "high", ...item });
+  const p = facts.property || {};
+  const loc = facts.location || {};
+  const b = facts.building || {};
+  const a = facts.association || {};
+  const mk = facts.market || {};
+  const fin = facts.financing || {};
+  const age = p.yearBuilt ? YEAR - p.yearBuilt : null;
+  const isCondo = p.type === "condo";
+
+  // ---------- Listing integrity ----------
+  if (p.listingDiscrepancies?.length) {
+    add({
+      id: "listing-discrepancy", horizon: "now", severity: "high", title: "Listing facts disagree across sites",
+      why: p.listingDiscrepancies.join(" "),
+      action: "Pull the Property Appraiser record and the condo declaration exhibit for the unit; price on the recorded square footage and bath count.",
+    });
+  }
+  if (p.priceHistory?.length >= 2) {
+    const first = p.priceHistory[0].price;
+    const last = p.priceHistory[p.priceHistory.length - 1].price;
+    const cut = Math.round((1 - last / first) * 100);
+    if (cut >= 10) {
+      add({
+        id: "price-cuts", horizon: "now", severity: "watch", title: `Asking price cut ${cut}% since first listing`,
+        why: `From $${first.toLocaleString()} to $${last.toLocaleString()} over ${p.priceHistory.length - 1} reductions. Long market time plus repeated cuts means the seller is motivated and buyers who looked walked away, often after reading the condo documents or getting a lending answer.`,
+        action: "Ask the agent why earlier contracts fell through. Offer below asking with a financing and document-review contingency.",
+      });
+    }
+  }
+  if (p.daysOnMarket && p.daysOnMarket > 120) {
+    add({
+      id: "dom", horizon: "now", severity: "watch", title: `${p.daysOnMarket}+ days on market`,
+      why: `Median market time for condos in this market is far shorter. Stale listings carry negotiating room and, sometimes, a reason.`,
+      action: "Negotiate. Ask for the seller's own inspection reports and any prior buyer's inspection findings.",
+    });
+  }
+  if (p.zestimateMissing) {
+    add({
+      id: "no-avm", horizon: "now", severity: "info", title: "No automated valuation shown",
+      why: "Zillow shows no Zestimate for this unit. Thin sales data in the building, conflicting records, or an unusual unit mix can cause that. It also means appraisal risk if you finance.",
+      action: "Order a pre-offer broker price opinion or pay for an appraisal early.",
+    });
+  }
+
+  // ---------- Building age and systems ----------
+  if (age !== null) {
+    if (age >= 50) {
+      add({
+        id: "age", horizon: "now", severity: "high", title: `${age}-year-old building`,
+        why: "Original drain lines, electrical risers, roofing and waterproofing are all past or near their design life unless replaced. The HOA budget has to carry those replacements or they land as special assessments.",
+        action: "Get the capital-improvement history in writing: roof, re-pipe, electrical, waterproofing, paving, seawall.",
+      });
+    }
+    if (p.yearBuilt < 1975 && unknown(b.drainsReplaced)) {
+      add({
+        id: "cast-iron", horizon: "1-3y", severity: "high", confidence: "medium", title: "Cast-iron drain lines likely original",
+        why: `${LIFECYCLES.castIronDrain.note} At ${age} years these are past the ${LIFECYCLES.castIronDrain.life}-year mark. Failures show up as slow drains, sewer smell, and slab leaks; building-wide repipes in small South Florida buildings run $8,000 to $25,000 per unit.`,
+        action: "Pay for a sewer camera scope of the unit line and ask the board for the building's drain-line assessment.",
+      });
+    }
+    if (p.yearBuilt < 1980 && unknown(b.panelBrand)) {
+      add({
+        id: "electrical", horizon: "now", severity: "watch", confidence: "medium", title: "Electrical panel and service age",
+        why: LIFECYCLES.electricalPanel.note + " Insurers also price 60-year-old service equipment harshly.",
+        action: "Have the inspector photograph the unit panel and the main service; confirm the electrical recertification date.",
+      });
+    }
+    if (p.yearBuilt >= LIFECYCLES.aluminumWiringEra[0] && p.yearBuilt <= LIFECYCLES.aluminumWiringEra[1]) {
+      add({ id: "aluminum", horizon: "now", severity: "watch", title: "Aluminum branch wiring era", why: "Built in the 1965 to 1973 window when aluminum branch wiring was common.", action: "Inspector to check receptacles; insurers require copper pigtails." });
+    }
+    if (unknown(b.roofYear)) {
+      add({
+        id: "roof", horizon: "3-10y", severity: "watch", confidence: "medium", title: "Roof age unknown",
+        why: `Low-rise 1960s Florida condos usually carry flat modified-bitumen or tile roofs. Flat roofs last about ${LIFECYCLES.flatRoofModifiedBitumen.life} years; carriers now refuse or surcharge roofs older than 15 to 20 years, which flows into the master policy and your HOA fee.`,
+        action: "Get the roof permit history from the city permit portal and the master policy's roof schedule.",
+      });
+    } else {
+      const roofAge = YEAR - b.roofYear;
+      const life = b.roofType === "tile" ? LIFECYCLES.tileRoof.life : LIFECYCLES.flatRoofModifiedBitumen.life;
+      const left = life - roofAge;
+      add({
+        id: "roof", horizon: left <= 3 ? "1-3y" : left <= 10 ? "3-10y" : "10-30y", severity: left <= 3 ? "high" : "watch",
+        title: `Roof replaced ${b.roofYear}: about ${Math.max(0, left)} years of life left`,
+        why: `Typical life for this roof type is about ${life} years.`, action: "Confirm the reserve line for roofing covers the replacement.",
+      });
+    }
+    if (unknown(p.impactWindows)) {
+      add({
+        id: "windows", horizon: "now", severity: "watch", confidence: "medium", title: "Impact protection unknown",
+        why: "Opening protection drives both your HO-6 wind premium and the building's master policy. Non-impact windows on the coast also mean shutters every storm.",
+        action: "Ask for the wind mitigation report (OIR-B1-1802) for the building and the unit.",
+      });
+    }
+    // Broward 40/50-year recertification cadence
+    if (loc.county === "Broward" && age >= FLORIDA.browardRecert.firstAtYears) {
+      const firstDue = p.yearBuilt + FLORIDA.browardRecert.firstAtYears;
+      let next = firstDue;
+      while (next <= YEAR) next += FLORIDA.browardRecert.repeatEveryYears;
+      const last = next - FLORIDA.browardRecert.repeatEveryYears;
+      add({
+        id: "recert", horizon: next - YEAR <= 3 ? "1-3y" : "3-10y", severity: "high", title: `Broward recertification: last due ${last}, next due ${next}`,
+        why: `${FLORIDA.browardRecert.note} The ${last} report (structural and electrical) tells you what an engineer found and what the board was ordered to fix. The ${next} cycle will produce the next repair list.`,
+        action: `Obtain the ${last} recertification report and proof the city closed it out. Budget for ${next}.`,
+      });
+    }
+  }
+
+  // ---------- Florida condo law ----------
+  if (isCondo) {
+    const stories = b.habitableStories;
+    if (unknown(stories)) {
+      add({
+        id: "stories", horizon: "now", severity: "high", title: "Confirm habitable stories: it decides which state inspection laws apply",
+        why: "Three or more habitable stories triggers the milestone inspection and the Structural Integrity Reserve Study (SIRS), with reserves that cannot be waived. Under three stories, reserves can still be waived by vote, which is how low fees stay low.",
+        action: "Ask the association; the declaration's survey exhibit shows it.",
+      });
+    } else if (stories >= FLORIDA.condoLaw.milestoneInspection.appliesToHabitableStories) {
+      add({
+        id: "milestone", horizon: "now", severity: "critical", title: "Milestone inspection and SIRS required",
+        why: `Building age ${age} is past the ${FLORIDA.condoLaw.milestoneInspection.ageYears}-year trigger. SIRS reserves had to be funded in the budget from ${FLORIDA.condoLaw.sirs.fundingStarts}.`,
+        action: "Get the Phase 1 (and Phase 2 if ordered) milestone report and the SIRS. No report means non-compliance and a DBPR enforcement risk.",
+      });
+    } else {
+      add({
+        id: "exempt-sirs", horizon: "now", severity: "watch", title: "Exempt from milestone inspection and SIRS, so reserves can be waived",
+        why: FLORIDA.condoLaw.nonSirsReserves.note,
+        action: "Read the last three budgets for 'reserves waived' or 'partially funded' votes.",
+      });
+    }
+
+    // Fee adequacy heuristic: dollars per sqft per month vs what a coastal building this age needs.
+    if (p.hoaMonthly && p.sqft && age !== null) {
+      const perSqft = p.hoaMonthly / p.sqft;
+      const needed = age >= 50 ? 0.55 : age >= 30 ? 0.45 : 0.35; // $/sqft/month incl. insurance and reserves, small coastal low-rise
+      if (perSqft < needed * 0.6) {
+        add({
+          id: "fee-low", horizon: "1-3y", severity: "high", title: `HOA fee of $${p.hoaMonthly}/mo looks too low for this building`,
+          why: `That is $${perSqft.toFixed(2)} per sq ft per month. A ${age}-year-old coastal low-rise with insurance, water, reserves and a roof to replace typically needs $${needed.toFixed(2)} or more. Low fees are usually either waived reserves, a self-insured or thinly insured master policy, or utilities billed separately. Expect the fee to rise or a special assessment to appear.`,
+          action: `Model the fee at $${Math.round(needed * p.sqft)}/mo and ask what is excluded (water, insurance, reserves).`,
+        });
+      }
+    }
+    if (unknown(a.reservesUsd)) {
+      add({ id: "reserves", horizon: "now", severity: "high", title: "Reserve balance unknown", why: "Reserves are the difference between a fee increase and a five-figure special assessment.", action: "Year-end balance sheet and the current budget's reserve schedule." });
+    }
+    if (unknown(a.masterDeductible)) {
+      add({ id: "master", horizon: "now", severity: "high", title: "Master insurance terms unknown", why: `Master policy wind deductibles of 5% to 10% of insured value are common now, and the per-unit share can reach $10,000 to $50,000 after a storm. From ${FLORIDA.lending.masterDeductibleCapPerUnitUsd.from} agency lenders cap the per-unit deductible at $${FLORIDA.lending.masterDeductibleCapPerUnitUsd.amount.toLocaleString()}.`, action: "Get the master declarations page; buy loss-assessment coverage on your HO-6." });
+    }
+    if (unknown(a.rentalMinDays) || unknown(a.pets) || unknown(a.ageRestricted)) {
+      add({ id: "rules", horizon: "now", severity: "watch", title: "Rental, pet and age rules unknown", why: "Neighboring buildings on this street list no pets and seasonal minimums; some 1960s buildings on this coast are 55+. Each rule changes who can buy from you later.", action: "Rules and FAQ sheet from the 718.503 package." });
+    }
+    if (unknown(a.specialAssessments)) {
+      add({ id: "sa", horizon: "now", severity: "high", title: "Special assessment status unknown", why: "Assessments already voted follow the unit; assessments under discussion appear only in the minutes.", action: "Estoppel certificate plus 24 months of minutes." });
+    }
+    // Lending
+    if (unknown(fin.warrantable)) {
+      add({
+        id: "warrantable", horizon: "now", severity: "critical", title: "Agency financing may not be available",
+        why: `Fannie Mae and Freddie Mac retired the Limited Review on ${FLORIDA.lending.limitedReviewRetired}. A full review needs reserves of at least ${FLORIDA.lending.minReservesPctOfBudget}% of the budget (${FLORIDA.lending.minReservesPctOfBudgetFrom.pct}% from ${FLORIDA.lending.minReservesPctOfBudgetFrom.date}), adequate master insurance, no significant deferred maintenance, and delinquencies under ${FLORIDA.lending.delinquencyRedFlagPct}%. A ${age}-year-old building with a $${p.hoaMonthly}/mo fee is exactly the profile that fails. If it fails, your buyer pool at resale is cash and portfolio loans.`,
+        action: "Have the lender complete the condo questionnaire and project review before the financing contingency expires. Price a portfolio loan as a fallback.",
+      });
+    }
+    // Termination / redevelopment on a large parcel
+    if (p.lotAcres && p.lotAcres >= 0.5 && age >= 50 && loc.barrierIsland) {
+      add({
+        id: "termination", horizon: "10-30y", severity: "watch", title: "Redevelopment and condo-termination exposure",
+        why: `${p.lotAcres} acres on a barrier island one block from the beach, under a ${age}-year-old low-rise, is worth more as land to a developer than as the sum of its units. ${FLORIDA.condoLaw.termination.note} That can be a windfall or a forced sale at an appraised price you did not choose.`,
+        action: "Read the declaration's termination clause and check whether any owner or LLC is accumulating units.",
+      });
+    }
+  }
+
+  // ---------- Hazards ----------
+  if (loc.evacuationZone === "A") {
+    add({ id: "evac", horizon: "now", severity: "high", title: "Evacuation Zone A", why: FLORIDA.evacuation.Broward.A + " You will be ordered out for every hurricane that threatens, which also means Zone A traffic, shutters, and a week without power on return.", action: "Have a plan and a place to go. Budget for generator-free living." });
+  }
+  if (unknown(loc.floodZone)) {
+    add({ id: "flood-zone", horizon: "now", severity: "high", title: "FEMA flood zone not confirmed", why: "New coastal maps took effect July 31, 2024. Barrier-island parcels here are usually AE (base flood elevation about 6 to 7 ft) with pockets of X on the ridge. Zone decides lender flood insurance requirements and the NFIP price.", action: "FEMA Map Service Center lookup, then the city Building Division; request the elevation certificate." });
+  } else if (/^(A|V)/.test(loc.floodZone)) {
+    add({ id: "flood-zone", horizon: "now", severity: "high", title: `Special Flood Hazard Area (${loc.floodZone})`, why: "Lenders require flood insurance; NFIP Risk Rating 2.0 premiums can rise up to 18% a year until they reach full risk price.", action: "Get the elevation certificate and quotes." });
+  }
+  if (loc.barrierIsland || (loc.distanceToCoastFt && loc.distanceToCoastFt < 2000)) {
+    add({
+      id: "wind", horizon: "10-30y", severity: "high", title: "Hurricane wind and surge exposure",
+      why: "First Street models an extreme wind factor here with a 99% chance of a damaging wind event in 30 years. Wilma (2005) stripped roofs across Pompano; Irma (2017) and Nicole (2022) took beach sand from NE 16th St north to the inlet.",
+      action: "Impact openings, a roof with a current permit, and a master policy with a deductible you can fund.",
+    });
+    add({
+      id: "slr", horizon: "10-30y", severity: "watch", title: `Sea level: +${FLORIDA.seaLevel.by2040InchesRange[0]} to ${FLORIDA.seaLevel.by2040InchesRange[1]} in by 2040, +${FLORIDA.seaLevel.by2070InchesRange[0]} to ${FLORIDA.seaLevel.by2070InchesRange[1]} in by 2070`,
+      why: "Unified Southeast Florida projection. On a barrier island between the Intracoastal and the ocean, this shows up first as king-tide street flooding and salt in the stormwater system, then as insurance and resale friction. Broward's seawall standard rises to 5 ft NAVD by 2050.",
+      action: "Check the city's 2025 Vulnerability Assessment maps for this street and ask how the drainage was upgraded.",
+    });
+    if (unknown(loc.elevationFt)) {
+      add({ id: "elev", horizon: "now", severity: "watch", title: "Finished-floor elevation unknown", why: "A first-floor unit at grade on a 5 ft parcel and a second-floor unit are different risks and different premiums.", action: "Elevation certificate; floor number." });
+    }
+  }
+  add({ id: "heat", horizon: "10-30y", severity: "info", title: "Heat and cooling cost", why: "First Street rates heat risk here as extreme; days above 100°F heat index roughly double by 2050. Cooling is most of a Florida electric bill, and old window units or an undersized split system in a 1963 building cost more each year.", action: "HVAC age and SEER rating; insulation above the top floor." });
+
+  // ---------- Market ----------
+  if (mk.monthsOfSupply && mk.monthsOfSupply > 6) {
+    add({ id: "buyers-market", horizon: "now", severity: "info", title: `Buyer's market: ${mk.monthsOfSupply} months of condo supply`, why: `More than six months of supply favors buyers. ${mk.note || ""}`.trim(), action: "Offer below asking; ask for seller concessions toward rate buy-down or the first year of HOA." });
+  }
+  if (mk.vintageHeadwind) {
+    add({ id: "vintage", horizon: "1-3y", severity: "watch", title: "Older-building discount is widening", why: mk.vintageHeadwind, action: "Underwrite for flat to negative price growth for 3 years; the upside is the land and the location, not the building." });
+  }
+  if (facts.development?.length) {
+    for (const d of facts.development) {
+      add({ id: `dev-${d.id}`, horizon: d.horizon || "1-3y", severity: d.severity || "info", title: d.title, why: d.why, action: d.action || "Track the city planning agenda.", confidence: d.confidence || "medium" });
+    }
+  }
+
+  // ---------- Rental and use ----------
+  if (facts.rents?.estimateMonthly && p.listPrice) {
+    const gross = (facts.rents.estimateMonthly * 12) / p.listPrice;
+    add({ id: "rent", horizon: "now", severity: "info", title: `Gross rent yield about ${(gross * 100).toFixed(1)}%`, why: `Comparable units in this building rented around $${facts.rents.estimateMonthly.toLocaleString()}/mo. After HOA, taxes, insurance and vacancy the cap rate lands near 3 to 5%, below a 7.3% mortgage, so this is a negative-leverage rental today.`, action: "Confirm the association's rental minimum and approval process before underwriting as a rental." });
+  }
+  const str = FLORIDA.shortTermRental[p.city];
+  if (str) {
+    add({ id: "str", horizon: "now", severity: "info", title: "Short-term rental needs a city permit and the association's consent", why: `${p.city} requires an annual permit ($${str.initialFeeUsd} initial, $${str.renewalFeeUsd} renewal), a local contact within ${str.contactWithinMiles} miles, and inspections. Most small condos here set a 30 to 90 day minimum, which rules out nightly rentals regardless of the city permit.`, action: "Read the rental section of the declaration first." });
+  }
+
+  // ---------- Tax ----------
+  add({ id: "tax-reset", horizon: "now", severity: "watch", title: "Property tax resets to the purchase price at closing", why: "The seller's capped assessment does not transfer. Use the purchase-price estimate in the cost section, not the current tax bill. Homestead filing by March 1 after closing caps future growth at 3%.", action: "File for homestead the January after closing if this is your primary home." });
+  add({ id: "homestead-2027", horizon: "1-3y", severity: "info", title: "Possible larger homestead exemption from 2027", why: "A 2026 ballot measure would raise the non-school homestead exemption to $150,000 in 2027 and $250,000 in 2028 and cut the non-homestead cap to 5%. If it passes, taxes on a primary residence fall; if not, nothing changes.", action: "Re-run the tax estimate after the November 2026 result.", confidence: "low" });
+
+  // Sort: horizon order then severity
+  const H = { now: 0, "1-3y": 1, "3-10y": 2, "10-30y": 3 };
+  const S = { critical: 0, high: 1, watch: 2, info: 3 };
+  items.sort((x, y) => H[x.horizon] - H[y.horizon] || S[x.severity] - S[y.severity]);
+  return items;
+}
+
+const HORIZON_LABELS = { now: "Before you close", "1-3y": "Years 1 to 3", "3-10y": "Years 3 to 10", "10-30y": "Years 10 to 30" };
+
+// ---- src/engine/score.js
+// Dimension grades. Each grade is A to F with a one-line reason, derived from facts and watch items.
+// The verdict is a plain-language stance, not a number, because a single score hides the trade-offs.
+
+function grade(facts, watch, carry) {
+  const p = facts.property || {};
+  const loc = facts.location || {};
+  const mk = facts.market || {};
+  const sev = (id) => watch.find((w) => w.id === id)?.severity;
+  const count = (s) => watch.filter((w) => w.severity === s).length;
+
+  const dims = [];
+
+  // Price vs market
+  {
+    const ppsf = p.listPrice && p.sqft ? p.listPrice / p.sqft : null;
+    const mkt = mk.medianPricePerSqft;
+    let g = "C", why = "No market price-per-square-foot comparison available.";
+    if (ppsf && mkt) {
+      const ratio = ppsf / mkt;
+      g = ratio < 0.8 ? "A" : ratio < 0.95 ? "B" : ratio < 1.1 ? "C" : "D";
+      why = `$${Math.round(ppsf)}/sq ft asked against about $${Math.round(mkt)}/sq ft for comparable listings nearby. ${sev("price-cuts") ? "Multiple price cuts already taken." : ""}`.trim();
+    }
+    dims.push({ key: "price", label: "Asking price", grade: g, why });
+  }
+  // Carrying cost: the costs that belong to the home (taxes, HOA, insurance, utilities), not to your mortgage rate.
+  {
+    const own = carry ? carry.totalMonthlyExcludingMortgage : null;
+    const ratio = own && p.listPrice ? (own * 12) / p.listPrice : null;
+    let g = "C", why = "Carrying cost not modeled.";
+    if (ratio) {
+      g = ratio < 0.03 ? "A" : ratio < 0.042 ? "B" : ratio < 0.055 ? "C" : "D";
+      why = `About $${own.toLocaleString()}/mo in taxes, HOA, insurance and utilities (${(ratio * 100).toFixed(1)}% of price per year) on top of $${carry.totalMonthly - own}/mo of mortgage${carry.monthly.pmi ? " and PMI" : ""} at ${Math.round(carry.assumptions.downPct * 100)}% down.${carry.assumptions.hoaEstimated ? " HOA is an estimate." : ""}`;
+    }
+    dims.push({ key: "carry", label: "Cost to own", grade: g, why });
+  }
+  // Building condition
+  {
+    const age = p.yearBuilt ? new Date().getFullYear() - p.yearBuilt : null;
+    const unknowns = ["cast-iron", "roof", "electrical", "windows"].filter((id) => watch.find((w) => w.id === id && w.confidence !== "high")).length;
+    let g = age === null ? "C" : age >= 50 ? "D" : age >= 30 ? "C" : age >= 10 ? "B" : "A";
+    if (facts.building?.drainsReplaced && facts.building?.roofYear && new Date().getFullYear() - facts.building.roofYear < 10 && g === "D") g = "C";
+    const kind = p.type === "house" ? "house" : p.type === "townhouse" ? "townhouse" : "building";
+    dims.push({ key: "building", label: "Building", grade: g, why: age === null ? `Year built unknown; ${unknowns} major systems have no documented replacement date.` : `${age}-year-old ${kind}. ${unknowns} major systems have no documented replacement date.` });
+  }
+  // Association health (a house with no association gets a pass on this dimension)
+  {
+    if (p.type === "house" && !p.hoaMonthly) {
+      dims.push({ key: "association", label: "Association", grade: "A", why: "No association. You control the maintenance budget, and you carry all of it." });
+    } else {
+      const bad = ["fee-low", "reserves", "sa", "master"].filter((id) => ["high", "critical"].includes(sev(id))).length;
+      const g = bad === 0 ? "B" : bad <= 2 ? "D" : "F";
+      dims.push({ key: "association", label: "Association", grade: g, why: bad ? `${bad} of 4 core financial facts are missing or alarming (fee level, reserves, assessments, master insurance).` : "Core financial facts documented." });
+    }
+  }
+  // Hazards
+  {
+    let g = "C";
+    if (loc.evacuationZone === "B") g = "C";
+    if (loc.evacuationZone === "C" || loc.evacuationZone === "none") g = "B";
+    if (loc.barrierIsland || loc.evacuationZone === "A") g = "D";
+    if (/^V/.test(loc.floodZone || "")) g = "F";
+    if (/^X/.test(loc.floodZone || "") && !loc.barrierIsland) g = "B";
+    dims.push({ key: "hazard", label: "Hazards", grade: g, why: `${loc.barrierIsland ? "Barrier island, evacuation zone A." : ""} Flood zone ${loc.floodZone || "unconfirmed"}. Extreme wind and heat exposure.`.trim() });
+  }
+  // Location and lifestyle
+  {
+    const g = loc.walkScore >= 70 ? "A" : loc.distanceToBeachFt && loc.distanceToBeachFt < 1500 ? "A" : loc.walkScore >= 50 ? "B" : loc.walkScore ? "C" : "C";
+    dims.push({ key: "location", label: "Location", grade: g, why: loc.summary || (loc.neighborhood ? `${loc.neighborhood}.` : "No location summary.") });
+  }
+  // Liquidity / resale
+  {
+    let g = "C";
+    if (sev("warrantable") === "critical") g = "D";
+    if (mk.monthsOfSupply > 8) g = g === "D" ? "D" : "C";
+    dims.push({ key: "resale", label: "Resale and financing", grade: g, why: `${mk.monthsOfSupply ? mk.monthsOfSupply + " months of condo supply." : ""} ${sev("warrantable") ? "Agency financing unconfirmed; a non-warrantable verdict halves the buyer pool." : ""}`.trim() });
+  }
+
+  const verdict = buildVerdict(facts, watch, dims, count);
+  return { dimensions: dims, verdict };
+}
+
+function buildVerdict(facts, watch, dims, count) {
+  const p = facts.property || {};
+  const crit = count("critical");
+  const high = count("high");
+  const location = dims.find((d) => d.key === "location")?.grade;
+  const assoc = dims.find((d) => d.key === "association")?.grade;
+  const stance = crit > 0 || assoc === "F" ? "Conditional" : high > 4 ? "Proceed with caution" : "Reasonable";
+  const lines = [];
+  const ageText = p.yearBuilt ? `in a ${new Date().getFullYear() - p.yearBuilt}-year-old ${p.type === "house" ? "house" : "building"}` : `${p.type === "house" ? "house" : "unit"} of unknown age`;
+  lines.push(`${stance}. ${p.beds ?? "?"}-bed, ${p.baths ?? "?"}-bath ${p.type === "house" ? "" : "unit "}${ageText}, ${location === "A" ? "in a location that is hard to replace" : "in a decent location"}, asking $${p.listPrice?.toLocaleString()}.`);
+  if (crit) lines.push(`${crit} item${crit > 1 ? "s" : ""} could end the deal: ${watch.filter((w) => w.severity === "critical").map((w) => w.title.toLowerCase()).join("; ")}.`);
+  lines.push(`${high} high-priority items need documents or an inspection before the contingency period ends. The price already reflects some of this; it does not reflect a special assessment or a non-warrantable verdict.`);
+  return { stance, summary: lines.join(" ") };
+}
+
+// ---- src/engine/afford.js
+// Affordability: what a household can carry, and how a given home sits against that.
+
+
+// profile: { grossAnnualIncome, monthlyDebts, cashAvailable, loanType, rate, homestead, creditTier }
+function budget(profile) {
+  const income = Number(profile.grossAnnualIncome) || 0;
+  const debts = Number(profile.monthlyDebts) || 0;
+  const cash = Number(profile.cashAvailable) || 0;
+  const monthlyIncome = income / 12;
+  const d = FLORIDA.dti;
+  const lim = (t) => Math.max(0, Math.min(monthlyIncome * t.front, monthlyIncome * t.back - debts));
+  return {
+    monthlyIncome: Math.round(monthlyIncome),
+    comfortableHousing: Math.round(lim(d.comfortable)),
+    stretchHousing: Math.round(lim(d.stretch)),
+    cashAvailable: cash,
+    minDownPct: d.minDownPct[profile.loanType === "fha" ? "fha" : "conventional"],
+    rate: Number(profile.rate) || FLORIDA.mortgage.rate30yr,
+  };
+}
+
+// Solve the maximum price for a representative home shape (type, sqft, hoa) under a housing-cost limit and the cash on hand.
+function maxPrice(profile, shape = { type: "condo", sqft: 1000, hoaMonthly: 450, city: "Pompano Beach", barrierIsland: false }, tier = "comfortable") {
+  const b = budget(profile);
+  const limit = tier === "stretch" ? b.stretchHousing : b.comfortableHousing;
+  if (limit <= 0) return { price: 0, limit, downPct: 0, reason: "No room under the debt-to-income limit." };
+  let lo = 0, hi = 3_000_000, best = null;
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    const r = evaluate(profile, shapeFacts(shape), mid, b);
+    if (r.fits(limit)) { best = { price: Math.round(mid), downPct: r.downPct, housing: r.carry.housingCostForDti, cashNeeded: r.carry.cashToClose }; lo = mid; } else hi = mid;
+  }
+  return best ? { ...best, limit } : { price: 0, limit, downPct: 0, reason: "Cash on hand does not cover the minimum down payment and closing costs at any price." };
+}
+
+function shapeFacts(s) {
+  return { property: { type: s.type, sqft: s.sqft, hoaMonthly: s.hoaMonthly, city: s.city, yearBuilt: s.yearBuilt || 1990, listPrice: 0 }, location: { barrierIsland: Boolean(s.barrierIsland) }, insurance: {} };
+}
+
+// Down payment: as much of the cash as possible after closing costs and a reserve, capped at the price, floored at the program minimum.
+function chooseDown(price, b, preferredDownPct) {
+  const closing = price * FLORIDA.dti.closingCostPct;
+  const available = Math.max(0, b.cashAvailable - closing);
+  let pct = preferredDownPct ?? 0.2;
+  if (price > 0 && available < price * pct) pct = available / price;
+  pct = Math.min(1, Math.max(0, pct));
+  return pct;
+}
+
+function evaluate(profile, facts, price, b = budget(profile)) {
+  const downPct = chooseDown(price, b, profile.preferredDownPct);
+  const carry = carryingCosts(facts, { price, downPct, rate: b.rate, homestead: profile.homestead !== false, loanType: profile.loanType || "conventional" });
+  const housing = carry.housingCostForDti;
+  const front = b.monthlyIncome ? housing / b.monthlyIncome : Infinity;
+  const back = b.monthlyIncome ? (housing + (Number(profile.monthlyDebts) || 0)) / b.monthlyIncome : Infinity;
+  const cashOk = carry.cashToClose <= b.cashAvailable + 1;
+  const downOk = downPct >= b.minDownPct - 1e-9;
+  const d = FLORIDA.dti;
+  const tier = front <= d.comfortable.front && back <= d.comfortable.back ? "comfortable" : front <= d.stretch.front && back <= d.stretch.back ? "stretch" : "over";
+  const reserveAfterClose = b.cashAvailable - carry.cashToClose;
+  return {
+    carry, downPct, housing, frontPct: Math.round(front * 1000) / 10, backPct: Math.round(back * 1000) / 10, tier, cashOk, downOk,
+    reserveAfterClose: Math.round(reserveAfterClose),
+    reserveMonths: housing ? Math.round((reserveAfterClose / housing) * 10) / 10 : 0,
+    fits: (limit) => housing <= limit && cashOk && downOk,
+  };
+}
+
+// ---- src/adapters/http.js
+// Small fetch wrapper: timeout, JSON, and a uniform result shape so a dead source never kills a report.
+async function getJSON(url, { timeoutMs = 8000, headers = {} } = {}) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { signal: ctl.signal, headers: { "user-agent": "Dossier/0.1 (+https://github.com/frizzyfrizwan/story)", ...headers } });
+    if (!res.ok) return { ok: false, status: res.status, error: `HTTP ${res.status}` };
+    return { ok: true, data: await res.json() };
+  } catch (e) {
+    return { ok: false, error: e.name === "AbortError" ? "timeout" : e.message };
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+async function postText(url, body, { timeoutMs = 20000 } = {}) {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { method: "POST", body, signal: ctl.signal, headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "Dossier/0.1" } });
+    if (!res.ok) return { ok: false, status: res.status, error: `HTTP ${res.status}` };
+    return { ok: true, data: await res.json() };
+  } catch (e) {
+    return { ok: false, error: e.name === "AbortError" ? "timeout" : e.message };
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+// ---- src/adapters/public.js
+// Free public data layers. Each adapter returns { source, status: "live"|"unavailable", data?, error? }.
+// All of these are US-government or open services with no API key.
+
+async function geocode(address) {
+  const url = `https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?address=${encodeURIComponent(address)}&benchmark=Public_AR_Current&format=json`;
+  const r = await getJSON(url);
+  const m = r.ok && r.data?.result?.addressMatches?.[0];
+  if (!m) return { source: "US Census Geocoder", status: "unavailable", error: r.error || "no match" };
+  return {
+    source: "US Census Geocoder",
+    status: "live",
+    data: { lat: m.coordinates.y, lon: m.coordinates.x, matched: m.matchedAddress, zip: m.addressComponents?.zip, city: m.addressComponents?.city, state: m.addressComponents?.state },
+  };
+}
+
+// FEMA National Flood Hazard Layer, layer 28 = flood hazard areas.
+async function floodZone(lat, lon) {
+  const geom = encodeURIComponent(JSON.stringify({ x: lon, y: lat, spatialReference: { wkid: 4326 } }));
+  const url = `https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query?geometry=${geom}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=FLD_ZONE,ZONE_SUBTY,STATIC_BFE,SFHA_TF,DFIRM_ID&returnGeometry=false&f=json`;
+  const r = await getJSON(url, { timeoutMs: 12000 });
+  const f = r.ok && r.data?.features?.[0]?.attributes;
+  if (!f) return { source: "FEMA NFHL", status: "unavailable", error: r.error || "no feature" };
+  return {
+    source: "FEMA NFHL",
+    status: "live",
+    data: { floodZone: f.FLD_ZONE, subtype: f.ZONE_SUBTY, baseFloodElevationFt: f.STATIC_BFE > -9000 ? f.STATIC_BFE : null, sfha: f.SFHA_TF === "T", firm: f.DFIRM_ID },
+  };
+}
+
+// USGS Elevation Point Query Service (ground elevation, NAVD88 feet).
+async function elevation(lat, lon) {
+  const url = `https://epqs.nationalmap.gov/v1/json?x=${lon}&y=${lat}&units=Feet&wkid=4326&includeDate=false`;
+  const r = await getJSON(url);
+  const v = r.ok && r.data?.value;
+  if (v === undefined || v === null) return { source: "USGS EPQS", status: "unavailable", error: r.error || "no value" };
+  return { source: "USGS EPQS", status: "live", data: { groundElevationFt: Math.round(Number(v) * 10) / 10 } };
+}
+
+// Census ACS 5-year profile for the ZIP Code Tabulation Area.
+async function acsProfile(zip, year = 2023) {
+  const vars = ["DP05_0018E", "DP03_0062E", "DP04_0046PE", "DP04_0003PE", "DP05_0001E"].join(",");
+  const url = `https://api.census.gov/data/${year}/acs/acs5/profile?get=${vars}&for=zip%20code%20tabulation%20area:${zip}`;
+  const r = await getJSON(url);
+  const row = r.ok && Array.isArray(r.data) && r.data[1];
+  if (!row) return { source: "US Census ACS 5-year", status: "unavailable", error: r.error || "no row" };
+  const [medianAge, income, ownerPct, vacantPct, pop] = row.map(Number);
+  return { source: `US Census ACS ${year} 5-year`, status: "live", data: { medianAge, medianHouseholdIncome: income, ownerOccupiedPct: ownerPct, vacantPct, population: pop } };
+}
+
+// OpenStreetMap Overpass: what is within walking distance.
+async function nearby(lat, lon, radiusM = 1600) {
+  const q = `[out:json][timeout:20];(
+    nwr(around:${radiusM},${lat},${lon})["shop"="supermarket"];
+    nwr(around:${radiusM},${lat},${lon})["amenity"~"^(hospital|pharmacy|school|fire_station|police)$"];
+    nwr(around:${radiusM},${lat},${lon})["natural"="beach"];
+    nwr(around:${radiusM},${lat},${lon})["leisure"~"^(park|marina)$"];
+    nwr(around:${radiusM},${lat},${lon})["public_transport"="stop_position"];
+  );out center 60;`;
+  const r = await postText("https://overpass-api.de/api/interpreter", `data=${encodeURIComponent(q)}`);
+  if (!r.ok) return { source: "OpenStreetMap Overpass", status: "unavailable", error: r.error };
+  const items = (r.data.elements || []).map((e) => {
+    const la = e.lat ?? e.center?.lat, lo = e.lon ?? e.center?.lon;
+    return { name: e.tags?.name || e.tags?.amenity || e.tags?.shop || e.tags?.natural || e.tags?.leisure || "stop", kind: e.tags?.shop || e.tags?.amenity || e.tags?.natural || e.tags?.leisure || e.tags?.public_transport, distanceFt: Math.round(haversineM(lat, lon, la, lo) * 3.281) };
+  });
+  items.sort((a, b) => a.distanceFt - b.distanceFt);
+  return { source: "OpenStreetMap Overpass", status: "live", data: items.slice(0, 40) };
+}
+
+function haversineM(lat1, lon1, lat2, lon2) {
+  const R = 6371000, toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// NOAA CO-OPS tide stations with long-term sea level trends near Southeast Florida (mm/yr, NOAA Sea Level Trends).
+// Kept local because the trend table changes rarely and the API needs a station id anyway.
+const NOAA_TREND_STATIONS = [
+  { id: "8723170", name: "Miami Beach / Virginia Key", lat: 25.7314, lon: -80.1618, mmPerYear: 3.95, since: 1931 },
+  { id: "8722670", name: "Lake Worth Pier", lat: 26.6128, lon: -80.0339, mmPerYear: 4.84, since: 1970 },
+  { id: "8724580", name: "Key West", lat: 24.5557, lon: -81.8079, mmPerYear: 2.59, since: 1913 },
+];
+
+function nearestTrendStation(lat, lon) {
+  let best = null;
+  for (const s of NOAA_TREND_STATIONS) {
+    const d = haversineM(lat, lon, s.lat, s.lon);
+    if (!best || d < best.distanceM) best = { ...s, distanceM: Math.round(d) };
+  }
+  return best;
+}
+
+// ---- src/report.js
+// Report pipeline: facts in, dossier out.
+// facts can come from a researched sample, from a user's listing form, or from live adapters merged on top.
+
+
+
+
+
+
+function buildReport(facts, options = {}) {
+  const carry = carryingCosts(facts, options.carry);
+  const carryNonHomestead = carryingCosts(facts, { ...options.carry, homestead: false });
+  const watch = runRules(facts);
+  const grades = grade(facts, watch, carry);
+  const sa = inferSpecialAssessments(facts, watch);
+  const proj = projection(carry, { years: 10, specialAssessments: sa });
+  const rental = rentalMath(facts, carryNonHomestead);
+  const checklist = CHECKLIST.filter((c) => !isAnswered(facts, c.unlocks));
+  const byHorizon = {};
+  for (const w of watch) (byHorizon[w.horizon] ||= []).push(w);
+
+  return {
+    generatedAt: new Date().toISOString(),
+    meta: facts.meta,
+    facts,
+    verdict: grades.verdict,
+    grades: grades.dimensions,
+    costs: { homestead: carry, nonHomestead: carryNonHomestead, projection: proj, rental, specialAssessmentScenario: sa },
+    watch,
+    watchByHorizon: Object.keys(HORIZON_LABELS).map((h) => ({ horizon: h, label: HORIZON_LABELS[h], items: byHorizon[h] || [] })),
+    checklist,
+    reference: { florida: FLORIDA },
+    provenance: facts.provenance || [],
+  };
+}
+
+function isAnswered(facts, path) {
+  if (!path) return false;
+  const v = path.split(".").reduce((o, k) => (o ? o[k] : undefined), facts);
+  return v !== undefined && v !== null && v !== "unknown" && !(typeof v === "string" && v.startsWith("unknown"));
+}
+
+// A plausible special-assessment scenario for the projection, so the 10-year table is not a fantasy of flat fees.
+function inferSpecialAssessments(facts, watch) {
+  const out = [];
+  const year = new Date().getFullYear();
+  const units = Number(String(facts.building?.unitsInBuilding || "").match(/\d+/)?.[0]) || 6;
+  if (watch.find((w) => w.id === "cast-iron")) out.push({ year: year + 2, amount: 15000, label: "Drain-line repipe (share of building cost)" });
+  if (watch.find((w) => w.id === "roof" && w.confidence !== "high")) out.push({ year: year + 5, amount: Math.round(90000 / units), label: "Roof replacement share" });
+  if (watch.find((w) => w.id === "recert")) {
+    const m = watch.find((w) => w.id === "recert").title.match(/next due (\d{4})/);
+    if (m) out.push({ year: Number(m[1]), amount: 6000, label: "Recertification repairs" });
+  }
+  return out;
+}
+
+// Live enrichment: run every public adapter against an address and merge what comes back onto the facts.
+async function enrich(facts) {
+  const prov = [];
+  const address = [facts.property.address, facts.property.city, facts.property.state, facts.property.zip].filter(Boolean).join(", ");
+  const geo = await pub.geocode(address);
+  prov.push(geo);
+  if (geo.status !== "live") return { facts, provenance: prov };
+  const { lat, lon } = geo.data;
+  facts.location = { ...(facts.location || {}), lat, lon };
+  const [fz, el, acs, near] = await Promise.all([pub.floodZone(lat, lon), pub.elevation(lat, lon), pub.acsProfile(facts.property.zip), pub.nearby(lat, lon)]);
+  prov.push(fz, el, acs, near);
+  if (fz.status === "live") Object.assign(facts.location, { floodZone: fz.data.floodZone, baseFloodElevationFt: fz.data.baseFloodElevationFt, sfha: fz.data.sfha });
+  if (el.status === "live") facts.location.groundElevationFt = el.data.groundElevationFt;
+  if (acs.status === "live") facts.demographics = { ...(facts.demographics || {}), ...acs.data, source: acs.source };
+  if (near.status === "live") {
+    facts.location.nearby = near.data;
+    const beach = near.data.find((n) => n.kind === "beach");
+    if (beach && !facts.location.distanceToBeachFt) facts.location.distanceToBeachFt = beach.distanceFt;
+    const market = near.data.find((n) => n.kind === "supermarket");
+    if (market) facts.location.nearestSupermarket = market;
+  }
+  const st = pub.nearestTrendStation(lat, lon);
+  facts.location.seaLevelTrend = { station: st.name, mmPerYear: st.mmPerYear, since: st.since, distanceMiles: Math.round(st.distanceM / 1609) };
+  prov.push({ source: "NOAA Sea Level Trends (local table)", status: "live" });
+  facts.provenance = prov;
+  return { facts, provenance: prov };
+}
+
+// Build a facts object from a plain listing form (what a user can read off Zillow in 30 seconds).
+function factsFromListing(input) {
+  const n = (v) => (v === "" || v === undefined || v === null ? undefined : Number(v));
+  const price = n(input.listPrice);
+  const sqft = n(input.sqft);
+  return {
+    meta: { id: slug(`${input.address} ${input.unit || ""}`), title: [input.address, input.unit, `${input.city}, ${input.state} ${input.zip}`].filter(Boolean).join(", "), mode: "live", researchedOn: new Date().toISOString().slice(0, 10) },
+    property: {
+      address: input.address, unit: input.unit || "", city: input.city, state: input.state || "FL", zip: input.zip, county: input.county || "Broward",
+      type: input.type || "condo", beds: n(input.beds), baths: n(input.baths), sqft, yearBuilt: n(input.yearBuilt), lotAcres: n(input.lotAcres),
+      listPrice: price, pricePerSqft: price && sqft ? Math.round(price / sqft) : undefined, hoaMonthly: n(input.hoaMonthly), daysOnMarket: n(input.daysOnMarket),
+      priceHistory: [], listingDiscrepancies: [], impactWindows: "unknown",
+    },
+    building: { habitableStories: n(input.stories) ?? "unknown", unitsInBuilding: input.units || "unknown", roofYear: n(input.roofYear) ?? "unknown", drainsReplaced: "unknown", panelBrand: "unknown" },
+    association: { reservesUsd: "unknown", specialAssessments: "unknown", masterDeductible: "unknown", rentalMinDays: "unknown", pets: "unknown", ageRestricted: "unknown" },
+    financing: { warrantable: "unknown" },
+    location: { county: input.county || "Broward", barrierIsland: input.barrierIsland === true || input.barrierIsland === "true", evacuationZone: input.evacuationZone || undefined, floodZone: "unknown", elevationFt: "unknown" },
+    market: {},
+    rents: input.rentEstimate ? { estimateMonthly: n(input.rentEstimate), evidence: ["User-supplied estimate"] } : undefined,
+    insurance: {},
+    sources: [],
+  };
+}
+
+function slug(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+// ---- src/engine/deals.js
+// Deal finder: rank a pool of candidate homes against a buyer profile.
+// Each candidate gets the full dossier treatment (rules, grades, carry), then a fit check and a 0 to 100 deal score.
+
+
+
+const GRADE_VALUE = { A: 4, B: 3, C: 2, D: 1, F: 0 };
+const DIM_WEIGHT = { price: 1.2, carry: 1.0, building: 1.1, association: 1.1, hazard: 0.9, location: 1.0, resale: 1.0 };
+
+function defaultMinBeds(household) {
+  const n = Number(household) || 1;
+  return n <= 2 ? 1 : n <= 4 ? 2 : 3;
+}
+
+// profile: budget fields plus { household, minBeds, types[], maxCommuteMin, work:{lat,lon,name}, minGrade, needsPets, mustFinance }
+function findDeals(profile, candidates) {
+  const b = budget(profile);
+  const minBeds = Number(profile.minBeds) || defaultMinBeds(profile.household);
+  const types = profile.types?.length ? profile.types : ["condo", "townhouse", "house"];
+  const poolPpsf = medianPpsfByType(candidates);
+
+  const rows = candidates.map((facts) => {
+    const p = facts.property;
+    const price = p.listPrice;
+    const ev = evaluate(profile, facts, price, b);
+    const report = buildReport(facts, { carry: { downPct: ev.downPct, rate: b.rate, homestead: profile.homestead !== false, loanType: profile.loanType } });
+    const grades = Object.fromEntries(report.grades.map((g) => [g.key, g.grade]));
+    const trip = profile.work?.lat ? commute(profile.work, facts.location) : null;
+    const reasons = [];
+    const exclusions = [];
+
+    // ---- hard fit
+    if (!types.includes(p.type)) exclusions.push(`Type ${p.type} not wanted`);
+    if ((p.beds || 0) < minBeds) exclusions.push(`${p.beds ?? "?"} beds, you need ${minBeds}`);
+    if (ev.tier === "over") exclusions.push(`Housing cost $${ev.housing.toLocaleString()}/mo is ${ev.frontPct}% of income`);
+    if (!ev.cashOk || !ev.downOk) exclusions.push(`Needs $${ev.carry.cashToClose.toLocaleString()} to close; you have $${b.cashAvailable.toLocaleString()}`);
+    if (trip && profile.maxCommuteMin && trip.peakMin > Number(profile.maxCommuteMin)) exclusions.push(`${trip.peakMin} min commute, limit ${profile.maxCommuteMin}`);
+    const minG = GRADE_VALUE[profile.minGrade] ?? -1;
+    const worst = Math.min(...Object.values(grades).map((g) => GRADE_VALUE[g]));
+    const meetsGradeFloor = worst >= minG;
+
+    // ---- score
+    const gradeScore = Object.entries(grades).reduce((a, [k, g]) => a + GRADE_VALUE[g] * (DIM_WEIGHT[k] || 1), 0) / (4 * Object.values(DIM_WEIGHT).reduce((a, w) => a + w, 0)); // 0..1
+    const affordScore = ev.tier === "comfortable" ? 1 - Math.min(1, ev.housing / Math.max(1, b.comfortableHousing)) * 0.5 : ev.tier === "stretch" ? 0.35 : 0;
+    const ppsf = price && p.sqft ? price / p.sqft : null;
+    const ref = poolPpsf[p.type];
+    const valueScore = ppsf && ref ? clamp(1 - (ppsf / ref - 0.75) / 0.6, 0, 1) : 0.5; // 25% under pool median = 1.0; 35% over = 0
+    const commuteScore = trip ? clamp(1 - trip.peakMin / 60, 0, 1) : 0.5;
+    const motivated = (p.daysOnMarket || 0) > 90 || (p.priceHistory?.length || 0) >= 2;
+    const leverageScore = motivated ? 1 : 0.4;
+    const score = Math.round(100 * (gradeScore * 0.4 + affordScore * 0.2 + valueScore * 0.2 + commuteScore * 0.12 + leverageScore * 0.08));
+
+    // ---- reasons
+    if (ev.tier === "comfortable") reasons.push(`Fits comfortably: $${ev.housing.toLocaleString()}/mo housing, ${ev.frontPct}% of gross income (${ev.backPct}% with your debts).`);
+    else if (ev.tier === "stretch") reasons.push(`A stretch: ${ev.frontPct}% of income on housing, ${ev.backPct}% with debts. Lenders may approve; your budget may not.`);
+    if (ppsf && ref) reasons.push(`$${Math.round(ppsf)}/sq ft against a pool median of $${Math.round(ref)} for ${p.type}s (${ppsf < ref ? "cheaper" : "pricier"} by ${Math.abs(Math.round((ppsf / ref - 1) * 100))}%).`);
+    const strong = report.grades.filter((g) => g.grade === "A" || g.grade === "B").map((g) => g.label);
+    const weak = report.grades.filter((g) => g.grade === "D" || g.grade === "F").map((g) => g.label);
+    if (strong.length) reasons.push(`Strong: ${strong.join(", ").toLowerCase()}.`);
+    if (weak.length) reasons.push(`Weak: ${weak.join(", ").toLowerCase()}.`);
+    if (trip) reasons.push(`About ${trip.peakMin} min to work at peak (${trip.miles} road miles).`);
+    if (motivated) reasons.push(`Seller signals: ${p.daysOnMarket ? p.daysOnMarket + " days on market" : ""}${p.priceHistory?.length >= 2 ? (p.daysOnMarket ? ", " : "") + (p.priceHistory.length - 1) + (p.priceHistory.length === 2 ? " price cut" : " price cuts") : ""}. Room to negotiate.`);
+    const crit = report.watch.filter((w) => w.severity === "critical").length;
+    if (crit) reasons.push(`${crit} deal-breaker check${crit > 1 ? "s" : ""} open: ${report.watch.filter((w) => w.severity === "critical").map((w) => w.title.toLowerCase()).join("; ")}.`);
+    if (ev.reserveMonths < 2 && ev.cashOk) reasons.push(`Only ${ev.reserveMonths} months of housing cost left in cash after closing.`);
+    if (ev.carry.assumptions.hoaEstimated && p.type !== "house") reasons.push("HOA fee not in the listing; an estimate is used.");
+
+    const label = exclusions.length ? "Pass" : score >= 70 && meetsGradeFloor ? "Strong buy" : score >= 55 ? "Good" : score >= 40 ? "Fair" : "Weak";
+
+    return {
+      id: facts.meta?.id, title: facts.meta?.title || `${p.address}${p.unit ? " " + p.unit : ""}, ${p.city}`,
+      price, type: p.type, beds: p.beds, baths: p.baths, sqft: p.sqft, yearBuilt: p.yearBuilt, city: p.city, source: facts.meta?.source, seenOn: facts.meta?.seenOn,
+      grades, worstGrade: Object.keys(GRADE_VALUE).find((k) => GRADE_VALUE[k] === worst), meetsGradeFloor,
+      afford: { tier: ev.tier, housing: ev.housing, totalMonthly: ev.carry.totalMonthly, frontPct: ev.frontPct, backPct: ev.backPct, downPct: Math.round(ev.downPct * 1000) / 10, cashToClose: ev.carry.cashToClose, reserveMonths: ev.reserveMonths },
+      commute: trip, score, label, reasons, exclusions, facts, report,
+    };
+  });
+
+  const eligible = rows.filter((r) => !r.exclusions.length);
+  const matchingFloor = eligible.filter((r) => r.meetsGradeFloor);
+  const ranked = (matchingFloor.length ? matchingFloor : eligible).sort((a, b) => b.score - a.score);
+  return {
+    budget: b,
+    minBeds,
+    ranked,
+    relaxedGradeFloor: Boolean(profile.minGrade) && !matchingFloor.length && eligible.length > 0,
+    excluded: rows.filter((r) => r.exclusions.length).sort((a, b) => b.score - a.score),
+    poolPpsf,
+  };
+}
+
+function medianPpsfByType(cands) {
+  const by = {};
+  for (const c of cands) {
+    const p = c.property;
+    if (p.listPrice && p.sqft) (by[p.type] ||= []).push(p.listPrice / p.sqft);
+  }
+  const out = {};
+  for (const [t, arr] of Object.entries(by)) {
+    arr.sort((a, b) => a - b);
+    out[t] = arr[Math.floor(arr.length / 2)];
+  }
+  return out;
+}
+
+const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+
+// ---- web/app.js
+
+
+
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const usd = (n) => (n === null || n === undefined ? "n/a" : "$" + Math.round(n).toLocaleString());
+const SAMPLE_URL = "../data/samples/3204-colony-club-rd-6.json";
+
+let state = { report: null, filter: "all" };
+
+async function loadSample() {
+  const facts = window.DOSSIER_SAMPLE || (await (await fetch(SAMPLE_URL)).json());
+  render(buildReport(structuredClone(facts)));
+}
+
+function render(report) {
+  state.report = report;
+  const r = report, f = r.facts, p = f.property;
+  const specs = [p.beds && `${p.beds} bd`, p.baths && `${p.baths} ba`, p.sqft && `${p.sqft.toLocaleString()} sq ft`, p.yearBuilt && `built ${p.yearBuilt}`, p.hoaMonthly && `HOA $${p.hoaMonthly}/mo`].filter(Boolean).join(" · ");
+  $("#report").innerHTML = `
+  <section class="band hero" id="top">
+    <div>
+      <h1>${esc(f.meta?.title || p.address)}</h1>
+      <div class="specs">${esc(specs)}</div>
+      <p class="muted" style="margin-top:.4rem">${esc(f.meta?.mode === "researched" ? `Researched ${f.meta.researchedOn}. ` : "")}${esc(p.listingSource || "")}</p>
+    </div>
+    <div>
+      <div class="price num">${usd(p.listPrice)}</div>
+      <div class="muted num">${p.pricePerSqft ? "$" + p.pricePerSqft + "/sq ft" : ""}</div>
+      <div style="margin-top:.5rem"><span class="stance ${esc(r.verdict.stance.split(" ")[0])}">${esc(r.verdict.stance)}</span></div>
+    </div>
+    <p class="verdict" style="grid-column:1/-1">${esc(r.verdict.summary)}</p>
+    ${r.narrative ? `<div class="narrative" style="grid-column:1/-1">${esc(r.narrative)}</div>` : ""}
+    <div style="grid-column:1/-1"><button type="button" id="add-pool" class="btn ghost">Add to my deals pool</button> <span id="add-pool-status" class="muted"></span></div>
+  </section>
+  <section class="band"><h2>Grades</h2><div class="grades">${r.grades.map((g) => `<div class="grade" data-g="${g.grade}"><div class="letter">${g.grade}</div><div class="label">${esc(g.label)}</div><div class="why">${esc(g.why)}</div></div>`).join("")}</div></section>
+  <section class="band" id="watch">
+    <h2>What will come up, and when</h2>
+    <p class="muted">${r.watch.length} items. Each names the document or inspection that settles it.</p>
+    <div class="filters" role="group" aria-label="Filter by severity">${["all", "critical", "high", "watch", "info"].map((s) => `<button type="button" class="chip" data-f="${s}" aria-pressed="${state.filter === s}">${s === "all" ? "All" : s[0].toUpperCase() + s.slice(1)}</button>`).join("")}</div>
+    <div id="watch-list">${renderWatch(r)}</div>
+  </section>
+  <section class="band" id="costs"><h2>Cost to own</h2>${renderCosts(r)}</section>
+  <section class="band" id="building"><h2>Building and association</h2>${renderFacts(f)}</section>
+  <section class="band" id="place"><h2>Location, hazards and neighborhood</h2>${renderPlace(f)}</section>
+  <section class="band" id="market"><h2>Market and comparable sales</h2>${renderMarket(f)}</section>
+  <section class="band" id="history"><h2>History</h2>${renderHistory(f)}</section>
+  <section class="band" id="checklist"><h2>Questions to ask before you waive contingencies</h2>${renderChecklist(r)}</section>
+  <section class="band" id="sources"><h2>Sources</h2>${renderSources(f, r)}</section>`;
+  $("#report").querySelectorAll(".chip").forEach((b) => b.addEventListener("click", () => { state.filter = b.dataset.f; $("#report").querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", c === b)); $("#watch-list").innerHTML = renderWatch(state.report); }));
+  wireCosts();
+  wireChecklist();
+  $("#add-pool")?.addEventListener("click", () => { addToPool(state.report.facts); $("#add-pool-status").textContent = "Added. Open Find deals to see it ranked."; });
+}
+
+function renderWatch(r) {
+  return r.watchByHorizon.map((h) => {
+    const items = h.items.filter((w) => state.filter === "all" || w.severity === state.filter);
+    if (!items.length) return "";
+    return `<div class="horizon"><h3>${esc(h.label)} <span class="count num">${items.length}</span></h3><div class="watch">${items.map((w) => `
+      <details class="item" data-s="${w.severity}" ${w.severity === "critical" ? "open" : ""}>
+        <summary><span class="sev">${w.severity}</span> ${esc(w.title)} ${w.confidence !== "high" ? `<span class="conf">(${w.confidence} confidence)</span>` : ""}</summary>
+        <div class="body"><p>${esc(w.why)}</p><p class="action"><b>Do:</b> ${esc(w.action)}</p></div>
+      </details>`).join("")}</div></div>`;
+  }).join("") || `<p class="muted">Nothing at this severity.</p>`;
+}
+
+function renderCosts(r) {
+  const c = r.costs.homestead, n = r.costs.nonHomestead;
+  const parts = [["Mortgage (P&I)", c.monthly.principalAndInterest, "c0"], ["Property tax", c.monthly.taxes, "c1"], ["HOA", c.monthly.hoa, "c4"], ["HO-6 insurance", c.monthly.ho6, "c2"], ["Flood (contents)", c.monthly.flood, "c3"], ["Utilities", c.monthly.utilities, "c5"]];
+  const total = c.totalMonthly;
+  return `<div class="costs">
+    <div>
+      <div class="muted">Estimated monthly, ${Math.round(c.assumptions.downPct * 100)}% down at ${(c.assumptions.rate * 100).toFixed(2)}%, 30 years, homestead</div>
+      <div class="big num" id="cost-total">${usd(total)}<span class="muted" style="font-size:1rem;font-weight:400">/mo</span></div>
+      <div class="stack" aria-hidden="true">${parts.map(([, v, cls]) => `<span class="${cls}" style="width:${((v || 0) / total) * 100}%"></span>`).join("")}</div>
+      <div class="legend">${parts.map(([k, v, cls]) => `<i class="${cls}"></i><span>${k}</span><span class="num">${usd(v)}</span>`).join("")}</div>
+      <p class="muted" style="margin-top:.6rem">Cash to close about ${usd(c.cashToClose)} (down payment plus about 3% closing costs). As a second home or rental the tax line is ${usd(n.monthly.taxes)}/mo and the total ${usd(n.totalMonthly)}/mo. ${esc(c.taxes?.note || "")} Insurance lines are planning ranges, not quotes.</p>
+      <div class="toggle"><label class="muted">Down payment <select id="down"><option value="0.05">5%</option><option value="0.1">10%</option><option value="0.2" selected>20%</option><option value="0.3">30%</option><option value="1">Cash</option></select></label>
+      <label class="muted">Rate <input id="rate" type="number" step="0.05" value="${(c.assumptions.rate * 100).toFixed(2)}" style="width:5.5em"> %</label></div>
+    </div>
+    <div>
+      <h3>Ten-year projection</h3>
+      <p class="muted">HOA +7%/yr, insurance +6%/yr (flood up to +10%), taxes +3%/yr, plus a special-assessment scenario drawn from the watch list.</p>
+      <div class="tablewrap"><table><thead><tr><th>Year</th><th class="num">HOA</th><th class="num">Insurance</th><th class="num">Monthly</th><th class="num">Special</th></tr></thead>
+      <tbody>${r.costs.projection.map((p) => `<tr><td class="num">${p.year}</td><td class="num">${usd(p.hoa)}</td><td class="num">${usd(p.insurance)}</td><td class="num">${usd(p.monthly)}</td><td class="num">${p.specialAssessment ? usd(p.specialAssessment) : ""}</td></tr>`).join("")}</tbody></table></div>
+      ${r.costs.specialAssessmentScenario.length ? `<p class="muted" style="margin-top:.5rem">Scenario assessments: ${r.costs.specialAssessmentScenario.map((s) => `${s.year} ${esc(s.label)} ${usd(s.amount)}`).join("; ")}. These are illustrations of the kind of bill a building this age produces, not predictions of this board's decisions.</p>` : ""}
+      ${r.costs.rental ? `<h3 style="margin-top:1rem">As a rental</h3><p>Rent about ${usd(r.costs.rental.rentMonthly)}/mo. Gross yield ${r.costs.rental.grossYieldPct}%, cap rate ${r.costs.rental.capRatePct}% after HOA, non-homestead taxes, insurance, ${r.costs.rental.assumptions.vacancyPct}% vacancy and ${r.costs.rental.assumptions.managementPct}% management. With a ${Math.round(c.assumptions.downPct * 100)}% down mortgage, monthly cash flow is about ${usd(r.costs.rental.cashFlowMonthly)}.</p>` : ""}
+    </div></div>`;
+}
+
+function wireCosts() {
+  const recompute = () => {
+    const down = Number($("#down").value), rate = Number($("#rate").value) / 100;
+    const facts = state.report.facts;
+    const rep = buildReport(facts, { carry: { downPct: down, rate } });
+    rep.narrative = state.report.narrative;
+    state.report = rep;
+    $("#costs").innerHTML = `<h2>Cost to own</h2>${renderCosts(rep)}`;
+    $("#down").value = String(down); $("#rate").value = (rate * 100).toFixed(2);
+    wireCosts();
+  };
+  $("#down")?.addEventListener("change", recompute);
+  $("#rate")?.addEventListener("change", recompute);
+}
+
+const fact = (k, v, note) => {
+  const u = v === undefined || v === null || v === "unknown" || (typeof v === "string" && v.startsWith("unknown"));
+  return `<div><span>${esc(k)}</span><span class="${u ? "unknown" : ""}">${u ? esc(typeof v === "string" && v.length > 7 ? v : "Unknown: ask") : esc(v)}${note ? ` <span class="muted">${esc(note)}</span>` : ""}</span></div>`;
+};
+
+function renderFacts(f) {
+  const p = f.property, b = f.building || {}, a = f.association || {}, fin = f.financing || {};
+  return `<div class="cols">
+    <div><h3>Unit</h3><div class="facts">
+      ${fact("Type", p.type)}${fact("Beds / baths", `${p.beds ?? "?"} / ${p.baths ?? "?"}`)}${fact("Square feet", p.sqft)}${fact("Floor", p.floor)}${fact("Parking", p.parking)}${fact("Impact windows", p.impactWindows)}${fact("Days on market", p.daysOnMarket)}
+    </div>${p.listingDiscrepancies?.length ? `<p class="muted" style="margin-top:.5rem">${esc(p.listingDiscrepancies.join(" "))}</p>` : ""}
+    ${p.priceHistory?.length ? `<h3 style="margin-top:.8rem">Asking price history</h3><div class="tablewrap"><table><tbody>${p.priceHistory.map((h) => `<tr><td class="num">${esc(h.date)}</td><td class="num">${usd(h.price)}</td><td>${esc(h.event)}</td></tr>`).join("")}</tbody></table></div>` : ""}
+    ${p.salesHistoryNote ? `<p class="muted" style="margin-top:.5rem">${esc(p.salesHistoryNote)}</p>` : ""}</div>
+    <div><h3>Building</h3><div class="facts">
+      ${fact("Name", b.name)}${fact("Year built", p.yearBuilt)}${fact("Habitable stories", b.habitableStories)}${fact("Units", b.unitsInBuilding)}${fact("Construction", b.construction)}${fact("Roof year / type", b.roofYear === "unknown" ? "unknown" : `${b.roofYear} ${b.roofType || ""}`)}${fact("Drain lines replaced", b.drainsReplaced)}${fact("Electrical panel", b.panelBrand)}${fact("Last recertification", b.recertYear)}${fact("Elevator", b.elevator ? "Yes" : "No")}
+    </div>${b.habitableStoriesNote ? `<p class="muted" style="margin-top:.5rem">${esc(b.habitableStoriesNote)}</p>` : ""}${b.recertNote ? `<p class="muted">${esc(b.recertNote)}</p>` : ""}
+    <h3 style="margin-top:.8rem">Association</h3><div class="facts">
+      ${fact("Association", a.name)}${fact("Fee", p.hoaMonthly ? `$${p.hoaMonthly}/mo` : undefined)}${fact("Fee includes", a.feeIncludes)}${fact("Reserves", a.reservesUsd)}${fact("Special assessments", a.specialAssessments)}${fact("Master policy deductible", a.masterDeductible)}${fact("Litigation", a.litigation)}${fact("Rental minimum", a.rentalMinDays)}${fact("Pets", a.pets)}${fact("Age restriction", a.ageRestricted)}${fact("Delinquency", a.delinquencyPct)}${fact("Agency-warrantable", fin.warrantable)}
+    </div></div></div>`;
+}
+
+function renderPlace(f) {
+  const l = f.location || {}, d = f.demographics || {}, c = f.crime || {};
+  const nearby = l.nearby?.length ? `<h3 style="margin-top:.8rem">Within a mile (OpenStreetMap)</h3><ul>${l.nearby.slice(0, 12).map((n) => `<li>${esc(n.name)} <span class="muted">${esc(n.kind)}, ${n.distanceFt.toLocaleString()} ft</span></li>`).join("")}</ul>` : "";
+  return `<div class="cols">
+    <div>${l.summary ? `<p>${esc(l.summary)}</p>` : ""}<div class="facts">
+      ${fact("Neighborhood", l.neighborhood)}${fact("Beach", l.distanceToBeachFt ? `${l.distanceToBeachFt.toLocaleString()} ft` : undefined)}${fact("Walk / transit / bike", [l.walkScore, l.transitScore, l.bikeScore].filter((x) => x !== undefined).join(" / ") || undefined)}${fact("Transit", l.transit)}${fact("Commute", l.commute)}${fact("Airport noise", l.airport)}${fact("Schools", l.schools?.note)}
+    </div>${nearby}</div>
+    <div><h3>Hazards</h3><div class="facts">
+      ${fact("Evacuation zone", l.evacuationZone)}${fact("FEMA flood zone", l.floodZone, l.baseFloodElevationFt ? `BFE ${l.baseFloodElevationFt} ft` : "")}${fact("Ground elevation", l.groundElevationFt !== undefined ? `${l.groundElevationFt} ft NAVD88` : l.elevationFt)}${fact("Finished-floor elevation", l.elevationFt)}${fact("Sea level trend", l.seaLevelTrend ? `${l.seaLevelTrend.mmPerYear} mm/yr at ${l.seaLevelTrend.station}` : "3.95 mm/yr at Virginia Key (NOAA)")}
+    </div>${l.floodZoneNote ? `<p class="muted" style="margin-top:.5rem">${esc(l.floodZoneNote)}</p>` : ""}${l.firstStreet?.note ? `<p class="muted">${esc(l.firstStreet.note)}</p>` : ""}
+    <h3 style="margin-top:.8rem">Who lives here</h3><div class="facts">
+      ${fact("ZIP", d.zip)}${fact("Population", d.population2024 || d.population)}${fact("Median age", d.medianAge)}${fact("Median household income", d.medianHouseholdIncome ? usd(d.medianHouseholdIncome) : undefined)}${fact("Owner-occupied", d.ownerOccupiedPct ? d.ownerOccupiedPct + "%" : undefined)}${fact("Vacant (seasonal)", d.vacantPct ? d.vacantPct + "%" : undefined)}
+    </div>${c.note ? `<h3 style="margin-top:.8rem">Crime</h3><div class="facts">${fact("Property crime, city", c.cityPropertyCrimePer1000 ? c.cityPropertyCrimePer1000 + " per 1,000" : undefined)}${fact("Violent crime, city", c.cityViolentPer100k ? c.cityViolentPer100k + " per 100k" : undefined)}</div><p class="muted" style="margin-top:.5rem">${esc(c.note)}</p>` : ""}
+    </div></div>`;
+}
+
+function renderMarket(f) {
+  const m = f.market || {}, comps = f.comps || [], r = f.rents;
+  return `<div class="cols"><div><div class="facts">
+    ${fact("City condo median", m.cityCondoMedianPrice ? `${usd(m.cityCondoMedianPrice)} (${m.cityCondoMedianPriceYoYPct > 0 ? "+" : ""}${m.cityCondoMedianPriceYoYPct ?? "?"}% YoY)` : undefined)}${fact("Months of supply", m.monthsOfSupply)}${fact("Active condo listings", m.activeCondoListings ? `${m.activeCondoListings} (${m.activeListingsYoYPct}% YoY)` : undefined)}${fact("Listing $/sq ft, city condos", m.medianPricePerSqft ? "$" + m.medianPricePerSqft : undefined)}${fact("Broward condo median", m.browardCondoMedian ? `${usd(m.browardCondoMedian)} (${m.browardCondoMedianYoYPct}% YoY)` : undefined)}${fact("ZIP median, all types", m.zip33062MedianAllTypes ? usd(m.zip33062MedianAllTypes) : undefined)}${fact("Days to sell, ZIP", m.zipDaysToSell)}
+    </div>${m.note ? `<p class="muted" style="margin-top:.5rem">${esc(m.note)}</p>` : ""}${m.medianPricePerSqftNote ? `<p class="muted">${esc(m.medianPricePerSqftNote)}</p>` : ""}${m.vintageHeadwind ? `<p class="muted">${esc(m.vintageHeadwind)}</p>` : ""}
+    ${r?.evidence ? `<h3 style="margin-top:.8rem">Rent evidence</h3><ul>${r.evidence.map((e) => `<li>${esc(e)}</li>`).join("")}</ul>` : ""}</div>
+    <div>${comps.length ? `<h3>Comparables on this street</h3><div class="tablewrap"><table><thead><tr><th>Address</th><th>Bd/ba</th><th class="num">Sq ft</th><th class="num">Price</th><th>Status</th></tr></thead><tbody>${comps.map((c) => `<tr><td>${esc(c.address)}${c.note ? `<div class="muted">${esc(c.note)}</div>` : ""}</td><td>${c.beds}/${c.baths}</td><td class="num">${c.sqft?.toLocaleString() ?? ""}</td><td class="num">${c.price ? usd(c.price) : ""}${c.price && c.sqft ? `<div class="muted">$${Math.round(c.price / c.sqft)}/sf</div>` : ""}</td><td>${esc(c.status)}${c.hoa ? `<div class="muted">HOA $${c.hoa}</div>` : ""}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">No comparables loaded.</p>`}
+    ${f.development?.length ? `<h3 style="margin-top:.8rem">Nearby development</h3><ul>${f.development.map((d) => `<li><b>${esc(d.title)}</b><div class="muted">${esc(d.why)}</div></li>`).join("")}</ul>` : ""}</div></div>`;
+}
+
+function renderHistory(f) {
+  const t = f.history?.timeline || [];
+  return t.length ? `<ul class="timeline">${t.map((e) => `<li><span class="yr num">${e.year}</span><span>${esc(e.event)}</span></li>`).join("")}</ul>` : `<p class="muted">No history loaded. Add the Property Appraiser sales history and permit history to the facts file.</p>`;
+}
+
+function renderChecklist(r) {
+  const groups = [...new Set(r.checklist.map((c) => c.group))];
+  return `<div class="checklist">${groups.map((g) => `<div class="group-title">${esc(g)}</div>${r.checklist.filter((c) => c.group === g).map((c) => `<label><input type="checkbox" data-ck="${c.id}"><span>${esc(c.ask)}<div class="who">${esc(c.who)}</div></span></label>`).join("")}`).join("")}</div>`;
+}
+
+function wireChecklist() {
+  const key = "dossier-ck-" + (state.report.facts.meta?.id || "x");
+  let done = {};
+  try { done = JSON.parse(localStorage.getItem(key) || "{}"); } catch {}
+  document.querySelectorAll("[data-ck]").forEach((cb) => {
+    cb.checked = Boolean(done[cb.dataset.ck]);
+    cb.closest("label").classList.toggle("done", cb.checked);
+    cb.addEventListener("change", () => {
+      done[cb.dataset.ck] = cb.checked;
+      cb.closest("label").classList.toggle("done", cb.checked);
+      try { localStorage.setItem(key, JSON.stringify(done)); } catch {}
+    });
+  });
+}
+
+function renderSources(f, r) {
+  const prov = r.provenance?.length ? `<p class="prov">Live layers: ${r.provenance.map((p) => `<span>${esc(p.source)}: ${p.status}${p.error ? ` (${esc(p.error)})` : ""}</span>`).join("")}</p>` : "";
+  return `${prov}<ol class="sources">${(f.sources || []).map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a></li>`).join("")}</ol><p class="muted" style="margin-top:.8rem">Reference tables (millage, condo statutes, lending rules, sea level) as of ${esc(r.reference.florida.asOf)}.</p>`;
+}
+
+// ---- deals ----
+const CANDIDATES_URL = "../data/candidates/south-florida-2026-10.json";
+let pool = null;
+
+async function loadPool() {
+  if (pool) return pool;
+  const data = window.DOSSIER_CANDIDATES || (await (await fetch(CANDIDATES_URL)).json());
+  const sample = window.DOSSIER_SAMPLE || (await (await fetch(SAMPLE_URL)).json());
+  let mine = [];
+  try { mine = JSON.parse(localStorage.getItem("dossier-pool") || "[]"); } catch {}
+  pool = [structuredClone(sample), ...data.candidates, ...mine];
+  return pool;
+}
+
+function readProfile() {
+  const f = $("#profile-form");
+  const data = Object.fromEntries(new FormData(f).entries());
+  const types = [...$("#p-types").selectedOptions].map((o) => o.value);
+  const hub = HUBS.find((h) => h.id === data.hub);
+  const p = {
+    grossAnnualIncome: Number(data.grossAnnualIncome), monthlyDebts: Number(data.monthlyDebts) || 0, cashAvailable: Number(data.cashAvailable),
+    household: Number(data.household) || 1, minBeds: data.minBeds ? Number(data.minBeds) : undefined, loanType: data.loanType, preferredDownPct: Number(data.preferredDownPct),
+    rate: Number(data.ratePct) / 100, types, minGrade: data.minGrade || undefined, maxCommuteMin: Number(data.maxCommuteMin) || undefined,
+    homestead: $("#p-homestead").checked, workAddress: data.workAddress, hub: data.hub,
+    work: hub ? { lat: hub.lat, lon: hub.lon, name: hub.name } : undefined,
+  };
+  return p;
+}
+
+function fillProfile(p) {
+  if (!p) return;
+  const set = (id, v) => { const el = $(id); if (el && v !== undefined && v !== null) el.value = v; };
+  set("#p-income", p.grossAnnualIncome); set("#p-debts", p.monthlyDebts); set("#p-cash", p.cashAvailable); set("#p-household", p.household); set("#p-beds", p.minBeds ?? "");
+  set("#p-loan", p.loanType); set("#p-down", String(p.preferredDownPct ?? 0.2)); set("#p-rate", p.rate ? (p.rate * 100).toFixed(2) : "7.32"); set("#p-grade", p.minGrade || ""); set("#p-commute", p.maxCommuteMin ?? 45);
+  set("#p-hub", p.hub || ""); set("#p-work", p.workAddress || ""); $("#p-homestead").checked = p.homestead !== false;
+  if (p.types) [...$("#p-types").options].forEach((o) => (o.selected = p.types.includes(o.value)));
+}
+
+async function geocodeWork(address) {
+  if (!address) return null;
+  try {
+    const res = await fetch(`/api/geocode?address=${encodeURIComponent(address)}`);
+    if (!res.ok) return null;
+    const g = await res.json();
+    return g.status === "live" ? { lat: g.data.lat, lon: g.data.lon, name: g.data.matched } : null;
+  } catch { return null; }
+}
+
+async function runDeals() {
+  const profile = readProfile();
+  const status = $("#deals-status");
+  status.textContent = "Working…";
+  if (profile.workAddress) {
+    const g = await geocodeWork(profile.workAddress);
+    if (g) profile.work = g;
+    else if (!profile.work) status.textContent = "Could not look up the work address (no server). Pick a hub from the list for commute times.";
+  }
+  try { localStorage.setItem("dossier-profile", JSON.stringify(profile)); } catch {}
+  const cands = await loadPool();
+  const result = findDeals(profile, cands);
+  if (status.textContent === "Working…") status.textContent = "";
+  renderDeals(profile, result);
+  $("#deals").hidden = false;
+  $("#report").hidden = true;
+  $("#deals").scrollIntoView({ behavior: "smooth" });
+}
+
+function renderDeals(profile, r) {
+  const b = r.budget;
+  const condoMax = maxPrice(profile, { type: "condo", sqft: 1000, hoaMonthly: 450, city: "Pompano Beach" });
+  const houseMax = maxPrice(profile, { type: "house", sqft: 1400, hoaMonthly: 0, city: "Pompano Beach" });
+  const stretch = maxPrice(profile, { type: "condo", sqft: 1000, hoaMonthly: 450, city: "Pompano Beach" }, "stretch");
+  const workName = profile.work?.name ? ` · work: ${profile.work.name}` : "";
+  const gradeNote = r.relaxedGradeFloor ? `<p class="muted">Nothing in the pool has every grade at ${esc(profile.minGrade)} or better, mostly because reserves, roof age and master insurance are unknown until you ask. Showing everything that fits your budget instead, ranked.</p>` : "";
+  const dealCard = (d, i) => `
+    <article class="deal" id="deal-${esc(d.id)}">
+      <div><h3>${i !== undefined ? `${i + 1}. ` : ""}${esc(d.title)}</h3>
+        <div class="meta num">${usd(d.price)} · ${d.beds ?? "?"} bd / ${d.baths ?? "?"} ba · ${d.sqft ? d.sqft.toLocaleString() + " sq ft" : "size unknown"} · ${d.yearBuilt && d.yearBuilt !== "unknown" ? "built " + d.yearBuilt : "year built unknown"} · ${esc(d.type)}</div>
+        <div class="meta num">Housing ${usd(d.afford.housing)}/mo (${d.afford.frontPct}% of income, ${d.afford.backPct}% with debts) · ${d.afford.downPct}% down · ${usd(d.afford.cashToClose)} to close${d.commute ? ` · ${d.commute.peakMin} min to work` : ""}</div></div>
+      <div class="score"><div class="n num">${d.score}</div><div class="l ${esc(d.label.split(" ")[0])}">${esc(d.label)}</div></div>
+      <div class="fitbar" title="Housing cost against your comfortable limit"><span class="${d.afford.tier}" style="width:${Math.min(100, (d.afford.housing / Math.max(1, b.comfortableHousing)) * 100)}%"></span></div>
+      <div class="gradechips">${Object.entries(d.grades).map(([k, g]) => `<span class="gchip" data-g="${g}"><b>${g}</b> ${esc(GRADE_LABEL[k] || k)}</span>`).join("")}</div>
+      <ul>${d.reasons.map((x) => `<li>${esc(x)}</li>`).join("")}${d.exclusions.map((x) => `<li><b>Why it is out:</b> ${esc(x)}</li>`).join("")}</ul>
+      <div class="actions2"><button type="button" class="btn ghost open-dossier" data-id="${esc(d.id)}">Open full dossier</button><span class="muted">${esc(d.source || "")}${d.seenOn ? `, seen ${esc(d.seenOn)}` : ""}. Verify status on the MLS before acting.</span></div>
+    </article>`;
+  $("#deals").innerHTML = `
+    <section class="band">
+      <h2>Your budget</h2>
+      <p class="muted num">Income ${usd(b.monthlyIncome)}/mo gross${workName}. Comfortable housing cost (28% front / 36% back): <b>${usd(b.comfortableHousing)}/mo</b>. Stretch (31/43): ${usd(b.stretchHousing)}/mo. Cash on hand ${usd(b.cashAvailable)}; minimum down ${Math.round(b.minDownPct * 1000) / 10}%.</p>
+      <div class="budget">
+        <div class="tile"><div class="k">Comfortable max, condo (HOA $450)</div><div class="v num">${usd(condoMax.price)}</div><div class="k">${condoMax.price ? Math.round(condoMax.downPct * 100) + "% down, " + usd(condoMax.cashNeeded) + " to close" : esc(condoMax.reason || "")}</div></div>
+        <div class="tile"><div class="k">Comfortable max, house (no HOA)</div><div class="v num">${usd(houseMax.price)}</div><div class="k">${houseMax.price ? Math.round(houseMax.downPct * 100) + "% down" : esc(houseMax.reason || "")}</div></div>
+        <div class="tile"><div class="k">Stretch max, condo</div><div class="v num">${usd(stretch.price)}</div><div class="k">Needs underwriting approval; leaves little slack for assessments</div></div>
+        <div class="tile"><div class="k">Bedrooms you need</div><div class="v num">${r.minBeds}+</div><div class="k">for ${profile.household} ${profile.household === 1 ? "person" : "people"}</div></div>
+      </div>
+      <p class="muted">The maximums assume a typical home shape; each listing below is priced on its own taxes, HOA and insurance. House insurance uses a coastal HO-3 planning range ($4,500 to $8,500/yr), which is why houses cost more to carry than their price suggests.</p>
+    </section>
+    <section class="band">
+      <h2>${r.ranked.length} ${r.ranked.length === 1 ? "home fits" : "homes fit"}${profile.minGrade && !r.relaxedGradeFloor ? ` with every grade ${esc(profile.minGrade)} or better` : ""}</h2>
+      ${gradeNote}
+      <div class="deals">${r.ranked.map((d, i) => dealCard(d, i)).join("") || `<p class="muted">Nothing in the pool fits. Loosen the bedroom count, commute, or home types, or add listings from a report page.</p>`}</div>
+    </section>
+    <section class="band">
+      <details class="excluded"><summary>${r.excluded.length} homes that do not fit, and why</summary><div class="deals" style="margin-top:.75rem">${r.excluded.map((d) => dealCard(d)).join("")}</div></details>
+      <p class="muted" style="margin-top:.8rem">Pool: ${pool.length} homes seen on public listing sites on 2026-10-21 plus any you add. Open any report and use "Add to my pool" to score a listing you found.</p>
+    </section>`;
+  $("#deals").querySelectorAll(".open-dossier").forEach((btn) => btn.addEventListener("click", () => {
+    const d = [...r.ranked, ...r.excluded].find((x) => x.id === btn.dataset.id);
+    if (!d) return;
+    $("#deals").hidden = true; $("#report").hidden = false;
+    render(buildReport(d.facts, { carry: { downPct: d.afford.downPct / 100, rate: b.rate, homestead: profile.homestead !== false, loanType: profile.loanType } }));
+    window.scrollTo({ top: 0 });
+  }));
+}
+
+const GRADE_LABEL = { price: "Price", carry: "Cost", building: "Building", association: "Association", hazard: "Hazards", location: "Location", resale: "Resale" };
+
+function addToPool(facts) {
+  let mine = [];
+  try { mine = JSON.parse(localStorage.getItem("dossier-pool") || "[]"); } catch {}
+  if (!mine.find((m) => m.meta?.id === facts.meta?.id)) mine.push(facts);
+  try { localStorage.setItem("dossier-pool", JSON.stringify(mine)); } catch {}
+  pool = null;
+}
+
+$("#show-deals").addEventListener("click", () => {
+  const p = $("#deals-panel"); p.hidden = !p.hidden; $("#form-panel").hidden = true;
+  if (!p.hidden) { try { fillProfile(JSON.parse(localStorage.getItem("dossier-profile") || "null")); } catch {} p.scrollIntoView({ behavior: "smooth" }); }
+});
+$("#profile-form").addEventListener("submit", (e) => { e.preventDefault(); runDeals(); });
+$("#p-household").addEventListener("change", () => { $("#p-beds").placeholder = `auto: ${defaultMinBeds($("#p-household").value)}`; });
+for (const h of HUBS) { const o = document.createElement("option"); o.value = h.id; o.textContent = h.name; $("#p-hub").appendChild(o); }
+
+// ---- native bridge (the iOS app hosts this page in a web view and calls these) ----
+const native = window.webkit?.messageHandlers?.dossier;
+window.dossierNative = {
+  navigate(route) {
+    if (route === "deals") {
+      $("#form-panel").hidden = true; $("#deals-panel").hidden = false;
+      try { fillProfile(JSON.parse(localStorage.getItem("dossier-profile") || "null")); } catch {}
+      $("#deals-panel").scrollIntoView({ behavior: "smooth" });
+    } else if (route === "new") {
+      $("#deals-panel").hidden = true; $("#form-panel").hidden = false;
+      $("#form-panel").scrollIntoView({ behavior: "smooth" });
+    } else if (route === "report") {
+      $("#deals").hidden = true; $("#report").hidden = false; window.scrollTo({ top: 0 });
+    }
+  },
+  requestSave() {
+    const r = state.report;
+    if (!r || !native) return;
+    native.postMessage({ type: "save", id: r.facts.meta?.id || String(Date.now()), title: r.facts.meta?.title || r.facts.property.address, price: usd(r.facts.property.listPrice), stance: r.verdict.stance, summary: r.verdict.summary, facts: r.facts });
+  },
+  requestShare() {
+    const r = state.report;
+    if (!r || !native) return;
+    const top = r.watch.filter((w) => w.severity === "critical" || w.severity === "high").slice(0, 6).map((w) => `- ${w.title}`).join("\n");
+    const text = `${r.facts.meta?.title || r.facts.property.address}\nAsking ${usd(r.facts.property.listPrice)} · ${r.verdict.stance}\n\n${r.verdict.summary}\n\nGrades: ${r.grades.map((g) => `${g.label} ${g.grade}`).join(" · ")}\nCost to own: about ${usd(r.costs.homestead.totalMonthly)}/mo at ${Math.round(r.costs.homestead.assumptions.downPct * 100)}% down\n\nTop items:\n${top}\n\nMade with Dossier`;
+    native.postMessage({ type: "share", text });
+  },
+  loadFacts(facts) {
+    if (!facts) return;
+    $("#deals").hidden = true; $("#deals-panel").hidden = true; $("#form-panel").hidden = true; $("#report").hidden = false;
+    render(buildReport(facts));
+    window.scrollTo({ top: 0 });
+  },
+};
+if (native) document.querySelector(".masthead").hidden = true; // the app's own toolbar carries these buttons
+
+// ---- form ----
+$("#new-report").addEventListener("click", () => { const p = $("#form-panel"); p.hidden = !p.hidden; $("#deals-panel").hidden = true; if (!p.hidden) p.scrollIntoView({ behavior: "smooth" }); });
+$("#load-sample").addEventListener("click", () => { $("#form-panel").hidden = true; loadSample(); });
+$("#listing-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target).entries());
+  data.barrierIsland = $("#f-island").checked;
+  let facts = factsFromListing(data);
+  const status = $("#enrich-status");
+  status.textContent = "Checking public records…";
+  try {
+    const res = await fetch("/api/enrich", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(facts) });
+    if (res.ok) { facts = await res.json(); status.textContent = "Public layers added."; } else status.textContent = "No server: report built from the listing facts only.";
+  } catch { status.textContent = "No server: report built from the listing facts only."; }
+  $("#form-panel").hidden = true;
+  $("#deals").hidden = true; $("#report").hidden = false;
+  render(buildReport(facts));
+  window.scrollTo({ top: 0 });
+});
+
+loadSample();
+
+</script>
+</body>
+</html>
