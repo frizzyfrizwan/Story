@@ -23,4 +23,7 @@ html = html.replace('<link rel="stylesheet" href="style.css">', () => `<style>\n
 html = html.replace('<script type="module" src="app.js"></script>', () => `<script>window.DOSSIER_SAMPLE = ${sample};\nwindow.DOSSIER_CANDIDATES = ${candidates};</script>\n<script>\n${js}\n</script>`);
 fs.mkdirSync(path.join(root, "site"), { recursive: true });
 fs.writeFileSync(path.join(root, "site/index.html"), html);
-console.log(`site/index.html written (${(html.length / 1024).toFixed(0)} KB)`);
+// The iOS app bundles the same page as a resource.
+fs.mkdirSync(path.join(root, "ios/Dossier/Resources"), { recursive: true });
+fs.writeFileSync(path.join(root, "ios/Dossier/Resources/dossier.html"), html);
+console.log(`site/index.html and ios/Dossier/Resources/dossier.html written (${(html.length / 1024).toFixed(0)} KB)`);

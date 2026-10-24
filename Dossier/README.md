@@ -70,6 +70,15 @@ A layer that fails is reported as unavailable in the Sources section; the report
 
 Install `@anthropic-ai/sdk` and provide credentials (`ANTHROPIC_API_KEY`, or `ant auth login`). `POST /api/report` then adds four paragraphs written from the structured report by Claude Opus 5.5 with server-side refusal fallbacks enabled. Everything else is deterministic.
 
+## iOS app
+
+`Dossier/ios/` is a native SwiftUI app (iOS 17+) that bundles the report engine and works offline. It adds a Saved tab (reports kept on the device), the system share sheet, and a toolbar for Find deals and New report. The web page talks to the app through a small bridge (`window.dossierNative` in `web/app.js`, `WebBridge` in `ios/Dossier/WebView.swift`).
+
+- `node bin/build-site.js` regenerates `ios/Dossier/Resources/dossier.html`; CI does this before every build.
+- `.github/workflows/ios-dossier.yml` builds and tests on an iOS simulator and exports screenshots.
+- `.github/workflows/testflight-dossier.yml` archives with cloud signing and uploads to TestFlight using the same secrets as Folio.
+- `docs/APP_STORE.md` has the listing copy, privacy answers, review notes and the step-by-step submission checklist. `docs/privacy.html` is the privacy policy, published at `/dossier/privacy.html` by the Pages workflow along with the web app at `/dossier/`.
+
 ## Layout
 
 ```

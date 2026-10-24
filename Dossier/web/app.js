@@ -316,6 +316,42 @@ $("#profile-form").addEventListener("submit", (e) => { e.preventDefault(); runDe
 $("#p-household").addEventListener("change", () => { $("#p-beds").placeholder = `auto: ${defaultMinBeds($("#p-household").value)}`; });
 for (const h of HUBS) { const o = document.createElement("option"); o.value = h.id; o.textContent = h.name; $("#p-hub").appendChild(o); }
 
+// ---- native bridge (the iOS app hosts this page in a web view and calls these) ----
+const native = window.webkit?.messageHandlers?.dossier;
+window.dossierNative = {
+  navigate(route) {
+    if (route === "deals") {
+      $("#form-panel").hidden = true; $("#deals-panel").hidden = false;
+      try { fillProfile(JSON.parse(localStorage.getItem("dossier-profile") || "null")); } catch {}
+      $("#deals-panel").scrollIntoView({ behavior: "smooth" });
+    } else if (route === "new") {
+      $("#deals-panel").hidden = true; $("#form-panel").hidden = false;
+      $("#form-panel").scrollIntoView({ behavior: "smooth" });
+    } else if (route === "report") {
+      $("#deals").hidden = true; $("#report").hidden = false; window.scrollTo({ top: 0 });
+    }
+  },
+  requestSave() {
+    const r = state.report;
+    if (!r || !native) return;
+    native.postMessage({ type: "save", id: r.facts.meta?.id || String(Date.now()), title: r.facts.meta?.title || r.facts.property.address, price: usd(r.facts.property.listPrice), stance: r.verdict.stance, summary: r.verdict.summary, facts: r.facts });
+  },
+  requestShare() {
+    const r = state.report;
+    if (!r || !native) return;
+    const top = r.watch.filter((w) => w.severity === "critical" || w.severity === "high").slice(0, 6).map((w) => `- ${w.title}`).join("\n");
+    const text = `${r.facts.meta?.title || r.facts.property.address}\nAsking ${usd(r.facts.property.listPrice)} · ${r.verdict.stance}\n\n${r.verdict.summary}\n\nGrades: ${r.grades.map((g) => `${g.label} ${g.grade}`).join(" · ")}\nCost to own: about ${usd(r.costs.homestead.totalMonthly)}/mo at ${Math.round(r.costs.homestead.assumptions.downPct * 100)}% down\n\nTop items:\n${top}\n\nMade with Dossier`;
+    native.postMessage({ type: "share", text });
+  },
+  loadFacts(facts) {
+    if (!facts) return;
+    $("#deals").hidden = true; $("#deals-panel").hidden = true; $("#form-panel").hidden = true; $("#report").hidden = false;
+    render(buildReport(facts));
+    window.scrollTo({ top: 0 });
+  },
+};
+if (native) document.querySelector(".masthead").hidden = true; // the app's own toolbar carries these buttons
+
 // ---- form ----
 $("#new-report").addEventListener("click", () => { const p = $("#form-panel"); p.hidden = !p.hidden; $("#deals-panel").hidden = true; if (!p.hidden) p.scrollIntoView({ behavior: "smooth" }); });
 $("#load-sample").addEventListener("click", () => { $("#form-panel").hidden = true; loadSample(); });
