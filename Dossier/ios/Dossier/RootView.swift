@@ -38,7 +38,6 @@ struct DossierScreen: View {
     var body: some View {
         NavigationStack {
             WebView(bridge: bridge)
-                .ignoresSafeArea(edges: .bottom)
                 .navigationTitle("Dossier")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
