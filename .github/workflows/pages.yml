@@ -1,10 +1,13 @@
-name: Vigil website
+name: Website
 
-# Publishes Vigil/site to GitHub Pages. Enable once: repo Settings → Pages → Source: "GitHub Actions".
+# Publishes the project site to GitHub Pages:
+#   /            Vigil (Vigil/site)
+#   /dossier/    Dossier web app (built from Dossier/) and its privacy policy
+# Enable once: repo Settings → Pages → Source: "GitHub Actions".
 on:
   push:
     branches: ["master"]
-    paths: ["Vigil/site/**", ".github/workflows/pages.yml"]
+    paths: ["Vigil/site/**", "Dossier/**", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -24,11 +27,22 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Assemble the site
+        run: |
+          node Dossier/bin/build-site.js
+          rm -rf _site && mkdir -p _site/dossier
+          cp -R Vigil/site/. _site/
+          cp Dossier/site/index.html _site/dossier/index.html
+          cp Dossier/docs/privacy.html _site/dossier/privacy.html
+          ls -R _site | head -40
       - uses: actions/configure-pages@v5
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: Vigil/site
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
